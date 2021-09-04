@@ -63,9 +63,9 @@ P.TXdelay = 100; %200 % delay between transmits (usec)
 
 % Motor scan parameters
 P.xLines = 8; % number of scanned lines in the x-direction
-P.zLines = 6; % number of scanned lines in the z-direction
 P.xDist = 9; % distance (in mm) to move in each x step
-P.zDist = 18; % distance (in mm) to move in each z step
+P.zLines = 1; % number of scanned lines in the z-direction
+P.zDist = 16; % distance (in mm) to move in each z step
 P.zSteps = P.zLines - 1; % number of steps in the z-direction
 P.xSteps = P.xLines - 1; % number of steps in the x-direction
 P.xLineIdx = 1; % Initialize motor x-step counter
@@ -305,11 +305,15 @@ Process(1).Parameters = {'imgbufnum',1,...   % no. of buffer to process.
                          'displayWindow',1};
 
 nproc = 2;
+n_ext_funct = 1 ;
 nproc_resetStartEvent = nproc;
 Process(nproc).classname = 'External';
 Process(nproc).method = 'resetStartEvent';
 Process(nproc).Parameters = {'srcbuffer','none','dstbuffer','none'};
-nproc = nproc+1;
+EF(n_ext_funct).Function = vsv.seq.function.ExFunctionDef('resetStartEvent', @resetStartEvent);
+nproc = nproc+1;        
+n_ext_funct = n_ext_funct + 1 ;           
+
 
 nproc_saveImData = nproc;
 Process(nproc).classname = 'External';
@@ -318,29 +322,37 @@ Process(nproc).Parameters = {'srcbuffer','image',...
     'srcbufnum',1,...
     'srcframenum',-1,...
     'dstbuffer','none'};
+EF(n_ext_funct).Function = vsv.seq.function.ExFunctionDef('saveImData', @saveImData);
 nproc = nproc+1;
+n_ext_funct = n_ext_funct + 1 ;       
 
 nproc_setVoltage = nproc;
 Process(nproc).classname = 'External';
 Process(nproc).method = 'setVoltage';
 Process(nproc).Parameters = {'srcbuffer','none','dstbuffer','none'};
-nproc = nproc+1;        
+EF(n_ext_funct).Function = vsv.seq.function.ExFunctionDef('setVoltage', @setVoltage);
+nproc = nproc+1;
+n_ext_funct = n_ext_funct + 1 ;         
 
 nproc_resetVoltage = nproc;
 Process(nproc).classname = 'External';
 Process(nproc).method = 'resetVoltage';
 Process(nproc).Parameters = {'srcbuffer','none','dstbuffer','none'};
+EF(n_ext_funct).Function = vsv.seq.function.ExFunctionDef('resetVoltage', @resetVoltage);
 nproc = nproc+1;
+n_ext_funct = n_ext_funct + 1 ;  
 
 nImageSaveProcess = nproc;
 for N = 1:P.nImgFrms
-    Process(nproc).classname = 'External';                   
+    Process(nproc).classname = 'External';
     Process(nproc).method = 'saveImData';
     Process(nproc).Parameters = {'srcbuffer','image',...
         'srcbufnum',1,...
-        'srcframenum',N,... 
+        'srcframenum',N,...
         'dstbuffer','none'};
+    EF(n_ext_funct).Function = vsv.seq.function.ExFunctionDef('saveImData', @saveImData);
     nproc = nproc+1;
+    n_ext_funct = n_ext_funct + 1 ;
 end
 
 nRFSaveProcess = nproc;
@@ -351,7 +363,9 @@ for N = 1:P.nImgFrms
         'srcbufnum',1,...
         'srcframenum',N,... 
         'dstbuffer','none'};
+    EF(n_ext_funct).Function = vsv.seq.function.ExFunctionDef('saveRFData', @saveRFData);
     nproc = nproc+1;
+    n_ext_funct = n_ext_funct + 1 ;
 end
 
 nImageRecon = nproc;
@@ -377,12 +391,12 @@ for N = 1:P.nImgFrms
     nproc = nproc+1;
 end
 
-% External function definition.
-i_extFns = find(strcmp({Process.classname},'External'));
-numExtFns = length(unique({Process(i_extFns).method}));
-for nExtProc = 1:numExtFns
-    EF(nExtProc).Function = text2cell(sprintf('%%EF#%d',nExtProc));
-end
+% % External function definition.
+% i_extFns = find(strcmp({Process.classname},'External'));
+% numExtFns = length(unique({Process(i_extFns).method}));
+% for nExtProc = 1:numExtFns
+%     EF(nExtProc).Function = text2cell(sprintf('%%EF#%d',nExtProc));
+% end
 
 %% Specify SeqControl structure arrays.
 nsc = 1;
@@ -449,8 +463,8 @@ for i = 1:P.nRcvFrms
     end
     Event(n-1).seqControl = [nsc_sync,nsc]; % modify last acquisition Event's seqControl
         SeqControl(nsc).command = 'transferToHost'; % transfer frame to host buffer
-        SeqControl(nsc).condition = 'waitForProcessing';
-        SeqControl(nsc).argument = lastTTHnsc;
+%         SeqControl(nsc).condition = 'waitForProcessing';
+%         SeqControl(nsc).argument = lastTTHnsc;
         lastTTHnsc = nsc;
     nsc = nsc+1;
     
@@ -587,6 +601,7 @@ VSX
 return
 
 %% **** Callback routines to be converted by text2cell function. ****
+
 %SensCutoffCallback - Sensitivity cutoff change
 ReconL = evalin('base', 'Recon');
 for i = 1:size(ReconL,2)
@@ -787,8 +802,7 @@ return
 
 %% External function definitions
 
-%EF#1
-resetStartEvent
+function resetStartEvent
 Resource = evalin('base', 'Resource');
 P = evalin('base', 'P');
 params = evalin('base','params');
@@ -827,11 +841,10 @@ Control = evalin('base','Control');
 Control(1).Command = 'set&Run';
 Control(1).Parameters = {'Parameters',1,'startEvent',Resource.Parameters.startEvent};
 assignin('base','Control', Control);
-return
-%EF#1
+end
 
-%EF#2
-saveImData(imData)
+
+function saveImData(imData)
 P = evalin('base','P');
 numFrames = evalin('base','P.nImgFrms');
 Receive = evalin('base','Receive');
@@ -890,11 +903,10 @@ else
     bloc_count = bloc_count+1;
 end
 assignin('base','P',P);
-return
-%EF#2
+end
 
-%EF#3
-setVoltage
+
+function setVoltage
 P = evalin('base','P');
 % Reset the voltage after collapse
 hv1Sldr = findobj('Tag','hv1Sldr');
@@ -902,11 +914,10 @@ set(hv1Sldr,'Value',P.collapseVoltage);
 hv1Value = findobj('Tag','hv1Value');
 set(hv1Value,'String',num2str(P.collapseVoltage,'%.1f'));
 feval(get(hv1Sldr,'Callback'), hv1Sldr);
-return
-%EF#3
+end
 
-%EF#4
-resetVoltage
+
+function resetVoltage
 P = evalin('base','P');
 % Reset the voltage after collapse
 hv1Sldr = findobj('Tag','hv1Sldr');
@@ -914,11 +925,10 @@ set(hv1Sldr,'Value',P.imagingVoltage);
 hv1Value = findobj('Tag','hv1Value');
 set(hv1Value,'String',num2str(P.imagingVoltage,'%.1f'));
 feval(get(hv1Sldr,'Callback'), hv1Sldr);
-return
-%EF#4
+end
 
-%EF#5
-saveRFData(rfData)
+
+function saveRFData(rfData)
 P = evalin('base','P');
 
 numFrames = evalin('base','P.nImgFrms');
@@ -943,5 +953,4 @@ Receive = evalin('base','Receive');
     else
         burst_count = burst_count+1;
     end
-return
-%EF#5
+end

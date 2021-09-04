@@ -7,21 +7,20 @@
 % Run the part of the script that defines the parameters, then copy and
 % paste from the lines below:
 %{
-% Activate the motor stage and define origin
+% Activate the motor stage
 sub_Close_All_Connections;
 params = sub_AllSettings('VerasonicsScan');
 params = sub_Stage_Initialize(params);
 
 % Move the X motor
-P.xDist = 0.5; % distance (in mm) to move in each x step
-num_x_steps = 365; % Modify to change the number of x steps
+num_x_steps = 300; % Modify to change the number of x steps
 sub_Stage_Move(params, params.Stages.x_motor, num_x_steps*(P.xDist/1000)/params.Stages.step_distance);
 BackToOrigin
 Release_Stage;
 
 % Move the Z motor
-P.zDist = 0.3*(P.numRays-1); % distance (in mm) to move in each z step
-num_z_steps = 26; % Modify to change the number of z steps
+P.zDist = 0.3*(P.numRays-1);
+num_z_steps = 8; % Modify to change the number of z steps
 sub_Stage_Move(params, params.Stages.z_motor, num_z_steps*(P.zDist/1000)/params.Stages.step_distance);
 BackToOrigin
 Release_Stage;
@@ -35,35 +34,35 @@ clear all
 %% Specify script parameters *edit this section ONLY*
 % Display parameters
 P.startDepth_mm = 0;  % startDepth in mm
-P.endDepth_mm = 30;  % endDepth in mm
+P.endDepth_mm = 15;  % endDepth in mm
 P.maxDepth_mm = P.endDepth_mm;  % maxDepth for RangeChange and RcvBuffer
 P.dBfloorAM = 0; % Initial min dB value for AM image display
 P.dBfloor = 0; % Initial min dB value for Bmode image display
 
 % Beam parameters
-P.transFreq = 10;
-P.pulseShape = 'axicon'; % Type of beam to use (axicon, parabola)
+P.transFreq = 15.625;
+P.pulseShape = 'parabola'; % Type of beam to use (axicon, parabola)
 P.code = 'AM'; % Type of imaging code to use (Bmode, AM)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
-P.txFocus_mm = 20; % focal depth of the wide beam
-P.numTx = 65;  % number of transmit elements in TX aperture
+P.txFocus_mm = 8; % focal depth of the wide beam
+P.numTx = 40;  % number of transmit elements in TX aperture
 P.numRays = 128 - P.numTx + 1; % no. of Rays
 P.alpha = 19.5; % angle alpha for X-beam transmits [degrees]
 P.numPulses = 3; % 3 = 1 double plane wave + 2 single plane waves
-P.AMdelay = 200; %200 % delay between AM transmits (usec)
 P.hv = 1.6; % initial high voltage
-P.numAccum = 4; % number of acquisitions to average for each frame
+P.numAccum = 16; % number of acquisitions to average for each frame
 P.numCycles = 2; % number of half cycles in transmit waveform
-P.TXdelay = 500; %600 % delay between ray line transmits (usec)
-P.fileFormat = 'mat';
+P.TXdelay = 180; %200 % delay between transmits (usec)
 
 % Motor scan parameters
-P.numScans = 3; % number of full scans
-P.xLines = 10; % number of scanned lines in the x-direction (160 for one row of plates; 360 for two rows of plates)
-P.zLines = 3; % number of scanned lines in the z-direction (25 for five columns of plates; 30 for six columns)
-P.xDist = 0.5; % distance (in mm) to move in each x step
-P.zDist = 0.3*(P.numRays-1); % distance (in mm) to move in each z step
-P.xLineIdx = 1; % Initialize motor x-step counter
-P.zLineIdx = 1; % Initialize motor z-step counter
+%P.xLines = 60; % number of scanned lines in the x-direction (160 for one row of plates; 360 for two rows of plates)
+P.xLines = 300; % number of scanned lines in the x-direction (160 for one row of plates; 360 for two rows of plates)
+%P.xDist = 0.25; % distance (in mm) to move in each x step
+P.xDist = 0.05; % distance (in mm) to move in each x step
+P.zLines = 1; % number of scanned lines in the z-direction (25 for five columns of plates; 30 for six columns)
+%P.zDist = 0.15*(P.numRays-1); % distance (in mm) to move in each z step
+P.zDist = 0.1*(P.numRays-1); % distance (in mm) to move in each z step
+P.numScans = 1; % number of full scans
+%P.numScans = 3; % number of full scans
 % NOTE: square plates are 91 mm across
 % each square section is 1/2 inch = 12.7 mm
 % 4 plates = 20 z-lines
@@ -75,14 +74,13 @@ Scan = repmat(struct('Voltage',P.hv,...
     'Angle',P.alpha,...
     'Focus',P.txFocus_mm,...
     'Recon',true,...
-    'xOffset',repmat(0,1,P.zLines),... % Offset (mm) in x dim for each z line
     'numCycles',P.numCycles),1,P.numScans);
 
-% Pre/post-collapse
+% % Pre/post-collapse
 n = 1;
-Scan(n).Voltage = 50; n = n+1;
-Scan(n).Voltage = 50; Scan(n).Beam = 'parabola'; Scan(n).Recon = false; n = n+1;
-Scan(n).Voltage = 50;
+Scan(n).Voltage = 2; n = n+1;
+% Scan(n).Voltage = 25; Scan(n).Beam = 'parabola'; Scan(n).Recon = false; n = n+1;
+% Scan(n).Voltage = 2;
 
 % % A variant fine Acoustic collapse ramp
 % n = 1;
@@ -139,7 +137,7 @@ Scan(n).Voltage = 50;
 % Scan(n).Voltage = 50;
 
 
-% % Full voltage ramp + collapse
+% Full voltage ramp
 % n = 1;
 % Scan(n).Voltage = 5; n = n+1;
 % Scan(n).Voltage = 10; n = n+1;
@@ -150,9 +148,8 @@ Scan(n).Voltage = 50;
 % Scan(n).Voltage = 35; n = n+1;
 % Scan(n).Voltage = 40; n = n+1;
 % Scan(n).Voltage = 45; n = n+1;
-% Scan(n).Voltage = 50; n = n+1;
-% Scan(n).Voltage = 50; Scan(n).Beam = 'parabola'; Scan(n).Recon = false; n = n+1;
 % Scan(n).Voltage = 50;
+
 
 % n = 1;
 % Scan(n).Voltage = 3; n = n+1;
@@ -173,6 +170,7 @@ Scan(n).Voltage = 50;
 % Scan(n).Voltage = 48; n = n+1;
 % Scan(n).Voltage = 50;
 
+
 P.numScans = length(Scan);
 for i = 1:P.numScans
     if ~isfield(Scan(i),'Voltage'); Scan(i).Voltage = P.hv; end
@@ -180,9 +178,6 @@ for i = 1:P.numScans
     if ~isfield(Scan(i),'Beam'); Scan(i).Beam = P.pulseShape; end
     if ~isfield(Scan(i),'Angle'); Scan(i).Angle = P.alpha; end
     if ~isfield(Scan(i),'Focus'); Scan(i).Focus = P.txFocus_mm; end
-    if length(Scan(i).xOffset) ~= P.zLines
-        error('ERROR: xOffset field of Scan(%d) must be an array with number of elements equal to P.zLines',i)
-    end
 end
 
 %% Derived script parameters
@@ -199,19 +194,16 @@ Resource.Parameters.speedOfSound = 1500;
 Resource.Parameters.speedCorrectionFactor = 1.0;
 Resource.Parameters.simulateMode = 0;
 P.cSI = Resource.Parameters.speedOfSound;
-Resource.VDAS.dmaTimeout = 10000; % (ms)
-% Resource.Parameters.waitForProcessing = 1 ;
 %  Resource.Parameters.simulateMode = 1 forces simulate mode, even if hardware is present.
 %  Resource.Parameters.simulateMode = 2 stops sequence and processes RcvData continuously.
 
 %% Specify Trans structure array.
-Trans.name = 'L10-4v';
+Trans.name = 'L22-14v';
 Trans.frequency = P.transFreq; % [MHz]
 Trans.units = 'wavelengths';
 Trans = computeTrans(Trans);
 P.pitchSI = Trans.spacing * P.cSI / (Trans.frequency*1e6);
 P.fSI = Trans.frequency*1e6;
-Trans.maxHighVoltage = 50;
 
 RcvProfile.LnaZinSel = 31;
 % Convert mm to wavelength
@@ -404,14 +396,13 @@ TGC.CntrlPts = [1023,1023,1023,1023,1023,1023,1023,1023];
 TGC.rangeMax = P.endDepth;
 TGC.Waveform = computeTGCWaveform(TGC);
 
-%% Specify Recon structure array.
-
+%% Specify Recon structure array. 
 Recon = struct('senscutoff', 0.6, ...
-    'pdatanum', 1, ...
-    'rcvBufFrame',-1, ...
-    'IntBufDest', [0,0], ...
-    'ImgBufDest', [1,-1], ...
-    'RINums', 1:nr);
+               'pdatanum', 1, ...
+               'rcvBufFrame',-1, ...
+               'IntBufDest', [0,0], ...
+               'ImgBufDest', [1,-1], ...
+               'RINums', 1:nr);
 
 %% Define ReconInfo structures.
 ReconInfo = repmat(struct('mode', 'replaceIntensity', ...  % replace intensity data
@@ -446,7 +437,7 @@ Process(1).Parameters = {'imgbufnum',1,...   % number of buffer to process.
                          'display',1,...      % display image after processing
                          'displayWindow',1};
                      % Set counter for easy insertion of now Process instances
-nproc = 2;      
+nproc = 2;  
 n_ext_funct = 1 ;
 % Set a named variable for each index for easy subsequent reference
 nproc_saveImage = nproc;
@@ -458,7 +449,7 @@ Process(nproc).Parameters = {'srcbuffer','receive',...
         'dstbuffer','none'};
 EF(n_ext_funct).Function = vsv.seq.function.ExFunctionDef('saveImage', @saveImage);
 nproc = nproc+1;        
-n_ext_funct = n_ext_funct + 1 ;                     
+n_ext_funct = n_ext_funct + 1 ;           
 
 nproc_motorStepX = nproc;
 Process(nproc).classname = 'External';
@@ -466,7 +457,7 @@ Process(nproc).method = 'motorStepX';
 Process(nproc).Parameters = {'srcbuffer','none','dstbuffer','none'};
 EF(n_ext_funct).Function = vsv.seq.function.ExFunctionDef('motorStepX', @motorStepX);
 nproc = nproc+1;
-n_ext_funct = n_ext_funct + 1 ;                     
+n_ext_funct = n_ext_funct + 1 ;           
 
 nproc_motorReturnXStepZ = nproc;
 Process(nproc).classname = 'External';
@@ -474,7 +465,7 @@ Process(nproc).method = 'motorReturnXStepZ';
 Process(nproc).Parameters = {'srcbuffer','none','dstbuffer','none'};
 EF(n_ext_funct).Function = vsv.seq.function.ExFunctionDef('motorReturnXStepZ', @motorReturnXStepZ);
 nproc = nproc+1;     
-n_ext_funct = n_ext_funct + 1 ;                     
+n_ext_funct = n_ext_funct + 1 ; 
 
 nproc_motorReturnXReturnZ = nproc;
 Process(nproc).classname = 'External';
@@ -517,20 +508,20 @@ Process(nproc).method = 'updateVoltage';
 Process(nproc).Parameters = {'srcbuffer','none','dstbuffer','none'};
 EF(n_ext_funct).Function = vsv.seq.function.ExFunctionDef('updateVoltage', @updateVoltage);
 nproc = nproc+1;
-n_ext_funct = n_ext_funct + 1 ;                     
+n_ext_funct = n_ext_funct + 1 ; 
 
-% nImageSaveProcess = nproc;
-% for N = 1:P.nImgFrms
-%     Process(nproc).classname = 'External';
-%     Process(nproc).method = 'saveImage';
-%     Process(nproc).Parameters = {'srcbuffer','image',...
-%         'srcbufnum',1,...
-%         'srcframenum',N,...
-%         'dstbuffer','none'};
-%     EF(n_ext_funct).Function = vsv.seq.function.ExFunctionDef('saveImage', @saveImage);
-%     nproc = nproc+1;
-%     n_ext_funct = n_ext_funct + 1 ;
-% end
+nImageSaveProcess = nproc;
+for N = 1:P.nImgFrms
+    Process(nproc).classname = 'External';                   
+    Process(nproc).method = 'saveImage';
+    Process(nproc).Parameters = {'srcbuffer','image',...
+        'srcbufnum',1,...
+        'srcframenum',N,... 
+        'dstbuffer','none'};
+    EF(n_ext_funct).Function = vsv.seq.function.ExFunctionDef('saveImage', @saveImage);
+    nproc = nproc+1;
+    n_ext_funct = n_ext_funct + 1 ; 
+end
 
 % % External function definition.
 % for nExtProc = 1:nImageSaveProcess-2
@@ -541,17 +532,14 @@ n_ext_funct = n_ext_funct + 1 ;
 nsc = 1;
 nsc_rylnDelay = nsc;
 SeqControl(nsc).command = 'timeToNextAcq';
-SeqControl(nsc).argument = P.TXdelay + 2*P.endDepth_mm/P.cSI*2*1e3;  % time between ray lines
-nsc = nsc+1;
-
-nsc_AMDelay = nsc;
-SeqControl(nsc).command = 'timeToNextAcq';
-SeqControl(nsc).argument = P.AMdelay + 2*P.endDepth_mm/P.cSI*2*1e3;  % time between ray lines
+% SeqControl(nsc).argument = 1000+2*P.endDepth_mm/P.cSI*2*1e3;  % time between ray lines
+SeqControl(nsc).argument = P.TXdelay+2*P.endDepth_mm/P.cSI*2*1e3;  % time between ray lines
 nsc = nsc+1;
 
 nsc_frameDelay = nsc;
 SeqControl(nsc).command = 'timeToNextAcq';
 SeqControl(nsc).argument = round(1000 + np*(nr-1)*SeqControl(1).argument); % 55 msec between frames (18 fps)
+% SeqControl(nsc).argument = round(110000 - np*(nr-1)*SeqControl(1).argument); % 55 msec between frames (18 fps)
 nsc = nsc+1;
  
 nsc_returnToMatlab = nsc;
@@ -585,7 +573,7 @@ nsc = nsc+1;
 
 nsc_sync = nsc;
 SeqControl(nsc).command = 'sync'; % - Synchronize hardware and software sequencers
-SeqControl(nsc).argument = 10000000; % [us] % 5 sec timeout for software sequencer (default is 0.5 seconds)
+SeqControl(nsc).argument = 10000000; % 10 sec timeout for software sequencer (default is 0.5 seconds)
 nsc = nsc+1;
 
 nsc_stop = nsc;
@@ -599,12 +587,8 @@ for i = 1:Resource.RcvBuffer(1).numFrames
         for k = 1:np
             Event(n).info = 'Acquire ray line';
             Event(n).tx = (k-1)*nr + j;        
-            Event(n).rcv = np*nr*(i-1) + j + (k-1)*nr;
-            if k == np
-                Event(n).seqControl = nsc_rylnDelay;
-            else
-                Event(n).seqControl = nsc_AMDelay;
-            end
+            Event(n).rcv = np*nr*(i-1) + j + (k-1)*nr; 
+            Event(n).seqControl = nsc_rylnDelay; 
             n = n+1;
         end
     end
@@ -626,11 +610,7 @@ for i = 1:Resource.RcvBuffer(1).numFrames
                 Event(n).info = 'Accumulate ray line';
                 Event(n).tx = (k-1)*nr + j;
                 Event(n).rcv = nAcq + np*nr*(i-1) + j + (k-1)*nr;
-                if k == np
-                    Event(n).seqControl = nsc_rylnDelay;
-                else
-                    Event(n).seqControl = nsc_AMDelay;
-                end
+                Event(n).seqControl = nsc_rylnDelay;
                 n = n+1;
             end
         end
@@ -677,11 +657,7 @@ for k_z = 1:P.zLines
             Event(n).info = 'Acquire ray line';
             Event(n).tx = (k-1)*nr + j;
             Event(n).rcv = (k-1)*nr + np*nr*(i-1)+j;
-            if k == np
-                Event(n).seqControl = nsc_rylnDelay;
-            else
-                Event(n).seqControl = nsc_AMDelay;
-            end
+            Event(n).seqControl = nsc_rylnDelay;
             n = n+1;
         end
     end
@@ -703,11 +679,7 @@ for k_z = 1:P.zLines
                 Event(n).info = 'Accumulate ray line';
                 Event(n).tx = (k-1)*nr + j;
                 Event(n).rcv = nAcq + np*nr*(i-1) + j + (k-1)*nr;
-                if k == np
-                    Event(n).seqControl = nsc_rylnDelay;
-                else
-                    Event(n).seqControl = nsc_AMDelay;
-                end
+                Event(n).seqControl = nsc_rylnDelay;
                 n = n+1;
             end
         end
@@ -720,6 +692,14 @@ for k_z = 1:P.zLines
         SeqControl(nsc).argument = nstart;
         nsc = nsc + 1;
         n = n+1;
+        
+        %     Event(n).info = 'Dummy transmit to set frame period';
+        %     Event(n).tx = nDummyTX;
+        %     Event(n).seqControl = [nsc_sync,nsc];
+        %     SeqControl(nsc).command = 'transferToHost'; % transfer frame to host buffer
+        %     nsc_lastTTH = nsc;
+        %     nsc = nsc+1;
+        %     n = n+1;
         
         Event(n-2).seqControl = [nsc_sync,nsc]; % modify last acquisition Event's seqControl
         SeqControl(nsc).command = 'transferToHost'; % transfer frame to host buffer
@@ -754,11 +734,7 @@ for k_z = 1:P.zLines
             Event(n).info = 'Acquire ray line';
             Event(n).tx = (k-1)*nr + j;
             Event(n).rcv = (k-1)*nr + np*nr*(i-1)+j;
-            if k == np
-                Event(n).seqControl = nsc_rylnDelay;
-            else
-                Event(n).seqControl = nsc_AMDelay;
-            end
+            Event(n).seqControl = nsc_rylnDelay;
             n = n+1;
         end
     end
@@ -780,11 +756,7 @@ for k_z = 1:P.zLines
                 Event(n).info = 'Accumulate ray line';
                 Event(n).tx = (k-1)*nr + j;
                 Event(n).rcv = nAcq + np*nr*(i-1) + j + (k-1)*nr;
-                if k == np
-                    Event(n).seqControl = nsc_rylnDelay;
-                else
-                    Event(n).seqControl = nsc_AMDelay;
-                end
+                Event(n).seqControl = nsc_rylnDelay;
                 n = n+1;
             end
         end
@@ -798,6 +770,16 @@ for k_z = 1:P.zLines
         nsc = nsc + 1;
         n = n+1;
         
+        %     Event(n).info = 'Dummy transmit to set frame period';
+        %     Event(n).tx = nDummyTX;
+        %     Event(n).seqControl = [nsc_sync,nsc];
+        %     SeqControl(nsc).command = 'transferToHost'; % transfer frame to host buffer
+        %         SeqControl(nsc).condition = 'waitForProcessing';
+        %         SeqControl(nsc).argument = nsc_lastTTH;
+        %         nsc_lastTTH = nsc;
+        %         nsc = nsc+1;
+        %     n = n+1;
+        
         Event(n-2).seqControl = [nsc_sync,nsc]; % modify last Event's seqControl
         SeqControl(nsc).command = 'transferToHost'; % transfer frame to host
 %         SeqControl(nsc).condition = 'waitForProcessing';
@@ -809,7 +791,7 @@ for k_z = 1:P.zLines
         SeqControl(nsc).command = 'transferToHost'; % transfer frame to host
 %         SeqControl(nsc).condition = 'waitForProcessing';
 %         SeqControl(nsc).argument = nsc_lastTTH;
-          nsc_lastTTH = nsc;
+        nsc_lastTTH = nsc;
         nsc = nsc+1;
     end
     
@@ -998,9 +980,7 @@ pos = getPosition(r);
 
 zDispROI = [pos(1) pos(1)+pos(3)];
 yDispROI = [pos(2) pos(2)+pos(4)];
-P.reconStartDepth_mm = yDispROI(1);  % startDepth in mm
-P.reconEndDepth_mm = yDispROI(2);  % endDepth in mm
-P.yIntegROI = find(y>P.reconStartDepth_mm,1):find(y>P.reconEndDepth_mm,1);
+P.yIntegROI = find(y>yDispROI(1),1):find(y>yDispROI(2),1);
 P.zIntegROI = 1:length(z);
 
 % Choose noise ROI
@@ -1080,7 +1060,6 @@ if isempty(dir_save)
     dir_save = ['PlateScan_' datestr(now, 'yyyy-mm-dd@HH-MM-SS') '\'];
 end
 if (i_xLine == 1 && i_zLine == 1)
-    Time.PartialRecon = zeros(P.xLines,P.zLines);
     Time.Recon = zeros(P.xLines,P.zLines);
     Time.Display = zeros(P.xLines,P.zLines);
     Time.Save = zeros(P.xLines,P.zLines);
@@ -1196,24 +1175,20 @@ if isempty(IDX)
 end
 z = Z;
 y = Y;
-
-tic
-imgCode = P.code;
-P.code = 'Bmode';
-[beamformedBmode,myIm_Bmode] = fastxAMrecon(rfData,P,IDX);
-P.code = 'AM';
-[beamformedAM,myIm_AM] = fastxAMrecon(rfData,P,IDX);
-P.code = imgCode;
-Time.Recon(i_xLine,i_zLine) = toc;
-
-% tic
 % imgCode = P.code;
 % P.code = 'Bmode';
 % [beamformedBmode,y,z,myIm_Bmode] = rawAMrecon(rfData,Receive,P);
 % P.code = 'AM';
 % [beamformedAM,~,~,myIm_AM] = rawAMrecon(rfData,Receive,P);
 % P.code = imgCode;
-% Time.PartialRecon(i_xLine,i_zLine) = toc;
+% tic
+imgCode = P.code;
+P.code = 'Bmode';
+[beamformedBmode,myIm_Bmode] = fastxAMrecon(rfData,P,IDX);
+P.code = 'AM';
+[beamformedAM,myIm_AM] = fastxAMrecon(rfData,P,IDX);
+P.code = imgCode;
+% Time.Recon(i_xLine,i_zLine) = toc;
 
 iY = 1:length(beamformedBmode);
 % iY = find(y>=P.startDepth_mm,1):find(y>=P.endDepth_mm,1);
@@ -1225,16 +1200,11 @@ Im_AM = abs(hilbert(beamformedAM(iY,:)));
 P.dBfloor = 20*log10(mean(mean(Im_AM(P.yNoiseROI,P.zNoiseROI)...
     ./max(max(Im_Bmode(P.yNoiseROI,P.zNoiseROI))))));
 
+
 %% Save data
+file_name = sprintf('zLine%.3d_xLine%.3d.mat', i_zLine,i_xLine);
 % tic
-if strcmp(P.fileFormat,'csv')
-    file_name = sprintf('zLine%.3d_xLine%.3d', i_zLine,i_xLine);
-    csvwrite([path_save dir_save subdir file_name '_AM.csv'],Im_AM);
-    csvwrite([path_save dir_save subdir file_name '_Bmode.csv'],Im_Bmode);
-else
-    file_name = sprintf('zLine%.3d_xLine%.3d.mat', i_zLine,i_xLine);
-    save([path_save dir_save subdir file_name], 'Im_AM','Im_Bmode','P','-v7.3');
-end
+save([path_save dir_save subdir file_name], 'Im_AM','Im_Bmode','P','-v7.3');
 % Time.Save(i_xLine,i_zLine) = toc;
 % disp(['saved block #' num2str(i_xLine) ' at ' path_save dir_save subdir file_name])
 P.prevDataPath = [path_save dir_save subdir];
@@ -1254,10 +1224,8 @@ if isempty(imCatRatio)
 end
 i = i_xLine;
 j = i_zLine;
-% imCatBmode(i,(j-1)*L+1:j*L) = max(Im_Bmode(P.yIntegROI,:),[],1);
-% imCatAM(i,(j-1)*L+1:j*L) = max(Im_AM(P.yIntegROI,:),[],1);
-imCatBmode(i,(j-1)*L+1:j*L) = max(Im_Bmode,[],1);
-imCatAM(i,(j-1)*L+1:j*L) = max(Im_AM,[],1);
+imCatBmode(i,(j-1)*L+1:j*L) = max(Im_Bmode(P.yIntegROI,:),[],1);
+imCatAM(i,(j-1)*L+1:j*L) = max(Im_AM(P.yIntegROI,:),[],1);
 if (j > 1)
     imCatBmode(i,(j-1)*L+1) = (imCatBmode(i,(j-1)*L) + imCatBmode(i,(j-1)*L+2))/2;
     imCatAM(i,(j-1)*L+1) = (imCatAM(i,(j-1)*L) + imCatAM(i,(j-1)*L+2))/2;
@@ -1292,21 +1260,6 @@ if (i_xLine > 2)
 end
 tic;
 fprintf('time remaining: %.0f hrs, %.0f min, %.0f sec\n',hrRem,minRem,secRem)
-
-
-% % Bmode depth plane image
-% P.dBfloor = mean(mean(myIm_Bmode(P.yNoiseROI,P.zNoiseROI)));
-% imagesc(yzImgHandle_Bmode.CurrentAxes,z,fliplr(y),Im_Bmode);
-% axis(yzImgHandle_Bmode.CurrentAxes,'image')
-% colorbar(yzImgHandle_Bmode.CurrentAxes)
-% drawnow limitrate
-% 
-% % AM depth plane image
-% P.dBfloor = mean(mean(myIm_AM(P.yNoiseROI,P.zNoiseROI)));
-% imagesc(yzImgHandle_AM.CurrentAxes,z,fliplr(y),Im_AM);
-% axis(yzImgHandle_AM.CurrentAxes,'image')
-% colorbar(yzImgHandle_AM.CurrentAxes)
-% drawnow limitrate
 
 if i_xLine == P.xLines
     % Bmode plate image
@@ -1363,8 +1316,19 @@ if i_xLine == P.xLines
     colorbar(xzImgHandle_Ratio.CurrentAxes)
     drawnow limitrate
     
-%     fprintf('Precomputed recon time = %f seconds\nPartial recon time = %f seconds\n',...
-%         mean(Time.Recon(:)),mean(Time.PartialRecon(:)))
+%     % Bmode depth plane image
+%     P.dBfloor = mean(mean(myIm_Bmode(P.yNoiseROI,P.zNoiseROI)));
+%     imagesc(yzImgHandle_Bmode.CurrentAxes,z,fliplr(y(iIm)),myIm_Bmode(iIm,:),[P.dBfloor inf]);
+%     axis(yzImgHandle_Bmode.CurrentAxes,'image')
+%     colorbar(yzImgHandle_Bmode.CurrentAxes)
+%     drawnow limitrate
+%     
+%     % AM depth plane image
+%     P.dBfloor = mean(mean(myIm_AM(P.yNoiseROI,P.zNoiseROI)));
+%     imagesc(yzImgHandle_AM.CurrentAxes,z,fliplr(y(iIm)),myIm_AM(iIm,:),[P.dBfloor inf]);
+%     axis(yzImgHandle_AM.CurrentAxes,'image')
+%     colorbar(yzImgHandle_AM.CurrentAxes)
+%     drawnow limitrate
     
     i_xLine = 1;
     i_zLine = i_zLine+1;
@@ -1379,6 +1343,8 @@ if i_zLine == P.zLines+1
     save([path_save dir_save subdir 'PlateScan_LinearPixelData.mat'], 'imCatAM','imCatBmode','imCatRatio','zCat','xCat','P','Scan','-v7.3');
     imCatBmode(:) = 0;
     imCatAM(:) = 0;
+%     fprintf('Recon time = %f seconds\nSave time = %f seconds\n',...
+%         mean(Time.Recon(:)),mean(Time.Save(:)))
 end
 end
 end
@@ -1393,33 +1359,22 @@ end
 
 function motorReturnXStepZ
 P = evalin('base','P');
-Scan = evalin('base','Scan');
 params = evalin('base','params');
-evalin('base','sub_Stage_Move(params, params.Stages.x_motor, -(P.xSteps*P.xDist + Scan(P.nScan-1).xOffset(P.zLineIdx))/1000/params.Stages.step_distance);');
+evalin('base','sub_Stage_Move(params, params.Stages.x_motor, -P.xSteps*(P.xDist/1000)/params.Stages.step_distance);');
 pause(0.5+P.xSteps*(P.xDist/1000)/params.Stages.step_distance/params.Stages.Speed)
-P.xLineIdx = 1;
-
 evalin('base','sub_Stage_Move(params, params.Stages.z_motor, (P.zDist/1000)/params.Stages.step_distance);');
 pause(0.5+(P.zDist/1000)/params.Stages.step_distance/params.Stages.Speed)
-
-% Apply any x offset
-evalin('base',['sub_Stage_Move(params, params.Stages.x_motor, '...
-    '(Scan(P.nScan-1).xOffset(P.zLineIdx+1)/1000)/params.Stages.step_distance);']);
-pause(0.5+(P.xDist/1000)/params.Stages.step_distance/params.Stages.Speed)
-P.zLineIdx = P.zLineIdx + 1;
-assignin('base','P',P);
-fprintf('motorReturnXStepZ\n')
 end
 
 function motorReturnXReturnZ
 P = evalin('base','P');
 params = evalin('base','params');
-evalin('base','BackToOrigin;');
-P.zLineIdx = 1;
-assignin('base','P',P);
-fprintf('motorReturnXReturnZ\n')
+evalin('base','sub_Stage_Move(params, params.Stages.x_motor, -P.xSteps*(P.xDist/1000)/params.Stages.step_distance);');
+pause(1+P.xSteps*(P.xDist/1000)/params.Stages.step_distance/params.Stages.Speed)
+evalin('base','sub_Stage_Move(params, params.Stages.z_motor, -P.zSteps*(P.zDist/1000)/params.Stages.step_distance);');
+pause(0.5+P.zSteps*(P.zDist/1000)/params.Stages.step_distance/params.Stages.Speed)
+% fprintf('motorReturnXReturnZ\n')
 end
-
 
 function resetStartEvent
 Resource = evalin('base', 'Resource');
@@ -1581,7 +1536,7 @@ persistent ImgHandle_AM
 if isempty(ImgHandle_AM)||~ishandle(ImgHandle_AM)
     ImgHandle_AM = figure('name','AM',...
         'NumberTitle','off','Position',[771 615 630 380]);
-    imagesc(z,fliplr(y(iIm))*cos(pi*P.alpha/180),myIm_AM(iIm,:)); 
+    imagesc(z,fliplr(y(iIm)),myIm_AM(iIm,:)); 
     xlabel('lateral position (mm)'), ylabel('depth (mm)')
     colormap hot, colorbar
 end
@@ -1591,7 +1546,7 @@ persistent ImgHandle_Bmode
 if isempty(ImgHandle_Bmode)||~ishandle(ImgHandle_Bmode)
     ImgHandle_Bmode = figure('name','Bmode',...
         'NumberTitle','off','Position',[141 615 630 380]);
-    imagesc(z,fliplr(y(iIm))*cos(pi*P.alpha/180),myIm_Bmode(iIm,:)); 
+    imagesc(z,fliplr(y(iIm)),myIm_Bmode(iIm,:)); 
     xlabel('lateral position (mm)'), ylabel('depth (mm)')
     colormap hot, colorbar
 end
@@ -1602,12 +1557,12 @@ end
 % else
 %     imagesc(ImgHandle_AM.CurrentAxes,z,fliplr(y(iIm)),myIm_Bmode(iIm,:));
 % end
-imagesc(ImgHandle_Bmode.CurrentAxes,z,fliplr(y(iIm))*cos(pi*P.alpha/180),myIm_Bmode(iIm,:),[P.dBfloor inf]);
+imagesc(ImgHandle_Bmode.CurrentAxes,z,fliplr(y(iIm)),myIm_Bmode(iIm,:),[P.dBfloor inf]);
 axis(ImgHandle_Bmode.CurrentAxes,'image')
 colorbar(ImgHandle_Bmode.CurrentAxes)
 drawnow limitrate   
 
-imagesc(ImgHandle_AM.CurrentAxes,z,fliplr(y(iIm))*cos(pi*P.alpha/180),myIm_AM(iIm,:),[P.dBfloor inf]);
+imagesc(ImgHandle_AM.CurrentAxes,z,fliplr(y(iIm)),myIm_AM(iIm,:),[P.dBfloor inf]);
 axis(ImgHandle_AM.CurrentAxes,'image')
 colorbar(ImgHandle_AM.CurrentAxes)
 drawnow limitrate   
@@ -1639,6 +1594,22 @@ if (P.nScan<=P.numScans)
         evalin('base','BackToOrigin');
         pause(1+(P.xDist/1000)/params.Stages.step_distance/params.Stages.Speed)
     end
+ 
+    
+%     P.hv = Scan(P.nScan).Voltage;
+%     HvSldr = findobj('Tag','hv1Sldr');
+%     if ~isempty(HvSldr)
+%         set(HvSldr,'Value',P.hv);
+%         feval(get(HvSldr,'Callback'))
+%     end
+%     
+%     [result,hv] = setTpcProfileHighVoltage(Scan(P.nScan).Voltage, 1);
+%     P.hv = hv;
+%     % Change voltage slider in GUI to match actual set voltage
+%     hv1Sldr = findobj('Tag','hv1Sldr');
+%     set(hv1Sldr,'Value',P.hv);
+%     hv1Value = findobj('Tag','hv1Value');
+%     set(hv1Value,'String',num2str(P.hv,'%.1f'));
     
     % Update transmit waveform
     TW(1).type = 'parametric';
@@ -1725,7 +1696,7 @@ end
 
 if (P.nScan<=P.numScans)
     P.hv = Scan(P.nScan).Voltage;
-%      HvSldr = findobj('Tag','hv1Sldr');
+%     HvSldr = findobj('Tag','hv1Sldr');
 %     if ~isempty(HvSldr)
 %         set(HvSldr,'Value',P.hv);
 %         feval(get(HvSldr,'Callback'))
