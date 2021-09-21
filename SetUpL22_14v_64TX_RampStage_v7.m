@@ -3,11 +3,13 @@
 %   64 ray transmits and 64 receive acquisitions
 %   128 receive channels are active for each acquisition of the 64 transmits
 %   62.5 MHz sampling for a 15.625 MHz processing center frequency
-
+%   automated voltage ramp scanning with auto depth adjustment 
 % Last update:
-% 11/12/2017 - Danny Sawyer
+% 09/21/2021 Zhiyang Jin
 
 clear all, format compact
+
+ModeCode = 4; %Default as xAM ramp
 
 params = sub_AllSettings('ZJScanTest');
 params = sub_Stage_Initialize(params);
@@ -43,8 +45,9 @@ P.BI = 1.6; % Parabolic B-mode imaging voltage
 P.fps = 100; % maximal frame rate
 
 P.autoDepthRange = 1; % max travel range from the center (dz in z +/- dz) in mm
-P.autoDepth = [5 0]; %349 = 5 mm for Bmode, 923 for 12 mm
-P.autoROI = 1;
+P.autoDepth = [0 0]; % initialization of [predict travel distance, flag to move y motor (real world z-dimension)]
+P.autoROI = 1; %auto ROI detection mode, 1 = predict well ROI, 2 = predict absorber position
+P.autoStart = [0 5];% if autoStart(1) set, auto adjust the depth to autoStart(2) (in mm) before starting the ramp.
 
 if isempty(Initial_Pos)
     Initial_Pos = 'A1';
@@ -831,7 +834,16 @@ Event(n).process = 0;
 Event(n).seqControl = 3;
 n = n + 1;
 
-Resource.Parameters.startEvent = nAngleEvent(1,length(P.Angles)+1);
+switch ModeCode %initalize ramp mode by ModeCode 
+    case 1
+        Resource.Parameters.startEvent = nAngleEvent(1,length(P.Angles)+1); %pBmode
+    case 2
+        Resource.Parameters.startEvent = nAngleEvent(1,P.Angles==P.alpha); %pAM
+    case 3
+        Resource.Parameters.startEvent = nAngleEvent(2,length(P.Angles)+1); %xBmode
+    case 4
+        Resource.Parameters.startEvent = nAngleEvent(2,P.Angles==P.alpha); %xAM
+end
 
 m = 1;
 % - Acquire RF data
@@ -903,8 +915,8 @@ UI(m).Callback = text2cell('%roiWidth');
 m = m + 1;
 
 % Save all the structures to a .mat file.
-save('MatFiles/L22-14v_64TX_AutoVRamp');
-filename = 'L22-14v_64TX_AutoVRamp';
+save('MatFiles/L22-14v_64TX_RampStage');
+filename = 'L22-14v_64TX_RampStage';
 VSX
 return
 %%
@@ -912,7 +924,11 @@ return
 %saveRF - save RF
 P = evalin('base','P');
 fprintf('Ramp starts.\n')
-P.ramp = 1;
+if ~P.autoStart(1)
+    P.ramp = 1;
+else
+    P.ScanCount(4) = 1; %Pre scan depth adjustment, to be tested
+end
 assignin('base','P', P);
 return
 %saveRF
@@ -1340,8 +1356,8 @@ end
 xNoiseROI = floor(nTX*P.noiseROI(1,1))+1:round(nTX*P.noiseROI(1,2));
 zNoiseROI = floor(Nz*P.noiseROI(2,1))+1:round(Nz*P.noiseROI(2,2));
 
-xWellROI = floor(nTX*P.wellROI(1,1))+1:round(nTX*P.wellROI(1,2));
-zWellROI = floor(Nz*P.wellROI(2,1))+1:round(Nz*P.wellROI(2,2));
+% xWellROI = floor(nTX*P.wellROI(1,1))+1:round(nTX*P.wellROI(1,2));
+% zWellROI = floor(Nz*P.wellROI(2,1))+1:round(Nz*P.wellROI(2,2));
 
 Im = abs(hilbert(RFX));
 Im_dB = 20*log10(Im);
@@ -1350,10 +1366,6 @@ Im_dB = Im_dB-max(Im_dB(:));
 noiseFloor = mean(mean(Im_dB(zNoiseROI,xNoiseROI)));
 Im_dB = Im_dB-noiseFloor;
 
-wellROI = mean(mean(Im(zWellROI,xWellROI)));
-wellNoiseROI = mean(mean(Im(zNoiseROI,xNoiseROI)));
-CNR = 20*log10(wellROI/wellNoiseROI);
-P.CNR = CNR;
 
 myIm = Im_dB;
 
@@ -1392,50 +1404,56 @@ colorbar(imgHandle_b.CurrentAxes)
 % Noise ROI
 rectangle(imgHandle_b.CurrentAxes,'Position',[x(xNoiseROI(1)), z(zNoiseROI(1)),...
     x(xNoiseROI(end))-x(xNoiseROI(1)),z(zNoiseROI(end))-z(zNoiseROI(1))],'EdgeColor','y')
-% Well ROI
-rectangle(imgHandle_b.CurrentAxes,'Position',[x(xWellROI(1)), z(zWellROI(1)),...
-    x(xWellROI(end))-x(xWellROI(1)),z(zWellROI(end))-z(zWellROI(1))],'EdgeColor','r')
+% % Well ROI
+% rectangle(imgHandle_b.CurrentAxes,'Position',[x(xWellROI(1)), z(zWellROI(1)),...
+%     x(xWellROI(end))-x(xWellROI(1)),z(zWellROI(end))-z(zWellROI(1))],'EdgeColor','r')
 % CNR value as text
-text(imgHandle_b.CurrentAxes,x(end)-2,z(iIm(1))+1,sprintf('CNR = %2.1f',CNR),'Color','y')
+
 
 %% auto ROI selection
-if P.autoROI == 1
-%     filter_depth = zeros(size(Im));
-%     filter_depth(iZt,:) = 1;
-    noiseROIt = mean(mean(Im(iZn,:))) + noise_stdratio * std2(Im(iZn,:));
-    Imt_f1 = medfilt2(Im(iZt,:),filter_size1);
-    Imt_f2 = (Imt_f1 > noiseROIt);
-    Xm = repmat(1:length(x),length(iZt),1).* Imt_f2;
-    bx1 = max(Xm,[],2) - min(Xm,[],2);
+if P.autoROI == 1 % auto depth adjustment by predicting the sample ROI
+    noiseROIt = mean(mean(Im(iZn,:))) + noise_stdratio * std2(Im(iZn,:)); % decide noise threshold based on noise mean and std
+    Imt_f1 = medfilt2(Im(iZt,:),filter_size1); % apply median filter to remove salt and pepper noise
+    Imt_f2 = (Imt_f1 > noiseROIt); % thresholding after median filter
+    Xm = repmat(1:length(x),length(iZt),1).* Imt_f2;% x axis indices of voxels above threshold at each z position
+    bx1 = max(Xm,[],2) - min(Xm,[],2); % find the x span (max lateral distance between two voxels)) at each z position
     if any(bx1)
-        [~,ztop] = max(bx1);
-        izbot = max(any(Imt_f2,2).*(1:length(iZt))');
-        izbot_range = -ztop + izbot - rangeoffset;
-        ixcenter = round(sum(sum((Xm(izbot - izbot_range:izbot,:)))) / nnz(Xm(izbot - izbot_range:izbot,:)));
-        Ind_dX = [ixcenter-xROI_size ixcenter+xROI_size];
-        ztop = iZt(ztop);
-        Ind_dZ = [ztop-zROI_size ztop+zROI_size];
-        Ind_dZ = Ind_dZ + zoffset;
-        P.d_cur = [x(ixcenter) mean(z(Ind_dZ))]; % convert to mm 
-        persistent d_samp
-        if isempty(d_samp) && P.ramp
-            d_samp = P.d_cur(2);
-        end
-        if P.ScanCount(4)
-            d_temp = d_samp - P.d_cur(2)
-            P.autoDepth = [-sign(d_temp) * P.autoDepthRange * (abs(d_temp) > P.autoDepthRange) ...
-                           - d_temp * (abs(d_temp) <= P.autoDepthRange), P.ScanCount(4)];
+        [~,ztop] = max(bx1);% find the z position where the max x span occurs, set as the top interface (water-agarose)
+        izbot = max(any(Imt_f2,2).*(1:length(iZt))'); % find the deepest over-threshold-voxel (OTV) as the bottom of the well 
+        izbot_range = -ztop + izbot - rangeoffset;% define the depth range of the well, use rangeoffset to exclude the very bottom
+        ixcenter = round(sum(sum((Xm(izbot - izbot_range:izbot,:)))) / nnz(Xm(izbot - izbot_range:izbot,:))); % Take the mean x position of all the OTVs in the depth range as the x center
+        if (round(ixcenter) == ixcenter) 
+            Ind_dX = [ixcenter-xROI_size ixcenter+xROI_size]; % Define ROI x dimension by expanding from the x center
+            ztop = iZt(ztop); % Convert the top of the well to full z indices
+            Ind_dZ = [ztop-zROI_size ztop+zROI_size]; % Define ROI z dimension by expanding from the z top first 
+            Ind_dZ = Ind_dZ + zoffset; % Move the ROI z position to lower by zoffset (distance from the interface to well center)
+            P.d_cur = [x(ixcenter) mean(z(Ind_dZ))]; % convert the center of the ROI to mm 
+            if ~P.autoStart(1) && P.ramp % At the beginning of the ramp, set the target depth to current depth if autoStart(1) not set
+                P.autoStart(2) = P.d_cur(2);
+            end
+            if P.ScanCount(4)
+                d_temp = P.autoStart(2) - P.d_cur(2); % calcualte the distance need to move
+                P.autoDepth = [-sign(d_temp) * P.autoDepthRange * (abs(d_temp) > P.autoDepthRange) ... % predicted travel distance 
+                               - d_temp * (abs(d_temp) <= P.autoDepthRange), P.ScanCount(4)]; % only move within a distance range from the initial position to prevent from crashing/out-of-water
+            else
+                P.autoDepth = [0 0];
+            end
+            if sum(sign([Ind_dX Ind_dZ])) == 4
+                rectangle(imgHandle_b.CurrentAxes,'Position',[x(Ind_dX(1)) z(Ind_dZ(1))...
+                    x(Ind_dX(2))-x(Ind_dX(1)) z(Ind_dZ(2))-z(Ind_dZ(1))],'EdgeColor','w')             % draw the predicted ROI
+                CNR = 20*log10((mean(mean(Im(Ind_dZ(1):Ind_dZ(2),Ind_dX(1):Ind_dX(2)))) - mean(mean(Im(zWellROI,xWellROI))))...
+                                / std2(Im(zWellROI,xWellROI)));
+                P.CNR = CNR;
+                text(imgHandle_b.CurrentAxes,x(end)-2,z(iIm(1))+1,sprintf('CNR = %2.1f',CNR),'Color','w')
+            end
+            text(imgHandle_b.CurrentAxes,x(end)-2,z(iIm(1))+0.5,sprintf('Depth = %2.1f',P.d_cur(2)),'Color','w') % display the predicted depth
         else
             P.autoDepth = [0 0];
         end
-        % auto ROI
-        rectangle(imgHandle_b.CurrentAxes,'Position',[x(Ind_dX(1)) z(Ind_dZ(1))...
-            x(Ind_dX(2))-x(Ind_dX(1)) z(Ind_dZ(2))-z(Ind_dZ(1))],'EdgeColor','w')
-        text(imgHandle_b.CurrentAxes,x(end)-2,z(iIm(1))+0.5,sprintf('Depth = %2.1f',P.d_cur(2)),'Color','w')
     else
         P.autoDepth = [0 0];
     end
-elseif P.autoROI == 2
+elseif P.autoROI == 2 % auto depth adjustment by predicting the absorber position, to be tested
     iZt2 = iZt(end)+1:length(z);
     noiseROIt = mean(mean(Im(iZn,:))) + noise_stdratio * 100 * std2(Im(iZn,:));
     Imt_f1 = medfilt2(Im(iZt2,:),filter_size1);
@@ -1683,8 +1701,10 @@ function motorReturnXReturnZ
 P = evalin('base','P');
 params = evalin('base','params');
 %evalin('base','BackToOrigin;');
-evalin('base','sub_Stage_Move(params, params.Stages.x_motor, (-P.xDist*(P.ScanCount(1)-1)/1000)/params.Stages.step_distance);');
-pause(1+(abs(P.xDist*(P.ScanCount(1)-1))/1000)/params.Stages.step_distance/params.Stages.Speed)
+if P.xDist > 0
+    evalin('base','sub_Stage_Move(params, params.Stages.x_motor, (-P.xDist*(P.ScanCount(1)-1)/1000)/params.Stages.step_distance);');
+    pause(1+(abs(P.xDist*(P.ScanCount(1)-1))/1000)/params.Stages.step_distance/params.Stages.Speed)
+end
 evalin('base','sub_Stage_Move(params, params.Stages.z_motor, (-P.zDist*(P.ScanCount(2)-1)/1000)/params.Stages.step_distance);');
 pause(1+(abs(P.zDist*(P.ScanCount(2)-1))/1000)/params.Stages.step_distance/params.Stages.Speed)
 evalin('base','Release_Stage');
@@ -1707,6 +1727,7 @@ Control.Command = 'set&Run';
 Control.Parameters = {'Parameters',1,'startEvent',Resource.Parameters.startEvent};
 assignin('base','P',P);
 assignin('base','Control', Control);
+close all % exit verasonics by closing the gui
 end
 
 
