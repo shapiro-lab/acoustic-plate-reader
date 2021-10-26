@@ -110,7 +110,7 @@ for well = 1:total_n
 end
 close(h);
 
-save(fullfile(pathName, 'imgs.mat'), '-v7.3')
+save(fullfile(samplePath, 'imgs.mat'), '-v7.3')
 
 function [subDirsNames] = GetSubDirs(parentDir)
     % Get a list of all files and folders in folder.
