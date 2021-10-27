@@ -2,8 +2,8 @@ clear all
 
 %% Inputs
 % file parameters
-pathName = 'G:\.shortcut-targets-by-id\1OPaP1L4hYKwhaXe5SqxupI4aIMb0Npgj\Acoustic plate reader project\Example data\';
-SampleName = 'vramp';
+pathName = '/Volumes/GoogleDrive/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/Multiplexing/';
+SampleName = '211026/';
 saveName = pathName;
 
 % scan_type = 'pre_post'; %'voltage_ramp', 'collapse_ramp' %TODO make these change what types of plots get made
@@ -14,12 +14,12 @@ noise_slice = [2 3];
 disp_crange = [40 -3];
 imgMode = 1; % 1 for ramping voltage, 2 for imaging voltage
 computeDiff = 1; % 1 or 0 to compute pre-post-collapse difference image or not
-PlateSize = [8 12]; % rows and columns of wells scanned
+PlateSize = [2 12]; % rows and columns of wells scanned
 compar = [24 25]; % indices of voltages to compare for pre-post-collapse difference
 
 %%
 % Call raw2imgs script
-raw2imgs;
+% raw2imgs;
 load(fullfile(saveName, SampleName, 'imgs.mat'));
 
 if imgMode == 1
@@ -110,6 +110,7 @@ end
 sliceViewer(prepostmontages, 'Colormap',hot(256));
 
 % plot images across voltages
+% Im_RGB dimensions: zs, xs, colors, pressures, imaging modes, wells
 mat = cat(3,squeeze(Imgs_RGB(:,:,1,8:end-1,1,1)),squeeze(Imgs_RGB(:,:,1,8:end-1,1,3)),squeeze(Imgs_RGB(:,:,1,8:end-1,1,4)));
 montage(mat,'Size',[3 14])
 colormap hot
@@ -161,6 +162,7 @@ montage(squeeze(Imgs_ROIs_RGB(:,:,:,end-1,1,:)),'Size',PlateSize);
 %% Plot ROI quantifications
 % plot ROI quants with microplateplot
 mpplot = microplateplot(Quant_ROIs(:,:,end-1,1));
+colorbar
 mpplot
 
 % scan_type matters
@@ -169,11 +171,11 @@ legendstr = {};
 % Plot ROI CNRs
 fig = figure; colormap hot
 voltages = [P.seed max(P.seed)+1];
-columns = [1 2 3];
+columns = [9 12];
 for column = columns
-    subplot(1, length(columns), column)
+    subplot(1, length(columns), find(columns==column))
     hold on
-    for row = 1:8
+    for row = 1:2
         plot(voltages, squeeze(Quant_ROIs(row,column,:,1)))
 %         plot(voltages, rescale(squeeze(Quant_ROIs(row,column,:,1)))) % normalize before plotting
         legendstr = [legendstr, {sprintf('Well %d',row)}];
