@@ -169,7 +169,7 @@ mpplot
 % plot pressure vs. signal for each well in a column
 legendstr = {};
 % Plot ROI CNRs
-fig = figure; colormap hot
+figure; colormap hot
 voltages = [P.seed max(P.seed)+1];
 columns = [9 12];
 for column = columns
@@ -189,17 +189,18 @@ end
 
 %%
 % plot highest concentration normalized
-G82L = rescale(squeeze(Quant_ROIs(1,1,:,1)));
-S50C_G82L = rescale(squeeze(Quant_ROIs(1,2,:,1)));
-Serratia = rescale(squeeze(Quant_ROIs(1,3,:,1)));
-figure
+% Quant_ROIs dimensions: well rows, well columns, pressures, imaging modes
+Ana = rescale(squeeze(Quant_ROIs(1,6,:,1)));
+Serratia = rescale(squeeze(Quant_ROIs(1,12,:,1)));
+S50C_G82L = rescale(squeeze(Quant_ROIs(1,9,:,1)));
+figure;
 hold on
+plot(voltages, Ana)
 plot(voltages, Serratia)
-plot(voltages, G82L)
 plot(voltages, S50C_G82L)
 title('xAM'),xlabel('Transducer voltage (V)'),ylabel('Normalized xAM signal')
-legend({'Serratia', 'GvpB-G82L', 'GvpB-S50C-G82L'})
-xlim([10 25])
+legend({'Ana', 'Serratia', 'GvpB-S50C-G82L'})
+xlim([2 25])
 hold off
 
 %% linear unmixing based on xAM turn-on at different voltages
@@ -208,7 +209,7 @@ hold off
 % this can be calculated from the image data by comparing the intensities of each sample across pressures
 % rows are different types of GVs; columns are different pressures
 % values don't have to be scaled from 0 to 1, but all rows should have the same min and max
-colmat = rescale([G82L Serratia]');
+colmat = rescale([Serratia S50C_G82L]');
 
 alpha = diff(colmat,1,2); % compute differential turn-on matrix "alpha" (i.e., fraction turning on at each step)
 
@@ -221,25 +222,31 @@ for well = 1:Nw
     [Is(:,:,well,:), Ss(:,:,well,:), Cs(:,:,well,:)] = Unmix(squeeze(Imgs(:,:,:,1,well)), alpha);
 end
 
-% view difference images
+% view sequential difference images
 montages = []; % initalize montage images array
 for species = 1:Np-1
     m = montage(squeeze(Ss(:,:,:,species)),'Size',PlateSize); % create a montage image
     montages = cat(3,montages,m.CData); % add montage image to montage array
 end
+figure;
 sliceViewer(montages, 'Colormap',hot(256),'DisplayRange',[0 100]);
+title('Sequential difference images')
 
 % view unmixed images
+figure;
 montage(squeeze(Cs(:,:,:,1)),'Size',PlateSize, 'DisplayRange',[0 500]);
+title('xAM')
+figure;
 montage(squeeze(Cs(:,:,:,2)),'Size',PlateSize, 'DisplayRange',[0 500]);
+title('Bmode')
 
 
-% plot desired wells unmixed
-wells = [1:5];
+% plot desired wells (indexed across rows) unmixed
+wells = [9 12];
 % scale images from 0 to 1, setting negative concentration values to 0 and
 % setting very large values to 1
 Cs_rescaled = rescale(Cs, 'InputMin',0, 'InputMax',max(Cs,[],[1:4])*.25);
-fig = figure;
+figure;
 for Wi = 1:length(wells)
     subplot(3, length(wells), Wi)
     im = squeeze(Cs_rescaled(:,:,wells(Wi),1));
@@ -278,8 +285,8 @@ function [I, D, C] = Unmix(vramp, alpha)
     %   alpha: differential xAM turn-on matrix
     % Outputs:
     %   I: spatially averaged raw images
-    %   D: difference images
-    %       for a given pixel, D contains the three observed difference signals
+    %   D: sequential difference images
+    %       for a given pixel, D contains the calculated sequential difference signals
     %       i.e. pre minus first collapse, first collapse minus second collapse, etc
     %   C: unmixed images
     %       for a given pixel, C contains the concentration of each species
