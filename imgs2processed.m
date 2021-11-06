@@ -2,9 +2,8 @@ clear all
 
 %% Inputs
 % file parameters
-pathName = 'G:\My Drive\Shapiro Lab Information\Data\Rob\96-well_plate_scans\Multiplexing\L10';
-SampleName = '20211105_multiplexing_0-2-offset_15deg';
-saveName = pathName;
+pathName = '/Volumes/GoogleDrive/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/Multiplexing/L10/';
+SampleName = '20211105_multiplexing_0-2-offset_0deg';
 
 % scan_type = 'pre_post'; %'voltage_ramp', 'collapse_ramp' %TODO make these change what types of plots get made
 
@@ -14,13 +13,12 @@ noise_slice = [10 12]; % [2 3] for L22; [10 12] for L10
 disp_crange = [40 -3];
 imgMode = 1; % 1 for ramping voltage, 2 for imaging voltage
 computeDiff = 1; % 1 or 0 to compute pre-post-collapse difference image or not
-PlateSize = [4 4]; % rows and columns of wells scanned
-compar = [31 32]; % indices of voltages to compare for pre-post-collapse difference
+compar = [49 50]; % indices of voltages to compare for pre-post-collapse difference
 
 %%
 % Call raw2imgs script
 raw2imgs;
-load(fullfile(saveName, SampleName, 'imgs.mat'));
+load(fullfile(pathName, SampleName, 'imgs.mat'));
 
 if imgMode == 1
     colorm = 'hot';
@@ -113,7 +111,7 @@ for pressure = 1:Np
     m = montage(squeeze(Imgs_RGB(:,:,1,pressure,1,:)),'Size',PlateSize); % create a montage image
     prepostmontages = cat(3,prepostmontages,m.CData); % add montage image to montage array
 end
-sliceViewer(prepostmontages, 'Colormap',hot(256));
+sliceViewer(prepostmontages, 'ScaleFactors',[3 1 1], 'Colormap',hot(256));
 
 % plot images across voltages
 % Im_RGB dimensions: zs, xs, colors, pressures, imaging modes, wells
@@ -370,7 +368,7 @@ end
 
 
 %%
-% saveName = '/Users/Sanyo 1/Documents/MATLAB/Vantage-3.3.0-1710061400/Data/PlateReader/';
+% pathName = '/Users/Sanyo 1/Documents/MATLAB/Vantage-3.3.0-1710061400/Data/PlateReader/';
 % SizeThreshold = 300;
 % test = nan(1,96);
 % ROISizes = test;
@@ -402,8 +400,8 @@ end
 %     FigTitle = [SampleName 'Bmode'];
 % end
 % fig = PlatePlot1(test2,FigTitle);
-% savefig([saveName FigTitle])
-% save([saveName FigTitle],'test1','ROISize1','test2','name1','name2');
+% savefig([pathName FigTitle])
+% save([pathName FigTitle],'test1','ROISize1','test2','name1','name2');
 % function fig_out = PlatePlot1(data,fig_title,fontsize,varargin)
 % if nargin == 2
 %     fontsize = 16;

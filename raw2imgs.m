@@ -4,6 +4,7 @@
 samplePath = fullfile(pathName, SampleName);
 SubDirs = GetSubDirs(samplePath);
 total_n = length(SubDirs); % total number of wells scanned
+
 PlateCoordinate = strings(1,96);
 
 % iterate through all wells
@@ -110,6 +111,7 @@ for well = 1:total_n
 end
 close(h);
 
+PlateSize = [P.xLines P.zLines]; % rows and columns of wells scanned
 save(fullfile(samplePath, 'imgs.mat'), '-v7.3')
 
 function [subDirsNames] = GetSubDirs(parentDir)
