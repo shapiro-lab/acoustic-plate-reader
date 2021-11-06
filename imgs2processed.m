@@ -2,21 +2,20 @@ clear all
 
 %% Inputs
 % file parameters
-pathName = '/Volumes/GoogleDrive/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/Multiplexing/';
-SampleName = '211101_HS31-32-80-93-Ser_stable_Bmut_DE3_37';
+pathName = 'G:\My Drive\Shapiro Lab Information\Data\Rob\96-well_plate_scans\Multiplexing\L10';
+SampleName = '20211105_multiplexing_0-2-offset_15deg';
 saveName = pathName;
-
 
 % scan_type = 'pre_post'; %'voltage_ramp', 'collapse_ramp' %TODO make these change what types of plots get made
 
 % data parameters
-disp_depth = [3 8];
-noise_slice = [2 3];
+disp_depth = [18 25]; % [3 10] for L22; [18 25] for L10
+noise_slice = [10 12]; % [2 3] for L22; [10 12] for L10
 disp_crange = [40 -3];
 imgMode = 1; % 1 for ramping voltage, 2 for imaging voltage
 computeDiff = 1; % 1 or 0 to compute pre-post-collapse difference image or not
-PlateSize = [4 12]; % rows and columns of wells scanned
-compar = [24 25]; % indices of voltages to compare for pre-post-collapse difference
+PlateSize = [4 4]; % rows and columns of wells scanned
+compar = [31 32]; % indices of voltages to compare for pre-post-collapse difference
 
 %%
 % Call raw2imgs script
@@ -62,10 +61,8 @@ colormap hot
 montage(dImgs,'Size',PlateSize);
 colorbar('Ticks',[0 1],'TickLabels',[noise_disp max(max(temp))+disp_crange(2)]);
 title(FigTitle);
-% savefig(fullfile(pathName, SampleName, FigTitle))
-%save([saveName FigTitle],'Imgs','Im_disp');
+savefig(fullfile(pathName, SampleName, FigTitle))
 
-% s = sliceViewer(Imi(:,:,:,1,1), 'Colormap',hot(256), 'ScaleFactors',[7 1 1], 'DisplayRange',[50 600]);
 %% Slice and resize images and convert from grayscale to RGB
 % slice Imi based on disp_depth
 % Imi dimensions: zs, xs, pressures, imaging mode, wells
@@ -103,6 +100,14 @@ for pressure = 1:Np
 end
 
 % visualize one montage per pressure with sliceViewer
+premontages = []; % initalize montage images array
+for pressure = 1:Np
+    m = montage(squeeze(Imgs(:,:,pressure,1,:)),'Size',PlateSize); % create a montage image
+    premontages = cat(3,premontages,m.CData); % add montage image to montage array
+end
+sliceViewer(premontages, 'Colormap',hot(256), 'ScaleFactors',[3 1 1], 'DisplayRange',[50 600]);
+
+% visualize one montage per pressure with sliceViewer
 prepostmontages = []; % initalize montage images array
 for pressure = 1:Np
     m = montage(squeeze(Imgs_RGB(:,:,1,pressure,1,:)),'Size',PlateSize); % create a montage image
@@ -112,8 +117,8 @@ sliceViewer(prepostmontages, 'Colormap',hot(256));
 
 % plot images across voltages
 % Im_RGB dimensions: zs, xs, colors, pressures, imaging modes, wells
-mat = cat(3,squeeze(Imgs_RGB(:,:,1,8:end-1,1,1)),squeeze(Imgs_RGB(:,:,1,8:end-1,1,3)),squeeze(Imgs_RGB(:,:,1,8:end-1,1,4)));
-montage(mat,'Size',[3 14])
+mat = cat(3,squeeze(Imgs_RGB(:,:,1,:,1,1)),squeeze(Imgs_RGB(:,:,1,:,1,2)),squeeze(Imgs_RGB(:,:,1,:,1,3)));
+montage(mat,'Size',[3 11])
 colormap hot
 colorbar
 %% Draw, quantify, and visualize ROIs
@@ -163,8 +168,10 @@ montage(squeeze(Imgs_ROIs_RGB(:,:,:,end-1,1,:)),'Size',PlateSize);
 %% Plot ROI quantifications
 % plot ROI quants with microplateplot
 mpplot = microplateplot(Quant_ROIs(:,:,end-1,1));
+colormap hot
 colorbar
 mpplot
+savefig(fullfile(pathName, SampleName, [FigTitle '_ROIs']))
 
 % scan_type matters
 % plot pressure vs. signal for each well in a column
