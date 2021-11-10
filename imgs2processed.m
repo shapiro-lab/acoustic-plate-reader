@@ -2,20 +2,30 @@ clear all
 
 %% Inputs
 % file parameters
-pathName = '/Volumes/GoogleDrive/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/Multiplexing/L10/';
-SampleName = '20211105_multiplexing_0-2-offset_0deg';
+pathName = 'G:\My Drive\Shapiro Lab Information\Data\Rob\96-well_plate_scans';
+SampleName = '20211108_EF208-B-S50C-G82L_stable_37C';
 
 % scan_type = 'pre_post'; %'voltage_ramp', 'collapse_ramp' %TODO make these change what types of plots get made
 
 % data parameters
-disp_depth = [18 25]; % [3 10] for L22; [18 25] for L10
-noise_slice = [10 12]; % [2 3] for L22; [10 12] for L10
 disp_crange = [40 -3];
 imgMode = 1; % 1 for ramping voltage, 2 for imaging voltage
 computeDiff = 1; % 1 or 0 to compute pre-post-collapse difference image or not
-compar = [49 50]; % indices of voltages to compare for pre-post-collapse difference
+compar = [1 2]; % indices of voltages to compare for pre-post-collapse difference
+trans = 'L22'; % L22 or L10
 
 %%
+% specify transducer parameters
+if trans == 'L22'
+    disp_depth = [3 10];
+    noise_slice = [2 3];
+    ScaleFactors = [1 1 1];
+elseif trans == 'L10'
+    disp_depth = [18 25];
+    noise_slice = [10 12];
+    ScaleFactors = [3 1 1];
+end
+
 % Call raw2imgs script
 raw2imgs;
 load(fullfile(pathName, SampleName, 'imgs.mat'));
@@ -103,7 +113,7 @@ for pressure = 1:Np
     m = montage(squeeze(Imgs(:,:,pressure,1,:)),'Size',PlateSize); % create a montage image
     premontages = cat(3,premontages,m.CData); % add montage image to montage array
 end
-sliceViewer(premontages, 'Colormap',hot(256), 'ScaleFactors',[3 1 1], 'DisplayRange',[50 600]);
+sliceViewer(premontages, 'Colormap',hot(256), 'ScaleFactors',ScaleFactors, 'DisplayRange',[50 600]);
 
 % visualize one montage per pressure with sliceViewer
 prepostmontages = []; % initalize montage images array
@@ -111,7 +121,7 @@ for pressure = 1:Np
     m = montage(squeeze(Imgs_RGB(:,:,1,pressure,1,:)),'Size',PlateSize); % create a montage image
     prepostmontages = cat(3,prepostmontages,m.CData); % add montage image to montage array
 end
-sliceViewer(prepostmontages, 'ScaleFactors',[3 1 1], 'Colormap',hot(256));
+sliceViewer(prepostmontages, 'ScaleFactors',ScaleFactors, 'Colormap',hot(256));
 
 % plot images across voltages
 % Im_RGB dimensions: zs, xs, colors, pressures, imaging modes, wells
