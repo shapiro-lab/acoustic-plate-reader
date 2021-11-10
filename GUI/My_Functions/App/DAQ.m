@@ -8,25 +8,27 @@
 % 11/12/2017 - Danny Sawyer
 
 format compact
+P.RampMode = 2; % 1 = pBmode, 2 = xAM, 3 = xBmode, 4 = pAM
+P.TargetDepth = 5; % in mm, just for instruction purpose
 
 params = sub_AllSettings('ZJScanTest');
 params = sub_Stage_Initialize(params);
 
-% P.savepath = [pwd '\Data\210817\'];
-% P.saveDirName = 'Serratia-pre-post';
+% P.savepath = [pwd '\Data\211109\'];
+% P.saveDirName = 'HS32-80-93-Ser_stable_Bmut_DE3_37_vramp';
 % P.saveDirName1 = [datestr(now, 'yyyymmdd') '_'];
 
 % Initial_Pos = 'A1'; %Starting point
 
 
-% P.seed = [25]; % Voltge ramp range
+% P.seed = [25]; % Voltge ramp range, min voltage = 1.6V 
 % PostCollapse = 25; % post-collapse voltage(s)
 P.Focus = 5e-3; % focus of parabolic beam [m]
 P.rc_threshold = 1;
 P.numAccum = 50;
 
-% P.xLines = 8; % number of scanned lines in the x-direction
-% P.zLines = 12; % number of scanned lines in the z-direction
+% P.xLines = 5; % number of scanned lines in the x-direction
+% P.zLines = 5; % number of scanned lines in the z-direction
 P.xDist = 9; % distance (in mm) to move in each x step
 P.zDist = 9; % distance (in mm) to move in each z step
 
@@ -38,7 +40,7 @@ P.EqTime1 = 5; % time to wait before ramping up
 P.EqTime2 = 3; % Parabolic collapse time
 P.EqTime3 = 0; % Post-collpase waiting time before changing voltages
 
-% P.BC = 25; % Parabolic collapse voltage
+% P.BC = 30; % Parabolic collapse voltage
 % P.BI = 1.6; % Parabolic B-mode imaging voltage
 P.fps = 100; % maximal frame rate
 
@@ -49,7 +51,13 @@ P.autoROI = 1;
 if isempty(Initial_Pos)
     Initial_Pos = 'A1';
 end
-P.ScanCount = [double(Initial_Pos(1))-64 str2double(Initial_Pos(2:end)) 0 0];
+P.ScanCount = [0 str2double(Initial_Pos(2:end)) 0 0];
+if ~mod(P.ScanCount(2),2)
+    P.xDist = -1 * P.xDist;
+    P.ScanCount(1) = P.xLines - (double(Initial_Pos(1))-64) + 1;
+else
+    P.ScanCount(1) = (double(Initial_Pos(1))-64);
+end
 P.SampleCount = (P.ScanCount(1) - 1) * P.xLines + P.ScanCount(2);
 P.Collapse = 0;
 P.PostCollapse = 0;
@@ -59,12 +67,25 @@ P.numRays = 64;%128 - P.numTx + 1; % no. of transmits in frame
 P.Angles = 19.5;
 P.alpha = 19.5;  % angle alpha for X-beam transmits [degrees]
 P.startDepth_mm = 0;  % startDepth in mm
-P.endDepth_mm = 15;  % endDepth in mm
-P.maxDepth_mm = 15;  % maxDepth for RangeChange and RcvBuffer
-P.timerayline = 3*P.endDepth_mm; %/P.cSI*2*1e3;
+P.endDepth_mm = 10;  % endDepth in mm
+P.maxDepth_mm = 10;  % maxDepth for RangeChange and RcvBuffer
+P.TXdelay = 60; % in usec
 P.numPulses = 3; % 3 = 1 double plane wave + 2 single plane waves
-P.pulseShape = 'parabola';
-P.code = 'Bmode';
+switch P.RampMode
+    case 1 
+        P.pulseShape = 'parabola';
+        P.code = 'Bmode'; % Case 1 = pBmode
+    case 2
+        P.pulseShape = 'axicon';
+        P.code = 'AM'; % Case 2 = xAM
+    case 3
+        P.pulseShape = 'axicon';
+        P.code = 'Bmode';% Case 3 = xBmode
+    case 4
+        P.pulseShape = 'parabola';
+        P.code = 'AM';
+end
+
 P.pathName = pwd;
 P.Xap = 65;
 P.Pap = 40;
@@ -105,7 +126,7 @@ P.pers = 0; % Persistence coefficient for 1st order IIR filter for image
 % P.wellROI = [0.19 0.49; 0.36 0.43];
 % small well
 nL = 0.13;
-nD = 0.11;
+nD = 0.49;
 wL = 0.38;
 wD = 0.26;
 w_width = 0.2;
@@ -161,13 +182,14 @@ Resource.Parameters.speedOfSound = 1500;  % speed of sound in m/s
 Resource.Parameters.speedCorrectionFactor = 1.0;
 Resource.Parameters.simulateMode = 0;
 Resource.Parameters.startEvent = 1;
+Resource.VDAS.dmaTimeout = 10000; % (ms)
 P.cSI = Resource.Parameters.speedOfSound;
 
 % Specify Trans structure array.
-Trans.name = 'L22-14v';
+Trans.name = 'L22-14vX';
 Trans.units = 'wavelengths';
 Trans.frequency = P.txFreq; % 62.5Mhz sampling / 4 samples per wave
-Trans.maxHighVoltage = 25;
+% Trans.maxHighVoltage = 25;
 Trans = computeTrans(Trans);
 P.pitchSI = Trans.spacing * P.cSI / (Trans.frequency*1e6);
 P.fSI = Trans.frequency*1e6;
@@ -410,8 +432,8 @@ Process(nproc).Parameters = {'srcbuffer','receive',...  % name of buffer to proc
                          'srcframenum',1,...
                          'dstbuffer','none'};
 EF(n_ext_funct).Function = vsv.seq.function.ExFunctionDef('XP_Recon', @XP_Recon);
+n_ext_funct = n_ext_funct + 1 ;  
 
-n_ext_funct = n_ext_funct + 1 ;                     
 nproc = nproc+1;
 n_oldsave = nproc;
 Process(nproc).classname = 'External';
@@ -421,8 +443,8 @@ Process(nproc).Parameters = {'srcbuffer','receive',...  % name of buffer to proc
                          'srcframenum',1,...
                          'dstbuffer','none'};
 EF(n_ext_funct).Function = vsv.seq.function.ExFunctionDef('SaveRF', @SaveRF);
+n_ext_funct = n_ext_funct + 1 ;  
 
-n_ext_funct = n_ext_funct + 1 ;                     
 nproc = nproc+1;
 n_xramp = nproc;
 Process(nproc).classname = 'External';
@@ -432,8 +454,8 @@ Process(nproc).Parameters = {'srcbuffer','receive',...  % name of buffer to proc
                          'srcframenum',1,...
                          'dstbuffer','none'};
 EF(n_ext_funct).Function = vsv.seq.function.ExFunctionDef('Auto_Ramp', @Auto_Ramp);
+n_ext_funct = n_ext_funct + 1 ;
 
-n_ext_funct = n_ext_funct + 1 ;                     
 nproc = nproc+1;
 n_brecon = nproc;
 Process(nproc).classname = 'External';
@@ -443,8 +465,8 @@ Process(nproc).Parameters = {'srcbuffer','receive',...  % name of buffer to proc
                          'srcframenum',2,...
                          'dstbuffer','none'};
 EF(n_ext_funct).Function = vsv.seq.function.ExFunctionDef('B_Recon', @B_Recon);
-
-n_ext_funct = n_ext_funct + 1 ;                                          
+n_ext_funct = n_ext_funct + 1 ; 
+                     
 nproc = nproc+1;
 n_bramp = nproc;
 Process(nproc).classname = 'External';
@@ -454,59 +476,55 @@ Process(nproc).Parameters = {'srcbuffer','receive',...  % name of buffer to proc
                          'srcframenum',2,...
                          'dstbuffer','none'}; 
 EF(n_ext_funct).Function = vsv.seq.function.ExFunctionDef('B_Save', @B_Save);
-
+n_ext_funct = n_ext_funct + 1 ;
                      
-n_ext_funct = n_ext_funct + 1 ;                     
 nproc = nproc+1;
 nproc_motorStepX = nproc;
 Process(nproc).classname = 'External';
 Process(nproc).method = 'motorStepX';
 Process(nproc).Parameters = {'srcbuffer','none','dstbuffer','none'};
 EF(n_ext_funct).Function = vsv.seq.function.ExFunctionDef('motorStepX', @motorStepX);
+n_ext_funct = n_ext_funct + 1 ;  
 
-
-n_ext_funct = n_ext_funct + 1 ;                     
 nproc = nproc+1;
 nproc_motorReturnXStepZ = nproc;
 Process(nproc).classname = 'External';
 Process(nproc).method = 'motorReturnXStepZ';
 Process(nproc).Parameters = {'srcbuffer','none','dstbuffer','none'};
 EF(n_ext_funct).Function = vsv.seq.function.ExFunctionDef('motorReturnXStepZ', @motorReturnXStepZ);
+n_ext_funct = n_ext_funct + 1 ; 
 
-
-n_ext_funct = n_ext_funct + 1 ;                     
 nproc = nproc+1;     
 nproc_motorReturnXReturnZ = nproc;
 Process(nproc).classname = 'External';
 Process(nproc).method = 'motorReturnXReturnZ';
 Process(nproc).Parameters = {'srcbuffer','none','dstbuffer','none'};
 EF(n_ext_funct).Function = vsv.seq.function.ExFunctionDef('motorReturnXReturnZ', @motorReturnXReturnZ);
+n_ext_funct = n_ext_funct + 1 ;     
 
-n_ext_funct = n_ext_funct + 1 ;                     
 nproc = nproc+1;     
 nproc_motorAdjustY = nproc;
 Process(nproc).classname = 'External';
 Process(nproc).method = 'motorAdjustY';
 Process(nproc).Parameters = {'srcbuffer','none','dstbuffer','none'};
 EF(n_ext_funct).Function = vsv.seq.function.ExFunctionDef('motorAdjustY', @motorAdjustY);
+n_ext_funct = n_ext_funct + 1 ;   
 
-
-n_ext_funct = n_ext_funct + 1 ;                     
 nproc = nproc+1;
 nproc_resetStartEvent = nproc;
 Process(nproc).classname = 'External';
 Process(nproc).method = 'resetStartEvent';
 Process(nproc).Parameters = {'srcbuffer','none','dstbuffer','none'};
 EF(n_ext_funct).Function = vsv.seq.function.ExFunctionDef('resetStartEvent', @resetStartEvent);
+n_ext_funct = n_ext_funct + 1 ;  
 
-n_ext_funct = n_ext_funct + 1 ;                     
 nproc = nproc+1;
 
 
 % Specify SeqControl structure arrays.
 % Specify SeqControl structure arrays.
 SeqControl(1).command = 'timeToNextAcq';
-SeqControl(1).argument = P.timerayline/P.cSI*2*1e3;%6*P.endDepth_mm/P.cSI*2*1e3;  % 220 usec between ray lines
+SeqControl(1).argument = P.TXdelay + 2*P.endDepth_mm/P.cSI*2*1e3;  % 6*P.endDepth_mm/P.cSI*2*1e3;  % 220 usec between ray lines
 SeqControl(2).command = 'timeToNextAcq';
 % 55 msec between frames (18 fps)
 SeqControl(2).argument = max(round(1/P.fps * 1e6 - 2*P.numAccum*np*nr*SeqControl(1).argument), 1000);
@@ -629,7 +647,7 @@ for L = 1:2
         Event(n).rcv = 0;
         Event(n).recon = 0;
         Event(n).process = 0;
-        Event(n).seqControl = [2,nsc];
+        Event(n).seqControl = nsc;
             SeqControl(nsc).command = 'transferToHost'; % transfer frame to host buffer
         n_lastTTH = nsc;
         nsc = nsc+1;
@@ -730,7 +748,7 @@ for L = 1:2
         Event(n).rcv = 0;
         Event(n).recon = 0;
         Event(n).process = 0;
-        Event(n).seqControl = [2,nsc];
+        Event(n).seqControl = nsc;
             SeqControl(nsc).command = 'transferToHost'; % transfer frame to host buffer
         n_lastTTH = nsc;
         nsc = nsc+1;
@@ -831,9 +849,18 @@ Event(n).process = 0;
 Event(n).seqControl = 3;
 n = n + 1;
 
-Resource.Parameters.startEvent = nAngleEvent(1,length(P.Angles)+1);
-
+switch P.RampMode
+    case 1 
+        Resource.Parameters.startEvent = nAngleEvent(1,length(P.Angles)+1); % Case 1 = pBmode
+    case 2
+        Resource.Parameters.startEvent = nAngleEvent(2,P.Angles==P.alpha); % Case 2 = xAM
+    case 3
+        Resource.Parameters.startEvent = nAngleEvent(1,P.Angles==P.alpha);% Case 3 = xBmode
+    case 4
+        Resource.Parameters.startEvent = nAngleEvent(2,length(P.Angles)+1);
+end
 m = 1;
+
 % - Acquire RF data
 nr = Resource.Parameters.numRcvChannels;
 UI(m).Control = {'UserC1','Style','VsPushButton','Label','Start Ramp'};
@@ -903,11 +930,10 @@ UI(m).Callback = text2cell('%roiWidth');
 m = m + 1;
 
 % Save all the structures to a .mat file.
-save('G:\My Drive\Shapiro Lab Information\verasonics_system\Vantage-4.4.1-RCH\MatFiles\L22-14v_64TX_AutoVRamp');
+save('MatFiles/L22-14v_64TX_AutoVRamp');
 filename = 'L22-14v_64TX_AutoVRamp';
 VSX
 return
-%%
 
 %saveRF - save RF
 P = evalin('base','P');
@@ -1062,6 +1088,7 @@ function XP_Recon(rfData)
 P = evalin('base','P');
 Receive = evalin('base','Receive');
 ImgData = evalin('base','ImgData');
+
 if P.ramp && (etime(clock,P.t1) > P.EqTime)% && (P.rc > P.rc_threshold)
     if P.Collapse 
         P.Collapse = 0;
@@ -1230,7 +1257,10 @@ rectangle(imgHandle.CurrentAxes,'Position',[x(xWellROI(1)), z(zWellROI(1)),...
 text(imgHandle.CurrentAxes,x(end)-2,z(iIm(1))+1,sprintf('CNR = %2.1f',CNR),'Color','y')
 
 drawnow limitrate   
+
 end
+
+
 
 function B_Recon(rfData)
 %% automated ROI selection parameters
@@ -1251,7 +1281,7 @@ if isempty(xROI_size)
     noise_stdratio = 1;
     auto_noise = 1;
     noiseSize = [2 2];
-    iZt = 169:593;
+    iZt = 169:400;
     iZn = 118:168;
     sample_width = 10;
 end
@@ -1352,8 +1382,8 @@ Im_dB = Im_dB-noiseFloor;
 
 wellROI = mean(mean(Im(zWellROI,xWellROI)));
 wellNoiseROI = mean(mean(Im(zNoiseROI,xNoiseROI)));
-CNR = 20*log10(wellROI/wellNoiseROI);
-P.CNR = CNR;
+% CNR = 20*log10(wellROI/wellNoiseROI);
+% P.CNR = CNR;
 
 myIm = Im_dB;
 
@@ -1396,7 +1426,7 @@ rectangle(imgHandle_b.CurrentAxes,'Position',[x(xNoiseROI(1)), z(zNoiseROI(1)),.
 rectangle(imgHandle_b.CurrentAxes,'Position',[x(xWellROI(1)), z(zWellROI(1)),...
     x(xWellROI(end))-x(xWellROI(1)),z(zWellROI(end))-z(zWellROI(1))],'EdgeColor','r')
 % CNR value as text
-text(imgHandle_b.CurrentAxes,x(end)-2,z(iIm(1))+1,sprintf('CNR = %2.1f',CNR),'Color','y')
+% text(imgHandle_b.CurrentAxes,x(end)-2,z(iIm(1))+1,sprintf('CNR = %2.1f',CNR),'Color','y')
 
 %% auto ROI selection
 if P.autoROI == 1
@@ -1406,34 +1436,53 @@ if P.autoROI == 1
     Imt_f1 = medfilt2(Im(iZt,:),filter_size1);
     Imt_f2 = (Imt_f1 > noiseROIt);
     Xm = repmat(1:length(x),length(iZt),1).* Imt_f2;
+    Xm(Xm==0) = nan;
     bx1 = max(Xm,[],2) - min(Xm,[],2);
     if any(bx1)
-        [~,ztop] = max(bx1);
-        izbot = max(any(Imt_f2,2).*(1:length(iZt))');
-        izbot_range = -ztop + izbot - rangeoffset;
-        ixcenter = round(sum(sum((Xm(izbot - izbot_range:izbot,:)))) / nnz(Xm(izbot - izbot_range:izbot,:)));
-        Ind_dX = [ixcenter-xROI_size ixcenter+xROI_size];
-        ztop = iZt(ztop);
-        Ind_dZ = [ztop-zROI_size ztop+zROI_size];
-        Ind_dZ = Ind_dZ + zoffset;
-        P.d_cur = [x(ixcenter) mean(z(Ind_dZ))]; % convert to mm 
-        persistent d_samp
-        if isempty(d_samp) && P.ramp
-            d_samp = P.d_cur(2);
+        [~,ztop] = max(bx1);% find the z position where the max x span occurs, set as the top interface (water-agarose)
+        Xm(isnan(Xm)) = 0;
+        izbot = max(any(Imt_f2,2).*(1:length(iZt))'); % find the deepest over-threshold-voxel (OTV) as the bottom of the well 
+        izbot_range = -ztop + izbot - rangeoffset;% define the depth range of the well, use rangeoffset to exclude the very bottom
+        ixcenter = round(sum(sum((Xm(izbot - izbot_range:izbot,:)))) / nnz(Xm(izbot - izbot_range:izbot,:))); % Take the mean x position of all the OTVs in the depth range as the x center
+        if ~isnan(ixcenter)
+            Ind_dX = [ixcenter-xROI_size ixcenter+xROI_size]; % Define ROI x dimension by expanding from the x center
+            ztop = iZt(ztop); % Convert the top of the well to full z indices
+            Ind_dZ = [ztop-zROI_size ztop+zROI_size]; % Define ROI z dimension by expanding from the z top first 
+            Ind_dZ = Ind_dZ + zoffset; % Move the ROI z position to lower by zoffset (distance from the interface to well center)
+            P.d_cur = [x(ixcenter) mean(z(Ind_dZ))]; % convert the center of the ROI to mm 
+            persistent d_samp
+            if isempty(d_samp) && P.ramp
+                d_samp = [P.d_cur(2) 0 0];
+            end
+            if P.ScanCount(4)
+                d_temp = (P.d_cur(2) - d_samp(1)); % negative sign for the motor definition
+                d_samp(3) = d_samp(2) + d_temp;
+                if abs(d_samp(3)) > 1
+                    d_samp(3) = sign(d_samp(3))*P.autoDepthRange;
+                end
+                P.autoDepth = [d_samp(3) - d_samp(2) P.ScanCount(4)];
+                d_samp(2) = d_samp(3);
+            else
+                P.autoDepth = [0 P.ScanCount(4)];
+            end
+            
+            % auto ROI
+            if sum(sign([Ind_dX Ind_dZ])) == 4 && (Ind_dZ(2) <= length(z)) && (Ind_dX(2) <= length(x)) 
+                rectangle(imgHandle_b.CurrentAxes,'Position',[x(Ind_dX(1)) z(Ind_dZ(1))...
+                    x(Ind_dX(2))-x(Ind_dX(1)) z(Ind_dZ(2))-z(Ind_dZ(1))],'EdgeColor','w')             % draw the predicted ROI
+                CNR = 20*log10((mean(mean(Im(Ind_dZ(1):Ind_dZ(2),Ind_dX(1):Ind_dX(2)))) - mean(mean(Im(zNoiseROI,xNoiseROI))))...
+                                / std2(Im(zNoiseROI,xNoiseROI)));
+                P.CNR = CNR;
+                text(imgHandle_b.CurrentAxes,x(end)-2,z(iIm(1))+1,sprintf('CNR = %2.1f',CNR),'Color','w')
+            end
+            if abs(P.TargetDepth - P.d_cur(2)) < 0.1        
+                text(imgHandle_b.CurrentAxes,x(end)-2,z(iIm(1))+0.5,sprintf('Depth = %2.1f',P.d_cur(2)),'Color','w')
+            else
+                text(imgHandle_b.CurrentAxes,x(end)-2,z(iIm(1))+0.5,sprintf('Depth = %2.1f',P.d_cur(2)),'Color','r')
+            end
         end
-        if P.ScanCount(4)
-            d_temp = d_samp - P.d_cur(2)
-            P.autoDepth = [-sign(d_temp) * P.autoDepthRange * (abs(d_temp) > P.autoDepthRange) ...
-                           - d_temp * (abs(d_temp) <= P.autoDepthRange), P.ScanCount(4)];
-        else
-            P.autoDepth = [0 0];
-        end
-        % auto ROI
-        rectangle(imgHandle_b.CurrentAxes,'Position',[x(Ind_dX(1)) z(Ind_dZ(1))...
-            x(Ind_dX(2))-x(Ind_dX(1)) z(Ind_dZ(2))-z(Ind_dZ(1))],'EdgeColor','w')
-        text(imgHandle_b.CurrentAxes,x(end)-2,z(iIm(1))+0.5,sprintf('Depth = %2.1f',P.d_cur(2)),'Color','w')
     else
-        P.autoDepth = [0 0];
+        P.autoDepth = [0 P.ScanCount(4)];
     end
 elseif P.autoROI == 2
     iZt2 = iZt(end)+1:length(z);
@@ -1464,7 +1513,10 @@ assignin('base','P',P);
 %%
 
 drawnow limitrate   
+
 end
+
+
 
 function B_Save(rfData)
 P = evalin('base','P');
@@ -1615,6 +1667,8 @@ if P.ramp
 end
 end
 
+
+
 function motorStepX
 P = evalin('base','P');
 if P.ScanCount(3) && P.ScanCount(1) < P.xLines && (P.rc > P.rc_threshold)   
@@ -1666,31 +1720,39 @@ if P.ScanCount(3) && P.ScanCount(1) == P.xLines && (P.rc > P.rc_threshold)
         assignin('base','Scan',Scan);
         save([P.savepath 'ScanInfo_' P.saveDirName '_' datestr(now, 'yyyy-mm-dd@HH-MM-SS')],'Scan','P','-v6');
         evalin('base','Release_Stage;');
-        Resource = evalin('base', 'Resource');
-        n_endramp = evalin('base','n_endramp');
-        Resource.Parameters.startEvent = n_endramp;
-        assignin('base','Resource',Resource);
-        Control = evalin('base','Control');
-        Control.Command = 'set&Run';
-        Control.Parameters = {'Parameters',1,'startEvent',Resource.Parameters.startEvent};
-        assignin('base','Control', Control);
-        runAcq(Control);
+        if P.xDist > 0
+            evalin('base','sub_Stage_Move(params, params.Stages.x_motor, (-P.xDist*(P.ScanCount(1)-1)/1000)/params.Stages.step_distance);');
+            pause(1+(abs(P.xDist*(P.ScanCount(1)-1))/1000)/params.Stages.step_distance/params.Stages.Speed)
+        end
+        evalin('base','sub_Stage_Move(params, params.Stages.z_motor, (-P.zDist*(P.ScanCount(2)-1)/1000)/params.Stages.step_distance);');
+        pause(1+(abs(P.zDist*(P.ScanCount(2)-1))/1000)/params.Stages.step_distance/params.Stages.Speed)
+        evalin('base','Release_Stage');
+        assignin('base','P',P);
+        fprintf('motorReturnXReturnZ\n')
+        close all
     end
 end
-end
+end 
+
+
 
 function motorReturnXReturnZ
 P = evalin('base','P');
 params = evalin('base','params');
 %evalin('base','BackToOrigin;');
-evalin('base','sub_Stage_Move(params, params.Stages.x_motor, (-P.xDist*(P.ScanCount(1)-1)/1000)/params.Stages.step_distance);');
-pause(1+(abs(P.xDist*(P.ScanCount(1)-1))/1000)/params.Stages.step_distance/params.Stages.Speed)
+if P.xDist > 0
+    evalin('base','sub_Stage_Move(params, params.Stages.x_motor, (-P.xDist*(P.ScanCount(1)-1)/1000)/params.Stages.step_distance);');
+    pause(1+(abs(P.xDist*(P.ScanCount(1)-1))/1000)/params.Stages.step_distance/params.Stages.Speed)
+end
 evalin('base','sub_Stage_Move(params, params.Stages.z_motor, (-P.zDist*(P.ScanCount(2)-1)/1000)/params.Stages.step_distance);');
 pause(1+(abs(P.zDist*(P.ScanCount(2)-1))/1000)/params.Stages.step_distance/params.Stages.Speed)
 evalin('base','Release_Stage');
 assignin('base','P',P);
 fprintf('motorReturnXReturnZ\n')
+close all
 end
+
+
 
 
 function resetStartEvent
@@ -1723,5 +1785,5 @@ if P.autoDepth(2)
     P.t1 = clock;
     assignin('base','P', P);
     fprintf('motorAdjustY\n')
-end   
+end
 end
