@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.apptool" plugin-version="1.0">
-  <configuration build-checksum="761999755" file="C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.4.1-RCH\acoustic-plate-reader\GUI\My_Functions\App\Acoustic Plate Reader.prj" location="C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.4.1-RCH\acoustic-plate-reader\GUI\My_Functions\App" name="Acoustic Plate Reader" target="target.mlapps" target-name="Package App">
+  <configuration build-checksum="3948371982" file="C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.4.1-RCH\acoustic-plate-reader\GUI\My_Functions\App\Acoustic Plate Reader.prj" location="C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.4.1-RCH\acoustic-plate-reader\GUI\My_Functions\App" name="Acoustic Plate Reader" target="target.mlapps" target-name="Package App">
     <param.appname>Acoustic Plate Reader</param.appname>
     <param.authnamewatermark />
     <param.email />
@@ -12,7 +12,7 @@
     </param.icons>
     <param.summary />
     <param.description />
-    <param.screenshot>C:\Users\dmaresca\AppData\Local\Temp\tp3977fdd5_079a_420c_88fd_951fcad99499.png</param.screenshot>
+    <param.screenshot>C:\Users\dmaresca\AppData\Local\Temp\tpabe9d00c_e12c_47ab_9032_b553974e1177.png</param.screenshot>
     <param.version>1.0</param.version>
     <param.products.name />
     <param.products.id />
