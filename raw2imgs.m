@@ -112,6 +112,7 @@ end
 close(h);
 
 PlateSize = [P.xLines P.zLines]; % rows and columns of wells scanned
+clear pathName SampleName
 save(fullfile(samplePath, 'imgs.mat'), '-v7.3')
 
 function [subDirsNames] = GetSubDirs(parentDir)

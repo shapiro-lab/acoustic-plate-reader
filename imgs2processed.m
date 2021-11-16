@@ -2,16 +2,16 @@ clear all
 
 %% Inputs
 % file parameters
-pathName = 'G:\My Drive\Shapiro Lab Information\Data\Rob\96-well_plate_scans';
-SampleName = '20211108_EF208-B-S50C-G82L_stable_37C';
+pathName = '/Volumes/GoogleDrive/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/Multiplexing';
+SampleName = '20211108_HS31-32-80-93-Ser_stable_Bmut_DE3_37_vramp';
 
-% scan_type = 'pre_post'; %'voltage_ramp', 'collapse_ramp' %TODO make these change what types of plots get made
+% scan_type = 'pre_post'; %'voltage_ramp', 'collapse_ramp' % TODO make these change what types of plots get made
 
 % data parameters
 disp_crange = [40 -3];
 imgMode = 1; % 1 for ramping voltage, 2 for imaging voltage
 computeDiff = 1; % 1 or 0 to compute pre-post-collapse difference image or not
-compar = [1 2]; % indices of voltages to compare for pre-post-collapse difference
+compar = [11 12]; % indices of voltages to compare for pre-post-collapse difference
 trans = 'L22'; % L22 or L10
 
 %%
@@ -27,7 +27,7 @@ elseif trans == 'L10'
 end
 
 % Call raw2imgs script
-raw2imgs;
+% raw2imgs;
 load(fullfile(pathName, SampleName, 'imgs.mat'));
 
 if imgMode == 1
