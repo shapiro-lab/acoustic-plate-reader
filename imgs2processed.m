@@ -2,8 +2,8 @@ clear all
 
 %% Inputs
 % file parameters
-pathName = '/Volumes/GoogleDrive/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/Multiplexing';
-SampleName = '20211108_HS31-32-80-93-Ser_stable_Bmut_DE3_37_vramp';
+pathName = 'G:\My Drive\Shapiro Lab Information\Data\Rob\96-well_plate_scans\Multiplexing';
+SampleName = '211117';
 
 % scan_type = 'pre_post'; %'voltage_ramp', 'collapse_ramp' % TODO make these change what types of plots get made
 
@@ -11,7 +11,7 @@ SampleName = '20211108_HS31-32-80-93-Ser_stable_Bmut_DE3_37_vramp';
 disp_crange = [40 -3];
 imgMode = 1; % 1 for ramping voltage, 2 for imaging voltage
 computeDiff = 1; % 1 or 0 to compute pre-post-collapse difference image or not
-compar = [11 12]; % indices of voltages to compare for pre-post-collapse difference
+compar = [1 2]; % indices of voltages to compare for pre-post-collapse difference
 trans = 'L22'; % L22 or L10
 
 %%
@@ -27,7 +27,7 @@ elseif trans == 'L10'
 end
 
 % Call raw2imgs script
-% raw2imgs;
+raw2imgs;
 load(fullfile(pathName, SampleName, 'imgs.mat'));
 
 if imgMode == 1
@@ -108,25 +108,25 @@ for pressure = 1:Np
 end
 
 % visualize one montage per pressure with sliceViewer
-premontages = []; % initalize montage images array
+rawMontages = []; % initalize montage images array
 for pressure = 1:Np
     m = montage(squeeze(Imgs(:,:,pressure,1,:)),'Size',PlateSize); % create a montage image
-    premontages = cat(3,premontages,m.CData); % add montage image to montage array
+    rawMontages = cat(3,rawMontages,m.CData); % add montage image to montage array
 end
-sliceViewer(premontages, 'Colormap',hot(256), 'ScaleFactors',ScaleFactors, 'DisplayRange',[50 600]);
+sliceViewer(rawMontages, 'Colormap',hot(256), 'ScaleFactors',ScaleFactors, 'DisplayRange',[50 600]);
 
 % visualize one montage per pressure with sliceViewer
-prepostmontages = []; % initalize montage images array
+scaledMontages = []; % initalize montage images array
 for pressure = 1:Np
     m = montage(squeeze(Imgs_RGB(:,:,1,pressure,1,:)),'Size',PlateSize); % create a montage image
-    prepostmontages = cat(3,prepostmontages,m.CData); % add montage image to montage array
+    scaledMontages = cat(3,scaledMontages,m.CData); % add montage image to montage array
 end
-sliceViewer(prepostmontages, 'ScaleFactors',ScaleFactors, 'Colormap',hot(256));
+sliceViewer(scaledMontages, 'ScaleFactors',ScaleFactors, 'Colormap',hot(256));
 
 % plot images across voltages
 % Im_RGB dimensions: zs, xs, colors, pressures, imaging modes, wells
 mat = cat(3,squeeze(Imgs_RGB(:,:,1,:,1,1)),squeeze(Imgs_RGB(:,:,1,:,1,2)),squeeze(Imgs_RGB(:,:,1,:,1,3)));
-montage(mat,'Size',[3 11])
+montage(mat,'Size',[3 Np])
 colormap hot
 colorbar
 %% Draw, quantify, and visualize ROIs
@@ -205,12 +205,11 @@ end
 %%
 % plot all samples of a given type
 % Quant_ROIs dimensions: well rows, well columns, pressures, imaging modes
-Ana1 = reshape(squeeze(Quant_ROIs(:,1:2,:,1)), [], length(voltages));
-Ana2 = reshape(squeeze(Quant_ROIs(:,3:4,:,1)), [], length(voltages));
-Ana3 = reshape(squeeze(Quant_ROIs(:,5:6,:,1)), [], length(voltages));
-AC = reshape(squeeze(Quant_ROIs(:,7:8,:,1)), [], length(voltages));
-Serratia = reshape(squeeze(Quant_ROIs(:,9:10,:,1)), [], length(voltages));
-S50C_G82L = reshape(squeeze(Quant_ROIs(:,11:12,:,1)), [], length(voltages));
+Ana1 = reshape(squeeze(Quant_ROIs(:,1,:,1)), [], length(voltages));
+Ana2 = reshape(squeeze(Quant_ROIs(:,2,:,1)), [], length(voltages));
+AC = reshape(squeeze(Quant_ROIs(:,3,:,1)), [], length(voltages));
+Serratia = reshape(squeeze(Quant_ROIs(:,4,:,1)), [], length(voltages));
+S50C_G82L = reshape(squeeze(Quant_ROIs(:,5,:,1)), [], length(voltages));
 
 
 % % plot all replicates of each sample
@@ -230,25 +229,25 @@ S50C_G82L = reshape(squeeze(Quant_ROIs(:,11:12,:,1)), [], length(voltages));
 % plot average of each sample
 figure;
 hold on
+plot(voltages, mean(Ana1))
 plot(voltages, mean(Ana2))
-plot(voltages, mean(Ana3))
 plot(voltages, mean(AC))
 plot(voltages, mean(Serratia))
 plot(voltages, mean(S50C_G82L))
 title('xAM'),xlabel('Transducer voltage (V)'),ylabel('xAM signal')
 legend({'pMetTU1-A_Sv7K_Ptac-lacO_AnaACNJKFGVW_BBa-B0015','pMetTU1-A_Sv7K_PBAD_AnaACNJKFGW','pMetTU1-A_Sv5K_Ptac-lacO_AnaA-A68R_AnaC-MegaRNFGLSKJTU_Bba-B0015','Serratia', 'GvpB-S50C-G82L'}, 'Interpreter', 'none')
-xlim([2 25])
+% xlim([2 25])
 hold off
 
 figure;
 hold on
+plot(voltages, mean(Ana1))
 plot(voltages, mean(Ana2))
-plot(voltages, mean(Ana3))
 plot(voltages, mean(AC))
 plot(voltages, mean(S50C_G82L))
 title('xAM'),xlabel('Transducer voltage (V)'),ylabel('xAM signal')
 legend({'pMetTU1-A_Sv7K_Ptac-lacO_AnaACNJKFGVW_BBa-B0015','pMetTU1-A_Sv7K_PBAD_AnaACNJKFGW','pMetTU1-A_Sv5K_Ptac-lacO_AnaA-A68R_AnaC-MegaRNFGLSKJTU_Bba-B0015', 'GvpB-S50C-G82L'}, 'Interpreter', 'none')
-xlim([2 25])
+% xlim([2 25])
 hold off
 
 %%
