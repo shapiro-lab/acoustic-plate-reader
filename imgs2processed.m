@@ -2,8 +2,8 @@ clear all
 
 %% Inputs
 % file parameters
-pathName = 'G:\My Drive\Shapiro Lab Information\Data\Rob\96-well_plate_scans\Multiplexing';
-SampleName = '211117';
+pathName = 'G:\My Drive\Shapiro Lab Information\Data\Rob\96-well_plate_scans\RBS-libraries';
+SampleName = '211121_EF218-colonies-9-16_stable_37C';
 
 % scan_type = 'pre_post'; %'voltage_ramp', 'collapse_ramp' % TODO make these change what types of plots get made
 
@@ -205,12 +205,13 @@ end
 %%
 % plot all samples of a given type
 % Quant_ROIs dimensions: well rows, well columns, pressures, imaging modes
-Ana1 = reshape(squeeze(Quant_ROIs(:,1,:,1)), [], length(voltages));
-Ana2 = reshape(squeeze(Quant_ROIs(:,2,:,1)), [], length(voltages));
-AC = reshape(squeeze(Quant_ROIs(:,3,:,1)), [], length(voltages));
-Serratia = reshape(squeeze(Quant_ROIs(:,4,:,1)), [], length(voltages));
-S50C_G82L = reshape(squeeze(Quant_ROIs(:,5,:,1)), [], length(voltages));
-
+Ana1 = reshape(squeeze(Quant_ROIs(1,:,:,1)), [], length(voltages));
+Ana2 = reshape(squeeze(Quant_ROIs(2,:,:,1)), [], length(voltages));
+AC1 = reshape(squeeze(Quant_ROIs(3,:,:,1)), [], length(voltages));
+AC2 = reshape(squeeze(Quant_ROIs(4,:,:,1)), [], length(voltages));
+AC3 = reshape(squeeze(Quant_ROIs(5,:,:,1)), [], length(voltages));
+S50C_G82L = reshape(squeeze(Quant_ROIs(6,:,:,1)), [], length(voltages));
+Serratia = reshape(squeeze(Quant_ROIs(7,:,:,1)), [], length(voltages));
 
 % % plot all replicates of each sample
 % figure;
@@ -231,23 +232,29 @@ figure;
 hold on
 plot(voltages, mean(Ana1))
 plot(voltages, mean(Ana2))
-plot(voltages, mean(AC))
-plot(voltages, mean(Serratia))
+plot(voltages, mean(AC1))
+plot(voltages, mean(AC2))
+plot(voltages, mean(AC3))
 plot(voltages, mean(S50C_G82L))
+plot(voltages, mean(Serratia))
 title('xAM'),xlabel('Transducer voltage (V)'),ylabel('xAM signal')
-legend({'pMetTU1-A_Sv7K_Ptac-lacO_AnaACNJKFGVW_BBa-B0015','pMetTU1-A_Sv7K_PBAD_AnaACNJKFGW','pMetTU1-A_Sv5K_Ptac-lacO_AnaA-A68R_AnaC-MegaRNFGLSKJTU_Bba-B0015','Serratia', 'GvpB-S50C-G82L'}, 'Interpreter', 'none')
-% xlim([2 25])
+legend({'pMetTU1-A_Sv6K_Ptac-lacO_AnaACNJKFGVW_BBa-B0015','pMetTU1-A_Sv7K_PBAD_AnaACNJKFGW','pMetTU1-A_Sv5K_Ptac-lacO_AnaA-A68R_AnaC-MegaRNFGLSKJTU_Bba-B0015','pMetTU1-A_Sv5K_Ptac-lacO_AnaA-K56H-A68N_AnaC-MegaRNFGLSKJTU_Bba-B0015','pMetTU1-A_Sv5K_Ptac-lacO_AnaA-I19M-A71M_AnaC-MegaRNFGLSKJTU_Bba-B0015','GvpB-S50C-G82L','Serratia'}, 'Location','northwest', 'Interpreter', 'none')
+xlim([5 31])
+set(findall(gca, 'Type', 'Line'),'LineWidth',2);
 hold off
 
 figure;
 hold on
 plot(voltages, mean(Ana1))
 plot(voltages, mean(Ana2))
-plot(voltages, mean(AC))
+plot(voltages, mean(AC1))
+plot(voltages, mean(AC2))
+plot(voltages, mean(AC3))
 plot(voltages, mean(S50C_G82L))
 title('xAM'),xlabel('Transducer voltage (V)'),ylabel('xAM signal')
-legend({'pMetTU1-A_Sv7K_Ptac-lacO_AnaACNJKFGVW_BBa-B0015','pMetTU1-A_Sv7K_PBAD_AnaACNJKFGW','pMetTU1-A_Sv5K_Ptac-lacO_AnaA-A68R_AnaC-MegaRNFGLSKJTU_Bba-B0015', 'GvpB-S50C-G82L'}, 'Interpreter', 'none')
-% xlim([2 25])
+legend({'pMetTU1-A_Sv6K_Ptac-lacO_AnaACNJKFGVW_BBa-B0015','pMetTU1-A_Sv7K_PBAD_AnaACNJKFGW','pMetTU1-A_Sv5K_Ptac-lacO_AnaA-A68R_AnaC-MegaRNFGLSKJTU_Bba-B0015','pMetTU1-A_Sv5K_Ptac-lacO_AnaA-K56H-A68N_AnaC-MegaRNFGLSKJTU_Bba-B0015','pMetTU1-A_Sv5K_Ptac-lacO_AnaA-I19M-A71M_AnaC-MegaRNFGLSKJTU_Bba-B0015','GvpB-S50C-G82L'}, 'Location','northwest', 'Interpreter', 'none')
+xlim([5 31])
+set(findall(gca, 'Type', 'Line'),'LineWidth',2);
 hold off
 
 %%
