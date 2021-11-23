@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.apptool" plugin-version="1.0">
-  <configuration build-checksum="3948371982" file="C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.4.1-RCH\acoustic-plate-reader\GUI\My_Functions\App\Acoustic Plate Reader.prj" location="C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.4.1-RCH\acoustic-plate-reader\GUI\My_Functions\App" name="Acoustic Plate Reader" target="target.mlapps" target-name="Package App">
+  <configuration build-checksum="1143317897" file="C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\acoustic-plate-reader\GUI\My_Functions\App\Acoustic Plate Reader.prj" location="C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\acoustic-plate-reader\GUI\My_Functions\App" name="Acoustic Plate Reader" target="target.mlapps" target-name="Package App">
     <param.appname>Acoustic Plate Reader</param.appname>
     <param.authnamewatermark />
     <param.email />
@@ -12,13 +12,15 @@
     </param.icons>
     <param.summary />
     <param.description />
-    <param.screenshot>C:\Users\dmaresca\AppData\Local\Temp\tpabe9d00c_e12c_47ab_9032_b553974e1177.png</param.screenshot>
+    <param.screenshot>C:\Users\dmaresca\AppData\Local\Temp\tpfe4ea709_9137_4964_9dce_c8d1810d1abc.png</param.screenshot>
     <param.version>1.0</param.version>
     <param.products.name />
     <param.products.id />
     <param.products.version />
-    <param.platforms />
-    <param.output>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.4.1-RCH\acoustic-plate-reader\GUI\My_Functions</param.output>
+    <param.platforms>
+      <item>win64</item>
+    </param.platforms>
+    <param.output>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.4.1-RCH</param.output>
     <param.guid>fcfcdb14-bb9a-463a-a473-9aca5e4e47ba</param.guid>
     <unset>
       <param.authnamewatermark />
@@ -30,25 +32,75 @@
       <param.products.name />
       <param.products.id />
       <param.products.version />
-      <param.platforms />
     </unset>
-    <fileset.main>
-      <file>${PROJECT_ROOT}\Data_Acquisition_GUI.mlapp</file>
-    </fileset.main>
+    <fileset.main />
     <fileset.depfun>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.4.1-RCH\activate.p</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.4.1-RCH\VSX.m</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\acoustic-plate-reader\GUI\Mat file tests\real2rgb\bone.m</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\acoustic-plate-reader\GUI\Mat file tests\real2rgb\gray.m</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\acoustic-plate-reader\GUI\Mat file tests\real2rgb\private\colormap_helper.m</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\acoustic-plate-reader\GUI\Mat file tests\real2rgb\private\rescale.m</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\acoustic-plate-reader\GUI\Mat file tests\real2rgb\real2rgb.m</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\Scripts\motorStage\sub_AllSettings.m</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\Scripts\motorStage\sub_Stage_Cancel.m</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\Scripts\motorStage\sub_Stage_Initialize.m</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\Scripts\motorStage\sub_Stage_Update_Positions.m</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\Scripts\motorStage\sub_Stage_Wait_Until_Ready.m</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\System\+vsv\+common\+util\Logger.m</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\System\+vsv\+multi\generateSecondaryEcho.m</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\System\+vsv\+multi\updateNaming.m</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\System\+vsv\+seq\+function\AbstractFunctionDef.m</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\System\+vsv\+seq\+function\ExFunctionDef.m</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\System\convertLogData.mexw64</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\System\envdet.mexw64</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\System\mexaudiostream.mexw64</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\System\P_Files\+vsv\+apps\VSXResearchApp.p</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\System\P_Files\+vsv\+hal\VantageHardware.p</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\System\P_Files\+vsv\+seq\+display\DisplaySettings.p</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\System\P_Files\+vsv\+seq\+function\ExFunctionManager.p</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\System\P_Files\+vsv\+seq\+view\+deprecated\vsxGUIcreation.p</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\System\P_Files\+vsv\+seq\getBaseComp.p</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\System\P_Files\+vsv\+util\+events\EventReporter.p</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\System\P_Files\+vsv\+vsx\+validate\mustBeValidEventIndices.p</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\System\P_Files\getConnectorInfo.p</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\System\P_Files\getHardwareProperty.p</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\System\P_Files\hwConfigCheck.p</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\System\P_Files\loadAnnotation.p</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\System\P_Files\setSelectedConnector.p</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\System\runAcq.mexw64</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\Utilities\audiostream.m</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\Utilities\computeHIFUgeometry.m</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\Utilities\computeHvMuxSHIAperture.m</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\Utilities\computeRcvProfile.m</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\Utilities\computeRegions.m</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\Utilities\computeTGCWaveform.m</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\Utilities\computeTrans.m</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\Utilities\computeUTA.m</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\Utilities\extPwrCtrl.m</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\Utilities\getMuxMap.m</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\Utilities\pt1.m</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\Utilities\rs_irrat.m</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\Utilities\setTpcProfileHighVoltage.m</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\Utilities\spectralDoppler.m</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\Utilities\text2cell.m</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\vstoolbox\filterTranslate.m</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\vstoolbox\hammingvs.m</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\vstoolbox\sincvs.m</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\vstoolbox\spectraldoppler_filtercoeff.mat</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\vstoolbox\subspoly.m</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\vstoolbox\upsamplevs.m</file>
+      <file>C:\Users\dmaresca\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\AcousticPlateReader\vstoolbox\zpad.m</file>
+      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\VSX.m</file>
     </fileset.depfun>
     <fileset.resources>
       <file>${PROJECT_ROOT}\DAQ.m</file>
     </fileset.resources>
     <fileset.package />
     <build-deliverables>
-      <file location="C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.4.1-RCH\acoustic-plate-reader\GUI" name="My_Functions" optional="false">C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.4.1-RCH\acoustic-plate-reader\GUI\My_Functions</file>
+      <file location="C:\Users\dmaresca\Dropbox\GV Team\verasonics system" name="Vantage-4.4.1-RCH" optional="false">C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.4.1-RCH</file>
     </build-deliverables>
     <workflow />
     <matlab>
-      <root>C:\Program Files\MATLAB\R2020a</root>
+      <root>C:\Program Files\MATLAB\R2021a</root>
       <toolboxes>
         <toolbox name="matlabcoder" />
       </toolboxes>
