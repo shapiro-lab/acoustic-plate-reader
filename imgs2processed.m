@@ -2,8 +2,8 @@ clear all
 
 %% Inputs
 % file parameters
-pathName = 'G:\My Drive\Shapiro Lab Information\Data\Rob\96-well_plate_scans\RBS-libraries';
-SampleName = '211121_EF218-colonies-9-16_stable_37C';
+pathName = 'C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\Data\';
+SampleName = '211122';
 
 % scan_type = 'pre_post'; %'voltage_ramp', 'collapse_ramp' % TODO make these change what types of plots get made
 
