@@ -11,7 +11,7 @@ SampleName = '211122';
 disp_crange = [40 -3];
 imgMode = 1; % 1 for ramping voltage, 2 for imaging voltage
 computeDiff = 1; % 1 or 0 to compute pre-post-collapse difference image or not
-compar = [1 2]; % indices of voltages to compare for pre-post-collapse difference
+compar = [5 6]; % indices of voltages to compare for pre-post-collapse difference
 trans = 'L22'; % L22 or L10
 
 %%
