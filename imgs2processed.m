@@ -2,8 +2,8 @@ clear all
 
 %% Inputs
 % file parameters
-pathName = 'G:\My Drive\Shapiro Lab Information\Data\Rob\96-well_plate_scans\RBS-libraries';
-SampleName = '211121_EF218-colonies-9-16_stable_37C';
+pathName = 'G:\My Drive\Shapiro Lab Information\Data\Rob\96-well_plate_scans\Multiplexing';
+SampleName = '211122_EF32-80-93_stable_Bmut_DE3_Serratia_stable_37C_2-20-3x';
 
 % scan_type = 'pre_post'; %'voltage_ramp', 'collapse_ramp' % TODO make these change what types of plots get made
 
@@ -11,7 +11,7 @@ SampleName = '211121_EF218-colonies-9-16_stable_37C';
 disp_crange = [40 -3];
 imgMode = 1; % 1 for ramping voltage, 2 for imaging voltage
 computeDiff = 1; % 1 or 0 to compute pre-post-collapse difference image or not
-compar = [1 2]; % indices of voltages to compare for pre-post-collapse difference
+compar = [30 31]; % indices of voltages to compare for pre-post-collapse difference
 trans = 'L22'; % L22 or L10
 
 %%
