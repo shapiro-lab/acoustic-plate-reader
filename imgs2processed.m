@@ -2,16 +2,16 @@ clear all
 
 %% Inputs
 % file parameters
-pathName = 'C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\Data\';
-SampleName = '211122';
+pathName = '/Volumes/GoogleDrive/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/';
+SampleName = '211130_EF162-to-169_stable_37C';
 
 % scan_type = 'pre_post'; %'voltage_ramp', 'collapse_ramp' % TODO make these change what types of plots get made
 
 % data parameters
-disp_crange = [40 -3];
+disp_crange = [40 -3]; % limits of colorbar
 imgMode = 1; % 1 for ramping voltage, 2 for imaging voltage
 computeDiff = 1; % 1 or 0 to compute pre-post-collapse difference image or not
-compar = [5 6]; % indices of voltages to compare for pre-post-collapse difference
+compar = [14 15]; % indices of voltages to compare for pre-post-collapse difference
 trans = 'L22'; % L22 or L10
 
 %%
@@ -376,61 +376,3 @@ function [I, D, C] = Unmix(vramp, alpha)
         end
     end
 end
-
-
-
-
-
-
-
-%%
-% pathName = '/Users/Sanyo 1/Documents/MATLAB/Vantage-3.3.0-1710061400/Data/PlateReader/';
-% SizeThreshold = 300;
-% test = nan(1,96);
-% ROISizes = test;
-% h = waitbar(0,'Processing...');
-% for i = 1:total_n
-% Ind = i;
-% autoROI1;
-% test(i) = autoROI;
-% ROISizes(i) = ROISize;
-% waitbar(i/total_n);
-% if overlay
-%     pause(0.5);
-%     close(fig);
-% end
-% end
-% close(h);
-% test1 = reshape(test,12,8);
-% ROISize1 = reshape(ROISizes,12,8);
-% test1 = test1';
-% ROISize1 = ROISize1';
-% name1 = reshape(PlateCoordinate,12,8);
-% name1 = name1';
-% name2 = reshape(1:96,12,8);
-% name2 = name2';
-% test2 = (test1 ./ ROISize1) .* (ROISize1 > SizeThreshold);
-% if imgMode == 1
-%     FigTitle = [SampleName 'xAM'];
-% elseif imgMode == 2
-%     FigTitle = [SampleName 'Bmode'];
-% end
-% fig = PlatePlot1(test2,FigTitle);
-% savefig([pathName FigTitle])
-% save([pathName FigTitle],'test1','ROISize1','test2','name1','name2');
-% function fig_out = PlatePlot1(data,fig_title,fontsize,varargin)
-% if nargin == 2
-%     fontsize = 16;
-% end
-% fig_out = figure;
-% [y,x] = size(data);
-% imagesc(data);axis image
-% xticks(1:x)
-% yticks(1:y)
-% ylabelnames = {'A','B','C','D','E','F','G','H'};
-% ylabelnames = ylabelnames(1:y);
-% yticklabels(ylabelnames)
-% colorbar;
-% title(fig_title)
-% set(gca,'fontsize',fontsize);
-% end
