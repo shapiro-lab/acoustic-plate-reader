@@ -2,8 +2,8 @@ clear all
 
 %% Inputs
 % file parameters
-pathName = '/Volumes/GoogleDrive/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/';
-SampleName = '211130_EF162-to-169_stable_37C';
+pathName = 'G:\My Drive\Shapiro Lab Information\Data\Rob\96-well_plate_scans\RBS-libraries';
+SampleName = '211204_EF230-to-234_stable_37C';
 
 % scan_type = 'pre_post'; %'voltage_ramp', 'collapse_ramp' % TODO make these change what types of plots get made
 
@@ -11,7 +11,7 @@ SampleName = '211130_EF162-to-169_stable_37C';
 disp_crange = [40 -3]; % limits of colorbar
 imgMode = 1; % 1 for ramping voltage, 2 for imaging voltage
 computeDiff = 1; % 1 or 0 to compute pre-post-collapse difference image or not
-compar = [14 15]; % indices of voltages to compare for pre-post-collapse difference
+compar = [1 2]; % indices of voltages to compare for pre-post-collapse difference
 trans = 'L22'; % L22 or L10
 
 %%
@@ -187,7 +187,7 @@ legendstr = {};
 % Plot ROI CNRs
 figure; colormap hot
 voltages = [P.seed max(P.seed)+1];
-columns = [9 12];
+columns = [1:4];
 for column = columns
     subplot(1, length(columns), find(columns==column))
     hold on
@@ -348,6 +348,18 @@ for Wi = 1:length(wells)
     axis square
 end
 
+%%
+
+Vs = nan([Np-1 Np-1 Nw]); % dimensions: voltages, voltages, wells
+Ss = nan([Np-1 Np-1 Nw]); % dimensions: voltages, voltages, wells
+USs = nan([zsize xsize Np-1 Nw]); % dimensions: x, y, voltages, wells
+
+for well = 1:1
+    % run SVD on each well
+    % Im_ROIs dimensions: zs, xs, pressures, imaging modes, wells
+    [Vs(:,:,well), Ss(:,:,well), USs(:,:,:,well)] = svdNplot(squeeze(Imgs(:,:,1:end-1,1,well)));
+end
+
 %% function definitions
 function [I, D, C] = Unmix(vramp, alpha)
     % Function to unmix image voltage ramp using differential xAM turn-on matrix
@@ -374,5 +386,42 @@ function [I, D, C] = Unmix(vramp, alpha)
             C(x,y,:) = alpha'\permute(D(x,y,:), [3 2 1]); % concentrations of the differently-collapsing species
 %             C(x,y,:) = lsqnonneg(alpha',permute(D(x,y,:), [3 2 1])); % concentrations of the differently-collapsing species
         end
+    end
+end
+
+
+function [V, S, US_resh] = svdNplot(Mat4svd)
+    % Mat4svd is a 3D matrix with dimensions: X, Y, Voltage
+
+    Mat_reshaped = reshape(Mat4svd,size(Mat4svd,1)*size(Mat4svd,2),size(Mat4svd,3));
+    
+    covar_mat = Mat_reshaped' * Mat_reshaped; % To save calculation time, you can calculate the SVD on the covariance matrix of your Mat_reshape
+    
+    % SVD: S = lambda x U x V
+    % with lamba = "weight" of your modes
+    %      U = spatial modes
+    %      V = voltage modes
+    [V,S] = svd(covar_mat);
+    US = Mat_reshaped * V;
+    US_resh = reshape(US,size(Mat4svd,1),size(Mat4svd,2),size(US,2));
+    
+    % Display the first 8 spatial modes
+    figure; 
+    for sMode = 1:8
+        subplot(2,4,sMode)
+        tmp = US_resh(:,:,sMode);
+        imagesc(tmp);
+        colormap jet
+        caxis([-max(abs(tmp(:))) max(abs(tmp(:)))]);
+        colorbar
+        title(sMode)
+    end
+    
+    % Display the first 4 voltage modes
+    figure;
+    for vMode = 1:4
+        subplot(2,2,vMode)
+        plot(V(:,vMode))
+        title(vMode)
     end
 end

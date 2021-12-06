@@ -1,7 +1,12 @@
 %%
+close all
+
 savedata = 1;
 savefigure = 1;
-groupbycolumns = 0;
+groupalong = 'columns';
+split = 1; % number of voltage ramps
+NpS = 4; % number of replicates
+numcondition = 24; % number of unique samples
 
 %%
 % ROI dimensions: voltage, mode, wells
@@ -12,9 +17,8 @@ sampCNRb = squeeze(sampCNR(:,2,:)); % CNR of Bmode, dB scale
 noiseROIx = squeeze(noiseROI_mean(:,1,:)); % mean intensity of xAM noise, linear scale
 noiseROIb = squeeze(noiseROI_mean(:,2,:)); % mean intensity of Bmode noise, linear scale
 
-PreV = 5:(length(voltage)-1); %Define pre-collapse voltage range
-PostV = PreV(end)+1;%Define post-collapse voltage range
-split = 1; %number of ramps
+PreV = 1:(length(voltage)-1); % Define pre-collapse voltage range
+PostV = PreV(end)+1; % Define post-collapse voltage range
 PreV_split = reshape(PreV,[],split)';
 
 % normx = 20*log10(abs((sampROIx(PreV,:) - noiseROIx(PreV,:)) ./...
@@ -28,20 +32,17 @@ normx = (sampCNRx(:,:)); % only plotting raw CNR
 vx = voltage(PreV_split(1,:));%voltage(PreV); % voltages for plotting
 %%
 % threshold_x = [1:total_n]; % groups/thresholding 
-NpS = 4;
-numcondition = 24;
 groups = cell(1,numcondition);
 group_names = strings(1,numcondition);
-
 colors_group = linspecer(numcondition);
  
-if groupbycolumns
+if strcmp(groupalong, 'rows')
     groups{1} = (1:NpS);
     for gi = 2:numcondition
-        groups{gi} = groups{gi-1}(end)+1:groups{gi-1}(end)+NpS;
+        groups{gi} = groups{gi-1}(end) + 1:groups{gi-1}(end) + NpS;
     end
-    for i = 1:numcondition
-        group_names(i) = num2str(i);
+    for sample = 1:numcondition
+        group_names(sample) = num2str(sample);
     end
 else
     num_stripe = [(numcondition-mod(numcondition,P.zLines))/P.zLines,mod(numcondition,P.zLines)];
