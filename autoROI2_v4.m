@@ -17,13 +17,15 @@ dz = nan(2,total_n);
 xcorrection = zeros(1,total_n);
 zcorrection = zeros(1,total_n);
 skip = zeros(1,total_n);
-noise_slices = repmat([1.5 2.5],total_n,1);
-noise_slices(30,:) = [8 9];
+noise_slices = repmat([2 3],total_n,1);
+noise_slices_backup = [8 9;1 2;7 8];
+ntt = 100; % threshold for choosing noise depth slice (mV)
 
-% xcorrection(21) = 20;
+%fig_n = figure; hold on;]
+xcorrection(36) = 8;
 % zcorrection(13) = 30;
-% zcorrection(21:23) = 25;
-% zcorrection(85) = 50;
+% zcorrection(21:24) = 25;
+% zcorrection(15) = 50;
 %%
 for testInd = 1:total_n
     if ~skip(testInd)
@@ -42,11 +44,14 @@ for testInd = 1:total_n
         filter_depth = zeros(size(Imt));
         filter_depth(iZt,:) = 1;
         Zit = Zi(iZt);
-
-        if auto_noise
+        noiseROIt = mean(mean(Imt(iZd_noise,:))) + noise_stdratio * std2(Imt(iZd_noise,:));
+        i_ntt = 1;
+        while noiseROIt > ntt && (i_ntt < length(noise_slices_backup(:,1)))
+            noise_slice = noise_slices_backup(i_ntt,:);
+            nz(:,testInd) = [find(Zi>=noise_slice(1),1,'first') find(Zi>=noise_slice(2),1,'first')];
+            iZd_noise = nz(1,testInd):nz(2,testInd);
             noiseROIt = mean(mean(Imt(iZd_noise,:))) + noise_stdratio * std2(Imt(iZd_noise,:));
-        else
-            noiseROIt = noiseROI(:,Ind);
+            i_ntt = i_ntt + 1;
         end
 
         Imt_f1 = medfilt2(Imt,filter_size1);
@@ -70,10 +75,12 @@ for testInd = 1:total_n
             Ind_dX = [ixcenter-xROI_size ixcenter+xROI_size]+ xcorrection(testInd);
             if showf5
                 fig = figure;
-                imagesc(Xi, Zit, 20*log10(abs(Imt(iZt,:))), [20 80]); axis image;colormap hot
+                imagesc(Xi, Zi(1:iZt(end)+200), 20*log10(abs(Imt(1:iZt(end)+200,:))), [20 80]); axis image;colormap hot
                 hold on;
-                drawrectangle('Position',[Xi(Ind_dX(1)) Zi(Ind_dZ(1)) Xi(Ind_dX(2))-Xi(Ind_dX(1)) Zi(Ind_dZ(2))-Zi(Ind_dZ(1))],'EdgeColor','w','LineWidth',2);
-                pause(1);
+                drawrectangle('Position',[Xi(1) Zi(iZd_noise(1)) Xi(end)-Xi(1) Zi(iZd_noise(end))-Zi(iZd_noise(1))],'EdgeColor','w','LineWidth',2);
+                drawrectangle('Position',[Xi(Ind_dX(1)) Zi(Ind_dZ(1)) Xi(Ind_dX(2))-Xi(Ind_dX(1)) Zi(Ind_dZ(2))-Zi(Ind_dZ(1))],'EdgeColor','g','LineWidth',2);
+                title(['Frame #' num2str(testInd)]);
+                pause(0.3);
                 % close(fig);
             end
 
@@ -85,15 +92,26 @@ for testInd = 1:total_n
                 end
             end
         else
+            ixcenter = round(length(Xi)/2);
+            Ind_dX = [ixcenter-xROI_size ixcenter+xROI_size]+ xcorrection(testInd);
             if showf5
                 fig = figure;
-                imagesc(Xi, Zit, 20*log10(abs(Imt(iZt,:))), [20 80]); axis image;colormap hot
+                imagesc(Xi, Zi(1:iZt(end)), 20*log10(abs(Imt(1:iZt(end),:))), [20 80]); axis image;colormap hot
                 hold on;
-                % drawrectangle('Position',[Xi(Ind_dX(1)) Zi(Ind_dZ(1)) Xi(Ind_dX(2))-Xi(Ind_dX(1)) Zi(Ind_dZ(2))-Zi(Ind_dZ(1))],'EdgeColor','w','LineWidth',2);
-                pause(1);
+                drawrectangle('Position',[Xi(1) Zi(iZd_noise(1)) Xi(end)-Xi(1) Zi(iZd_noise(end))-Zi(iZd_noise(1))],'EdgeColor','w','LineWidth',2);
+                drawrectangle('Position',[Xi(Ind_dX(1)) Zi(Ind_dZ(1)) Xi(Ind_dX(2))-Xi(Ind_dX(1)) Zi(Ind_dZ(2))-Zi(Ind_dZ(1))],'EdgeColor','g','LineWidth',2);
+                title(['Warning: ROI not detected in frame #' num2str(testInd)]);
+                pause(0.3);
                 % close(fig);
             end
 
+            for j = 1:Nf
+                for k = 1:2
+                    sampROI(j,k,testInd) = mean(mean(Imi{j,k,testInd}(Ind_dZ(1):Ind_dZ(2),Ind_dX(1):Ind_dX(2))));
+                    noiseROI_mean(j,k,testInd) = mean(mean(Imi{j,k,testInd}(iZd_noise,:)));
+                    noiseROI_std(j,k,testInd) =  std2(Imi{j,k,testInd}(iZd_noise,:));
+                end
+            end
         end
     end
 end

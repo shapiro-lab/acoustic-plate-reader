@@ -17,7 +17,7 @@ sampCNRb = squeeze(sampCNR(:,2,:)); % CNR of Bmode, dB scale
 noiseROIx = squeeze(noiseROI_mean(:,1,:)); % mean intensity of xAM noise, linear scale
 noiseROIb = squeeze(noiseROI_mean(:,2,:)); % mean intensity of Bmode noise, linear scale
 
-PreV = 1:(length(voltage)-1); % Define pre-collapse voltage range
+PreV = 5:(length(voltage)-1); % Define pre-collapse voltage range
 PostV = PreV(end)+1; % Define post-collapse voltage range
 PreV_split = reshape(PreV,[],split)';
 
@@ -82,7 +82,7 @@ figure; hold on;
 for i = 1:numcondition
     for j = 1:split
         plot(vx,(mnormx_group(PreV_split(j,:),i)),'LineWidth',3,'Color',[colors_group(i,:) 1 - 0.3*(j-1)],'DisplayName',group_names(i));
-        %pl = errorbar(vx,(mnormx_group(PreV_split(j,:),i)),(normxstd_group(PreV_split(j,:),i)),'LineWidth',3,'Color',[colors_group(i,:) 1 - 0.3*(j-1)],'DisplayName',group_names(i));
+%         pl = errorbar(vx,(mnormx_group(PreV_split(j,:),i)),(normxstd_group(PreV_split(j,:),i)),'LineWidth',3,'Color',[colors_group(i,:) 1 - 0.3*(j-1)],'DisplayName',group_names(i));
     end
 end
 xlabel('Voltage (V)');

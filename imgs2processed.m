@@ -2,8 +2,8 @@ clear all
 
 %% Inputs
 % file parameters
-pathName = 'G:\My Drive\Shapiro Lab Information\Data\Rob\96-well_plate_scans\RBS-libraries';
-SampleName = '211204_EF230-to-234_stable_37C';
+pathName = '/Volumes/GoogleDrive/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/';
+SampleName = '211201_EF178-179-181-to-186_stable_37C';
 
 % scan_type = 'pre_post'; %'voltage_ramp', 'collapse_ramp' % TODO make these change what types of plots get made
 
@@ -11,7 +11,7 @@ SampleName = '211204_EF230-to-234_stable_37C';
 disp_crange = [40 -3]; % limits of colorbar
 imgMode = 1; % 1 for ramping voltage, 2 for imaging voltage
 computeDiff = 1; % 1 or 0 to compute pre-post-collapse difference image or not
-compar = [1 2]; % indices of voltages to compare for pre-post-collapse difference
+compar = [14 15]; % indices of voltages to compare for pre-post-collapse difference
 trans = 'L22'; % L22 or L10
 
 %%
@@ -27,7 +27,7 @@ elseif trans == 'L10'
 end
 
 % Call raw2imgs script
-raw2imgs;
+% raw2imgs;
 load(fullfile(pathName, SampleName, 'imgs.mat'));
 
 if imgMode == 1
@@ -113,7 +113,7 @@ for pressure = 1:Np
     m = montage(squeeze(Imgs(:,:,pressure,1,:)),'Size',PlateSize); % create a montage image
     rawMontages = cat(3,rawMontages,m.CData); % add montage image to montage array
 end
-sliceViewer(rawMontages, 'Colormap',hot(256), 'ScaleFactors',ScaleFactors, 'DisplayRange',[50 600]);
+sliceViewer(rawMontages, 'Colormap',hot(256), 'ScaleFactors',ScaleFactors, 'DisplayRange',[20 400]);
 
 % visualize one montage per pressure with sliceViewer
 scaledMontages = []; % initalize montage images array
