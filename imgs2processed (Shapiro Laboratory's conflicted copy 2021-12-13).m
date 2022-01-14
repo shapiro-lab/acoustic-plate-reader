@@ -2,8 +2,8 @@ clear all
 
 %% Inputs
 % file parameters
-pathName = '/Volumes/GoogleDrive/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/Multiplexing/';
-SampleName = '210427_B-mutants-ser_vrampx2';
+pathName = 'G:\My Drive\Shapiro Lab Information\Data\Rob\96-well_plate_scans\RBS-libraries\';
+SampleName = '211213_EF230-231_stable_37C';
 
 % scan_type = 'pre_post'; %'voltage_ramp', 'collapse_ramp' % TODO make these change what types of plots get made
 
@@ -11,7 +11,7 @@ SampleName = '210427_B-mutants-ser_vrampx2';
 disp_crange = [40 -3]; % limits of colorbar
 imgMode = 1; % 1 for ramping voltage, 2 for imaging voltage
 computeDiff = 1; % 1 or 0 to compute pre-post-collapse difference image or not
-compar = [15 16]; % indices of voltages to compare for pre-post-collapse difference
+compar = [1 2]; % indices of voltages to compare for pre-post-collapse difference
 trans = 'L22'; % L22 or L10
 
 %%
@@ -27,7 +27,7 @@ elseif trans == 'L10'
 end
 
 % Call raw2imgs script
-% raw2imgs;
+raw2imgs;
 load(fullfile(pathName, SampleName, 'imgs.mat'));
 
 if imgMode == 1
@@ -205,45 +205,40 @@ end
 %%
 % plot all samples of a given type
 % Quant_ROIs dimensions: well rows, well columns, pressures, imaging modes
-% pressure_range = voltages;
-pressure_range = [5:length(voltages)-1];
-Serratia = reshape(squeeze(Quant_ROIs(1:2,1,pressure_range,1)), [], length(pressure_range));
-Q65Sfs = reshape(squeeze(Quant_ROIs(1:2,2,pressure_range,1)), [], length(pressure_range));
-A68R = reshape(squeeze(Quant_ROIs(1:2,3,pressure_range,1)), [], length(pressure_range));
-B230 = reshape(squeeze(Quant_ROIs(1:2,4,pressure_range,1)), [], length(pressure_range));
-% Mega13 = reshape(squeeze(Quant_ROIs(4,:,:,1)), [], length(pressure_range));
-% Mega14 = reshape(squeeze(Quant_ROIs(5,:,:,1)), [], length(pressure_range));
-% Serratia = reshape(squeeze(Quant_ROIs(6,:,:,1)), [], length(pressure_range));
+pressure_range = voltages;
+Ana1 = reshape(squeeze(Quant_ROIs(1,:,:,1)), [], length(pressure_range));
+Ana2 = reshape(squeeze(Quant_ROIs(2,:,:,1)), [], length(pressure_range));
+AC = reshape(squeeze(Quant_ROIs(3,:,:,1)), [], length(pressure_range));
+Mega13 = reshape(squeeze(Quant_ROIs(4,:,:,1)), [], length(pressure_range));
+Mega14 = reshape(squeeze(Quant_ROIs(5,:,:,1)), [], length(pressure_range));
+Serratia = reshape(squeeze(Quant_ROIs(6,:,:,1)), [], length(pressure_range));
 
 
 % % plot all replicates of each sample
-figure;
-hold on
-plot(voltages(pressure_range), reshape(A68R,[],length(pressure_range)))
-plot(voltages(pressure_range), reshape(Q65Sfs,[],length(pressure_range)))
-plot(voltages(pressure_range), reshape(Serratia,[],length(pressure_range)))
-plot(voltages(pressure_range), reshape(B230,[],length(pressure_range)))
+% figure;
+% hold on
+% plot(voltages, reshape(Ana1,[],length(voltages)))
+% plot(voltages, reshape(Ana2,[],length(voltages)))
+% plot(voltages, reshape(Ana3,[],length(voltages)))
 % plot(voltages, reshape(AC,[],length(voltages)))
 % plot(voltages, reshape(Serratia,[],length(voltages)))
 % plot(voltages, reshape(S50C_G82L,[],length(voltages)))
-title('xAM'),xlabel('Transducer voltage (V)'),ylabel('xAM signal')
-legend({'A68R', 'Q65Sfs', 'Serratia', 'GvpB-S50C-G82L'})
+% title('xAM'),xlabel('Transducer voltage (V)'),ylabel('Normalized xAM signal')
+% legend({'Ana', 'Serratia', 'GvpB-S50C-G82L'})
 % xlim([2 25])
-hold off
+% hold off
 
 % plot average of each sample
 figure;
 hold on
-plot(voltages(pressure_range), mean(A68R))
-plot(voltages(pressure_range), mean(Q65Sfs))
+plot(voltages(pressure_range), mean(Ana1))
+plot(voltages(pressure_range), mean(Ana2))
+plot(voltages(pressure_range), mean(AC))
+plot(voltages(pressure_range), mean(Mega13))
+plot(voltages(pressure_range), mean(Mega14))
 plot(voltages(pressure_range), mean(Serratia))
-plot(voltages(pressure_range), mean(B230))
-% plot(voltages(pressure_range), mean(Mega13))
-% plot(voltages(pressure_range), mean(Mega14))
-% plot(voltages(pressure_range), mean(Serratia))
 title('xAM'),xlabel('Transducer voltage (V)'),ylabel('xAM signal')
-legend({'A68R', 'Q65Sfs', 'Serratia', 'GvpB-S50C-G82L'}, 'Location','northwest', 'Interpreter', 'none')
-% legend({'pMetTU1-A_Sv6K_lacI-Ptac-lacO_RC_AnaACNJKFGVW_BBa-B0015','pMetTU1-A_Sv7K_araC-PBAD_RC_AnaA_T_AnaCNJKFGW','pMetTU1-A_Sv5K_lacI-Ptac-lacO_RC_AnaA-A68R_T_AnaC-MegaRNFGLSKJTU_Bba-B0015','Mega13','Mega14','Serratia'}, 'Location','northwest', 'Interpreter', 'none')
+legend({'pMetTU1-A_Sv6K_lacI-Ptac-lacO_RC_AnaACNJKFGVW_BBa-B0015','pMetTU1-A_Sv7K_araC-PBAD_RC_AnaA_T_AnaCNJKFGW','pMetTU1-A_Sv5K_lacI-Ptac-lacO_RC_AnaA-A68R_T_AnaC-MegaRNFGLSKJTU_Bba-B0015','Mega13','Mega14','Serratia'}, 'Location','northwest', 'Interpreter', 'none')
 % xlim([10 20])
 set(findall(gca, 'Type', 'Line'),'LineWidth',2);
 hold off
@@ -263,21 +258,18 @@ hold off
 %%
 % plot highest concentration normalized
 % Quant_ROIs dimensions: well rows, well columns, pressures, imaging modes
-% Serratia = rescale(mean(squeeze(Quant_ROIs(1:2,1,pressure_range,1))));
-Q65Sfs = rescale(mean(squeeze(Quant_ROIs(1:2,2,pressure_range,1))));
-A68R = rescale(mean(squeeze(Quant_ROIs(1:2,3,pressure_range,1))));
-B230 = rescale(mean(squeeze(Quant_ROIs(1:2,4,pressure_range,1))));
+AC = rescale(squeeze(Quant_ROIs(3,:,21:30,1)));
+Serratia = rescale(squeeze(Quant_ROIs(6,:,21:30,1)));
+S50C_G82L = rescale(squeeze(Quant_ROIs(4,:,21:30,1)));
 
 figure;
 hold on
-% plot(voltages(pressure_range), Serratia)
-plot(voltages(pressure_range), Q65Sfs)
-plot(voltages(pressure_range), A68R)
-plot(voltages(pressure_range), B230)
+plot(voltages(pressure_range), mean(AC))
+plot(voltages(pressure_range), mean(Serratia))
+plot(voltages(pressure_range), mean(S50C_G82L))
 title('xAM (Normalized)'),xlabel('Transducer voltage (V)'),ylabel('Normalized xAM signal')
-legend({'Q65Sfs', 'A68R', 'GvpB-S50C-G82L'})
-% legend({'Sv5K_Ptac-lacO_AnaA-A68R_AnaC-MegaRNFGLSKJTU_Bba-B0015', 'Serratia', 'GvpB-S50C-G82L'}, 'Location','northwest', 'Interpreter', 'none')
-% xlim([5 20])
+legend({'Sv5K_Ptac-lacO_AnaA-A68R_AnaC-MegaRNFGLSKJTU_Bba-B0015', 'Serratia', 'GvpB-S50C-G82L'}, 'Location','northwest', 'Interpreter', 'none')
+xlim([5 20])
 set(findall(gca, 'Type', 'Line'),'LineWidth',2);
 hold off
 
@@ -287,23 +279,23 @@ hold off
 % this can be calculated from the image data by comparing the intensities of each sample across pressures
 % rows are different types of GVs; columns are different pressures
 % values don't have to be scaled from 0 to 1, but all rows should have the same min and max
-colmat = rescale([A68R' B230']');
+colmat = rescale([Serratia S50C_G82L]');
 
 alpha = diff(colmat,1,2); % compute differential turn-on matrix "alpha" (i.e., fraction turning on at each step)
 
-Is = nan([zsize xsize Nw length(pressure_range)]); % dimensions: x, y, wells, voltages
-Ss = nan([zsize xsize Nw length(pressure_range)-1]); % dimensions: x, y, wells, voltages
+Is = nan([zsize xsize Nw Np]); % dimensions: x, y, wells, voltages
+Ss = nan([zsize xsize Nw Np-1]); % dimensions: x, y, wells, voltages
 Cs = nan([zsize xsize Nw size(colmat,1)]); % dimensions: x, y, wells, GV type
 for well = 1:Nw
     % unmix image using differential turn-on matrix alpha
-    % Imgs dimensions: zs, xs, pressures, imaging modes, wells
-    [Is(:,:,well,:), Ss(:,:,well,:), Cs(:,:,well,:)] = Unmix(squeeze(Imgs(:,:,pressure_range,1,well)), alpha);
+    % Im_ROIs dimensions: zs, xs, pressures, imaging modes, wells
+    [Is(:,:,well,:), Ss(:,:,well,:), Cs(:,:,well,:)] = Unmix(squeeze(Imgs(:,:,:,1,well)), alpha);
 end
 
 % view sequential difference images
 montages = []; % initalize montage images array
-for pressure = 1:length(pressure_range)-1
-    m = montage(squeeze(Ss(:,:,:,pressure)),'Size',PlateSize); % create a montage image
+for species = 1:Np-1
+    m = montage(squeeze(Ss(:,:,:,species)),'Size',PlateSize); % create a montage image
     montages = cat(3,montages,m.CData); % add montage image to montage array
 end
 figure;
@@ -313,14 +305,14 @@ title('Sequential difference images')
 % view unmixed images
 figure;
 montage(squeeze(Cs(:,:,:,1)),'Size',PlateSize, 'DisplayRange',[0 500]);
-title('Species 1')
+title('xAM')
 figure;
 montage(squeeze(Cs(:,:,:,2)),'Size',PlateSize, 'DisplayRange',[0 500]);
-title('Species 2')
+title('Bmode')
 
 
 % plot desired wells (indexed across rows) unmixed
-wells = [5 8];
+wells = [9 12];
 % scale images from 0 to 1, setting negative concentration values to 0 and
 % setting very large values to 1
 Cs_rescaled = rescale(Cs, 'InputMin',0, 'InputMax',max(Cs,[],[1:4])*.25);
@@ -335,7 +327,7 @@ for Wi = 1:length(wells)
 end
 for Wi = 1:length(wells)
     subplot(3, length(wells), Wi+length(wells))
-    im = squeeze(rescale(Cs_rescaled(:,:,wells(Wi),2)));
+    im = squeeze(Cs_rescaled(:,:,wells(Wi),2));
     % convert second image to green and plot
     imagesc(cat(3, zeros(size(im)), im, zeros(size(im))));
     set(gca,'xticklabel',[], 'yticklabel',[])
@@ -390,9 +382,6 @@ function [I, D, C] = Unmix(vramp, alpha)
     for x = 1:size(I,1)
         for y = 1:size(I,2)
             D(x,y,:) = diff(I(x,y,:)); % get subtraction signals
-%             size(D)
-%             size(permute(D(x,y,:), [3 2 1]))
-%             size(alpha')
             C(x,y,:) = alpha'\permute(D(x,y,:), [3 2 1]); % concentrations of the differently-collapsing species
 %             C(x,y,:) = lsqnonneg(alpha',permute(D(x,y,:), [3 2 1])); % concentrations of the differently-collapsing species
         end

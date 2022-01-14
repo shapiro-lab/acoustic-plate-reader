@@ -7,7 +7,7 @@ close all
 % SampleName = '211124_EF31-80-93-Mega13-Mega14-Serratia_stable_37C';
 % saveName = fullfile(saveName,'Verasonics_Processed','APR',SampleName,filesep);
 
-pathName = '/Volumes/GoogleDrive/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/211201_EF188-to-193-195-196_stable_37C';
+pathName = '/Volumes/GoogleDrive/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/211217_EF194-162-163_stable_37C';
 saveName = pathName;
 
 % mkdir(saveName);

@@ -5,8 +5,8 @@ savedata = 1;
 savefigure = 1;
 groupalong = 'columns';
 split = 1; % number of voltage ramps
-NpS = 4; % number of replicates
-numcondition = 24; % number of unique samples
+NpS = 1; % number of replicates
+numcondition = 36; % number of unique samples
 
 %%
 % ROI dimensions: voltage, mode, wells
@@ -79,9 +79,17 @@ figure; hold on;
 % for i = 1:length(PlateCoordinate_selected)
 %     plot(vx,selected(:,i),'LineWidth',2,'DisplayName',PlateCoordinate_selected(i),'Color',colors(i,:));
 % end
-for i = 1:numcondition
-    for j = 1:split
-        plot(vx,(mnormx_group(PreV_split(j,:),i)),'LineWidth',3,'Color',[colors_group(i,:) 1 - 0.3*(j-1)],'DisplayName',group_names(i));
+
+% [1:15; 16:32; 33:51; 52:72]
+% ind = 5:15;
+% ind = 20:32;
+% ind = 37:51;
+% ind = 56:72;
+% vx = vx(ind);
+% PreV_split = PreV_split(ind);
+for samp = 1:numcondition
+    for ramp = 1:split
+        plot(vx,mnormx_group(PreV_split(ramp,:),samp),'LineWidth',3,'Color',[colors_group(samp,:) 1 - 0.3*(ramp-1)],'DisplayName',group_names(samp));
 %         pl = errorbar(vx,(mnormx_group(PreV_split(j,:),i)),(normxstd_group(PreV_split(j,:),i)),'LineWidth',3,'Color',[colors_group(i,:) 1 - 0.3*(j-1)],'DisplayName',group_names(i));
     end
 end

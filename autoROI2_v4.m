@@ -22,25 +22,26 @@ noise_slices_backup = [8 9;1 2;7 8];
 ntt = 100; % threshold for choosing noise depth slice (mV)
 
 %fig_n = figure; hold on;]
-xcorrection(36) = 8;
-% zcorrection(13) = 30;
+xcorrection([23]) = -5;
+% xcorrection([55]) = 5;
+zcorrection([1:total_n]) = 20;
 % zcorrection(21:24) = 25;
-% zcorrection(15) = 50;
+% zcorrection(9) = 0;
 %%
-for testInd = 1:total_n
-    if ~skip(testInd)
-        Imt = Imi{1,2,testInd};
+for wellInd = 1:total_n
+    if ~skip(wellInd)
+        Imt = Imi{1,2,wellInd};
         filter_size1 = [40 5];
 
         threshold_ratio = 1;
-        noise_stdratio = 1;
+        noise_stdratio = 1.5;
         auto_noise = 1;
         sample_depth = [2.5 8];
-        noise_slice = noise_slices(testInd,:);
-        dz(:,testInd) = [find(Zi>=sample_depth(1),1,'first') find(Zi>=sample_depth(2),1,'first')];
-        nz(:,testInd) = [find(Zi>=noise_slice(1),1,'first') find(Zi>=noise_slice(2),1,'first')];
-        iZt = dz(1,testInd):dz(2,testInd);
-        iZd_noise = nz(1,testInd):nz(2,testInd);
+        noise_slice = noise_slices(wellInd,:);
+        dz(:,wellInd) = [find(Zi>=sample_depth(1),1,'first') find(Zi>=sample_depth(2),1,'first')];
+        nz(:,wellInd) = [find(Zi>=noise_slice(1),1,'first') find(Zi>=noise_slice(2),1,'first')];
+        iZt = dz(1,wellInd):dz(2,wellInd);
+        iZd_noise = nz(1,wellInd):nz(2,wellInd);
         filter_depth = zeros(size(Imt));
         filter_depth(iZt,:) = 1;
         Zit = Zi(iZt);
@@ -48,8 +49,8 @@ for testInd = 1:total_n
         i_ntt = 1;
         while noiseROIt > ntt && (i_ntt < length(noise_slices_backup(:,1)))
             noise_slice = noise_slices_backup(i_ntt,:);
-            nz(:,testInd) = [find(Zi>=noise_slice(1),1,'first') find(Zi>=noise_slice(2),1,'first')];
-            iZd_noise = nz(1,testInd):nz(2,testInd);
+            nz(:,wellInd) = [find(Zi>=noise_slice(1),1,'first') find(Zi>=noise_slice(2),1,'first')];
+            iZd_noise = nz(1,wellInd):nz(2,wellInd);
             noiseROIt = mean(mean(Imt(iZd_noise,:))) + noise_stdratio * std2(Imt(iZd_noise,:));
             i_ntt = i_ntt + 1;
         end
@@ -64,60 +65,72 @@ for testInd = 1:total_n
 
         Xm = repmat(1:length(Xi),length(Zi),1).* Imt_f2;
         Xm2 = Imt_f2;
-        % Xm(Xm==0) = nan;
-        % bx1 = max(Xm,[],2) - min(Xm,[],2);
+        Xm(Xm==0) = nan;
+        bx1 = max(Xm,[],2) - min(Xm,[],2);
         bx2 = sum(Xm2,2);
-        [~,ztop] = max(bx2);
+        [~,ztop] = max(bx1);
         Ind_dZ = [ztop-zROI_size ztop+zROI_size];
-        Ind_dZ = Ind_dZ + zoffset + zcorrection(testInd);
+        Ind_dZ = Ind_dZ + zoffset + zcorrection(wellInd);
+        Xm(isnan(Xm)) = 0;
         ixcenter = round(sum(sum((Xm(Ind_dZ(1):Ind_dZ(2),:)))) / nnz(Xm(Ind_dZ(1):Ind_dZ(2),:)));
         if ~isnan(ixcenter)
-            Ind_dX = [ixcenter-xROI_size ixcenter+xROI_size]+ xcorrection(testInd);
+            Ind_dX = [ixcenter-xROI_size ixcenter+xROI_size]+ xcorrection(wellInd);
             if showf5
                 fig = figure;
                 imagesc(Xi, Zi(1:iZt(end)+200), 20*log10(abs(Imt(1:iZt(end)+200,:))), [20 80]); axis image;colormap hot
                 hold on;
                 drawrectangle('Position',[Xi(1) Zi(iZd_noise(1)) Xi(end)-Xi(1) Zi(iZd_noise(end))-Zi(iZd_noise(1))],'EdgeColor','w','LineWidth',2);
                 drawrectangle('Position',[Xi(Ind_dX(1)) Zi(Ind_dZ(1)) Xi(Ind_dX(2))-Xi(Ind_dX(1)) Zi(Ind_dZ(2))-Zi(Ind_dZ(1))],'EdgeColor','g','LineWidth',2);
-                title(['Frame #' num2str(testInd)]);
+                title(['Frame #' num2str(wellInd)]);
                 pause(0.3);
                 % close(fig);
             end
 
-            for j = 1:Nf
-                for k = 1:2
-                    sampROI(j,k,testInd) = mean(mean(Imi{j,k,testInd}(Ind_dZ(1):Ind_dZ(2),Ind_dX(1):Ind_dX(2))));
-                    noiseROI_mean(j,k,testInd) = mean(mean(Imi{j,k,testInd}(iZd_noise,:)));
-                    noiseROI_std(j,k,testInd) =  std2(Imi{j,k,testInd}(iZd_noise,:));
+            for pressure = 1:Nf
+                for imMode = 1:2
+                    sampROI(pressure,imMode,wellInd) = mean(mean(Imi{pressure,imMode,wellInd}(Ind_dZ(1):Ind_dZ(2),Ind_dX(1):Ind_dX(2))));
+                    noiseROI_mean(pressure,imMode,wellInd) = mean(mean(Imi{pressure,imMode,wellInd}(iZd_noise,:)));
+                    noiseROI_std(pressure,imMode,wellInd) =  std2(Imi{pressure,imMode,wellInd}(iZd_noise,:));
                 end
             end
         else
             ixcenter = round(length(Xi)/2);
-            Ind_dX = [ixcenter-xROI_size ixcenter+xROI_size]+ xcorrection(testInd);
+            Ind_dX = [ixcenter-xROI_size ixcenter+xROI_size]+ xcorrection(wellInd);
             if showf5
                 fig = figure;
                 imagesc(Xi, Zi(1:iZt(end)), 20*log10(abs(Imt(1:iZt(end),:))), [20 80]); axis image;colormap hot
                 hold on;
                 drawrectangle('Position',[Xi(1) Zi(iZd_noise(1)) Xi(end)-Xi(1) Zi(iZd_noise(end))-Zi(iZd_noise(1))],'EdgeColor','w','LineWidth',2);
                 drawrectangle('Position',[Xi(Ind_dX(1)) Zi(Ind_dZ(1)) Xi(Ind_dX(2))-Xi(Ind_dX(1)) Zi(Ind_dZ(2))-Zi(Ind_dZ(1))],'EdgeColor','g','LineWidth',2);
-                title(['Warning: ROI not detected in frame #' num2str(testInd)]);
+                title(['Warning: ROI not detected in frame #' num2str(wellInd)]);
                 pause(0.3);
                 % close(fig);
             end
 
-            for j = 1:Nf
-                for k = 1:2
-                    sampROI(j,k,testInd) = mean(mean(Imi{j,k,testInd}(Ind_dZ(1):Ind_dZ(2),Ind_dX(1):Ind_dX(2))));
-                    noiseROI_mean(j,k,testInd) = mean(mean(Imi{j,k,testInd}(iZd_noise,:)));
-                    noiseROI_std(j,k,testInd) =  std2(Imi{j,k,testInd}(iZd_noise,:));
+            for pressure = 1:Nf
+                for imMode = 1:2
+                    sampROI(pressure,imMode,wellInd) = mean(mean(Imi{pressure,imMode,wellInd}(Ind_dZ(1):Ind_dZ(2),Ind_dX(1):Ind_dX(2))));
+                    noiseROI_mean(pressure,imMode,wellInd) = mean(mean(Imi{pressure,imMode,wellInd}(iZd_noise,:)));
+                    noiseROI_std(pressure,imMode,wellInd) =  std2(Imi{pressure,imMode,wellInd}(iZd_noise,:));
                 end
             end
         end
     end
 end
 sampCNR = 20 * log10(abs(sampROI - noiseROI_mean) ./ noiseROI_std);
-clear i j k;
+
+% save data
+clear i pressure imMode;
 if savedata
-    save([saveName '_data_' datestr(now,'yymmdd-hh-MM-ss')],'sampROI','sampCNR','noiseROI_mean','noiseROI_std','voltage','PlateCoordinate');
+    save([saveName '_data_' datestr(now,'yymmdd-hh-MM-ss')],'P','saveName','sampROI','sampCNR','noiseROI_mean','noiseROI_std','voltage','PlateCoordinate');
 end
-%close all
+
+% plot ROI quants with microplateplot
+% reshape ROI CNRs
+% sampCNR new dimensions: well rows, well columns, frames, imaging modes
+sampCNRs = permute(reshape(sampCNR, Nf, 2, PlateSize(2), PlateSize(1)), [4 3 1 2]);
+mpplot = microplateplot(sampCNRs(:,:,end-1,1));
+colormap hot
+colorbar
+mpplot
+savefig([saveName '_quants'])
