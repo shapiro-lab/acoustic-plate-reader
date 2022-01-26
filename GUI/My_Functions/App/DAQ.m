@@ -8,7 +8,7 @@
 % 11/12/2017 - Danny Sawyer
 
 format compact
-P.RampMode = 2; % 1 = pBmode, 2 = xAM, 3 = xBmode, 4 = pAM
+% P.RampMode = 2; % 1 = pBmode, 2 = xAM, 3 = xBmode, 4 = pAM
 P.TargetDepth = 5; % in mm, just for instruction purpose
 
 params = sub_AllSettings('ZJScanTest');
@@ -186,7 +186,7 @@ Resource.VDAS.dmaTimeout = 10000; % (ms)
 P.cSI = Resource.Parameters.speedOfSound;
 
 % Specify Trans structure array.
-Trans.name = 'L22-14vX';
+% Trans.name = 'L22-14vX';
 Trans.units = 'wavelengths';
 Trans.frequency = P.txFreq; % 62.5Mhz sampling / 4 samples per wave
 % Trans.maxHighVoltage = 25;

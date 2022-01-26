@@ -2,8 +2,8 @@ clear all
 
 %% Inputs
 % file parameters
-pathName = '/Volumes/GoogleDrive/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/Multiplexing/';
-SampleName = '210427_B-mutants-ser_vrampx2';
+pathName = 'C:\Users\Administrator\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\Data\';
+SampleName = '220126';
 
 % scan_type = 'pre_post'; %'voltage_ramp', 'collapse_ramp' % TODO make these change what types of plots get made
 
@@ -11,7 +11,7 @@ SampleName = '210427_B-mutants-ser_vrampx2';
 disp_crange = [40 -3]; % limits of colorbar
 imgMode = 1; % 1 for ramping voltage, 2 for imaging voltage
 computeDiff = 1; % 1 or 0 to compute pre-post-collapse difference image or not
-compar = [15 16]; % indices of voltages to compare for pre-post-collapse difference
+compar = [1 2]; % indices of voltages to compare for pre-post-collapse difference
 trans = 'L22'; % L22 or L10
 
 %%
@@ -27,7 +27,7 @@ elseif trans == 'L10'
 end
 
 % Call raw2imgs script
-% raw2imgs;
+raw2imgs;
 load(fullfile(pathName, SampleName, 'imgs.mat'));
 
 if imgMode == 1
