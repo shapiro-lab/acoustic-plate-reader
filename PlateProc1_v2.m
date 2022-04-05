@@ -1,18 +1,13 @@
 clear all
 close all
 
-% saveName = '/Volumes/GoogleDrive/My Drive/';
-% pathName = '/Volumes/GoogleDrive/My Drive/';
-% ExperimentDate = 'Verasonics_Raw';
-% SampleName = '211124_EF31-80-93-Mega13-Mega14-Serratia_stable_37C';
-% saveName = fullfile(saveName,'Verasonics_Processed','APR',SampleName,filesep);
 
-pathName = '/Volumes/GoogleDrive/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/211217_EF194-162-163_stable_37C';
+pathName = '/Volumes/GoogleDrive/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/B-lib-1/B-lib-1_plate1_rep1_stable-37C_P_1_1';
 saveName = pathName;
+
 
 % mkdir(saveName);
 
-% pathName = fullfile(pathName, ExperimentDate, SampleName);
 SubDirs = GetSubDirs(pathName);
 total_n = length(SubDirs);
 PlateCoordinate = strings(1,total_n);

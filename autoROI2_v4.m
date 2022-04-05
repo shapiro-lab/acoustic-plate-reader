@@ -4,7 +4,7 @@ showf5 = 1; % 0 or 1 to display ROIs on images
 savedata = 1; % 0 or 1 to save processed data
 xROI_size = 10;
 zROI_size = 40;
-zoffset = 80;
+zoffset = 100;
 testfilter = 0;
 rangeoffset = 10;
 %%
@@ -22,12 +22,27 @@ noise_slices_backup = [8 9;1 2;7 8];
 ntt = 100; % threshold for choosing noise depth slice (mV)
 
 %fig_n = figure; hold on;]
-xcorrection([23]) = -5;
+% xcorrection([59]) = -5;
+% xcorrection([20]) = -5;
+% xcorrection([22]) = -5;
+% xcorrection([23]) = -5;
+% xcorrection([32]) = -7;
+% xcorrection([47]) = -5;
+% xcorrection([49]) = 5;
 % xcorrection([55]) = 5;
-zcorrection([1:total_n]) = 20;
+% xcorrection([56]) = -5;
+% xcorrection([58]) = -5;
+% xcorrection([67]) = -5;
+% xcorrection([70]) = -5;
+% xcorrection([72]) = -5;
+% xcorrection([91]) = -5;
+% xcorrection([95]) = -9;
+% xcorrection([96]) = 3;
+
 % zcorrection(21:24) = 25;
-% zcorrection(9) = 0;
-%%
+% zcorrection(13) = 2;
+% zcorrection(22) = -2;
+%% quantify ROIs
 for wellInd = 1:total_n
     if ~skip(wellInd)
         Imt = Imi{1,2,wellInd};
@@ -125,12 +140,18 @@ if savedata
     save([saveName '_data_' datestr(now,'yymmdd-hh-MM-ss')],'P','saveName','sampROI','sampCNR','noiseROI_mean','noiseROI_std','voltage','PlateCoordinate');
 end
 
-% plot ROI quants with microplateplot
+%% plot ROI quants with microplateplot
 % reshape ROI CNRs
 % sampCNR new dimensions: well rows, well columns, frames, imaging modes
 sampCNRs = permute(reshape(sampCNR, Nf, 2, PlateSize(2), PlateSize(1)), [4 3 1 2]);
-mpplot = microplateplot(sampCNRs(:,:,end-1,1));
+
+% find max signal achieved by each sample at any voltage
+maxs = squeeze(max(sampCNRs, [], 3));
+
+% make and save microplate plot
+mpplot = microplateplot(maxs(:,:,1));
 colormap hot
 colorbar
+title('Max signal achieved at any voltage')
 mpplot
-savefig([saveName '_quants'])
+savefig([saveName '_max-signal'])

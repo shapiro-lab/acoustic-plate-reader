@@ -6,7 +6,7 @@ savefigure = 1;
 groupalong = 'columns';
 split = 1; % number of voltage ramps
 NpS = 1; % number of replicates
-numcondition = 36; % number of unique samples
+numcondition = 96; % number of unique samples
 
 %%
 % ROI dimensions: voltage, mode, wells
@@ -17,20 +17,27 @@ sampCNRb = squeeze(sampCNR(:,2,:)); % CNR of Bmode, dB scale
 noiseROIx = squeeze(noiseROI_mean(:,1,:)); % mean intensity of xAM noise, linear scale
 noiseROIb = squeeze(noiseROI_mean(:,2,:)); % mean intensity of Bmode noise, linear scale
 
-PreV = 5:(length(voltage)-1); % Define pre-collapse voltage range
-PostV = PreV(end)+1; % Define post-collapse voltage range
-PreV_split = reshape(PreV,[],split)';
+PreV = 1:16; % Define pre-collapse voltage range
+% PostV = PreV(end)+1; % Define post-collapse voltage
+PostV = length(voltage)-PreV(end)+1:length(voltage); % Define post-collapse voltage range
+PreV_split = reshape(PreV,[],split)'; % split pre-collapse voltage range into individual ramps
 
 % normx = 20*log10(abs((sampROIx(PreV,:) - noiseROIx(PreV,:)) ./...
 %         (sampROIb(PreV,:) - sampROIb(PostV,:)))); % xAM/Bmode, dB scale
+% yLabel = 'xAM/Bmode CNR (dB)';
 
 % normx = 20*log10(abs((sampROIx(PreV,:) - noiseROIx(PreV,:)) ./...
 %         (sampROIb(1,:) - sampROIb(PostV,:)))); % xAM/Bmode, dB scale, normalize only to the first Bmode frame
+% yLabel = 'xAM/Bmode CNR (dB), normalized only to the first Bmode frame';
 
-normx = (sampCNRx(:,:)); % only plotting raw CNR
+normx = (sampCNRx(:,:)); % only plot raw CNR
+yLabel = 'xAM CNR (dB)';
 
-vx = voltage(PreV_split(1,:));%voltage(PreV); % voltages for plotting
-%%
+% normx = 20*log10(abs((sampROIx(PreV,:) - sampROIx(PostV,:)))); % xAM/Bmode, dB scale
+% yLabel = 'xAM pre- post-collapse (dB)';
+
+vx = voltage(PreV_split(1,:)); %voltage(PreV); % voltages for plotting
+%% group samples
 % threshold_x = [1:total_n]; % groups/thresholding 
 groups = cell(1,numcondition);
 group_names = strings(1,numcondition);
@@ -60,8 +67,6 @@ else
     end
 end
 
-
-
 mnormx_group = [];
 normxstd_group = [];
 
@@ -74,7 +79,7 @@ end
 % PlateCoordinate_selected = PlateCoordinate(threshold_x);
 % selected = normx(:,threshold_x);
 
-
+%% plot voltage ramps
 figure; hold on;
 % for i = 1:length(PlateCoordinate_selected)
 %     plot(vx,selected(:,i),'LineWidth',2,'DisplayName',PlateCoordinate_selected(i),'Color',colors(i,:));
@@ -94,10 +99,15 @@ for samp = 1:numcondition
     end
 end
 xlabel('Voltage (V)');
-ylabel('xAM CNR (dB)')
+ylabel(yLabel)
 legend;
 set(gca,'fontsize',16);
 
+if savefigure
+    savefig([saveName '_normx_' datestr(now,'yymmdd-hh-MM-ss') '.fig'])
+end
+
+%%
 sampROIx = squeeze(sampROI(:,1,:)); % mean intensity of xAM, linear scale
 sampROIb = squeeze(sampROI(:,2,:)); % mean intensity of Bmode, linear scale
 sampCNRx = squeeze(sampCNR(:,1,:)); % CNR of xAM, dB scale
@@ -109,6 +119,3 @@ noiseROIb = squeeze(noiseROI_mean(:,2,:)); % mean intensity of Bmode noise, line
 %     save([saveName 'data_' datestr(now,'yymmdd-hh-MM-ss')],'sampROI','sampCNR','noiseROI_mean','noiseROI_std','voltage','groups', ...
 %             'normx','mnormx_group','normxstd_group');
 % end
-if savefigure
-    savefig([saveName '_normx_' datestr(now,'yymmdd-hh-MM-ss') '.fig'])
-end
