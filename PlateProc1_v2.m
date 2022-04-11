@@ -2,7 +2,7 @@ clear all
 close all
 
 
-pathName = '/Volumes/GoogleDrive/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/B-lib-1/B-lib-1_plate1_rep1_stable-37C_P_1_1';
+pathName = '/Volumes/GoogleDrive/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/A-lib-1/A-lib-1_plate1_rep1_stable-37C_P_1_1';
 saveName = pathName;
 
 

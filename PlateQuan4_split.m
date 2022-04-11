@@ -42,7 +42,7 @@ vx = voltage(PreV_split(1,:)); %voltage(PreV); % voltages for plotting
 groups = cell(1,numcondition);
 group_names = strings(1,numcondition);
 colors_group = linspecer(numcondition);
- 
+
 if strcmp(groupalong, 'rows')
     groups{1} = (1:NpS);
     for gi = 2:numcondition
