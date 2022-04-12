@@ -137,7 +137,7 @@ sampCNR = 20 * log10(abs(sampROI - noiseROI_mean) ./ noiseROI_std);
 % save data
 clear wellInd pressure imMode;
 if savedata
-    save([saveName '_data_' datestr(now,'yymmdd-hh-MM-ss')],'P','saveName','sampROI','sampCNR','noiseROI_mean','noiseROI_std','voltage','PlateCoordinate');
+    save([saveName '_data_' datestr(now,'yymmdd-hh-MM-ss')],'P','saveName','sampROI','sampCNR','noiseROI_mean','noiseROI_std','voltage','PlateCoordinate','Nf');
 end
 
 %% plot ROI quants with microplateplot

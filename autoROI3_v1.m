@@ -30,10 +30,11 @@ noise_slices = repmat([2 3],total_n,1); % default noise depth (in mm) for noise 
 noise_slices_backup = [8 9;1 2;7 8]; % backup noise depth (in mm) for noise ROI selection in case of abnormal noise level
 ntt = 100; % threshold of noise level (mV) for abnormal high noise level / changing noise depth slices
 
-% xcorrection([59]) = -5;
-% xcorrection([20]) = -5;
-% xcorrection([22]) = -5;
-% xcorrection([23]) = -5;
+xcorrection([2]) = 2;
+xcorrection([13]) = 5;
+xcorrection([22]) = 5;
+xcorrection([31]) = 5;
+
 % xcorrection([32]) = -7;
 % xcorrection([47]) = -5;
 % xcorrection([12]) = -5;
@@ -82,7 +83,7 @@ for wellInd = 1:total_n
         [zpeak,xpeak] = find(c==max(c(:)),1); % Find the max correlation location
         ConfidenceScore(wellInd) = c(zpeak,xpeak); % Use the correlation at max location as confidence score
         zoffset = zpeak - size(Imt_f2,1) + zcorrection(wellInd); % Convert max correlation location to index offset in z dimension
-        xoffset = xpeak - size(Imt_f2,2) + xcorrection(wellInd); % Convert max correlation location to index offset in z dimension
+        xoffset = xpeak - size(Imt_f2,2) - xcorrection(wellInd); % Convert max correlation location to index offset in z dimension
         ROI_Centers(wellInd,:) = TemplateCenter - [zoffset xoffset]; % Apply the offset to define the ROI center
         Ind_dZ = [ROI_Centers(wellInd,1) - zROI_size ROI_Centers(wellInd,1) + zROI_size]; % Extend from center to get start/end indices in z dimension 
         Ind_dX = [ROI_Centers(wellInd,2) - xROI_size ROI_Centers(wellInd,2) + xROI_size]; % Extend from center to get start/end indices in x dimension
@@ -123,7 +124,7 @@ sampCNR = 20 * log10(abs(sampROI - noiseROI_mean) ./ noiseROI_std); % Calculate 
 % save data
 clear pressure imMode;
 if savedata
-    save([saveName '_data_' datestr(now,'yymmdd-hh-MM-ss')],'P','saveName','sampROI','sampCNR','noiseROI_mean','noiseROI_std','voltage','PlateCoordinate','ROI_Centers','ConfidenceScore');
+    save([saveName '_data_' datestr(now,'yymmdd-hh-MM-ss')],'P','saveName','sampROI','sampCNR','noiseROI_mean','noiseROI_std','voltage','PlateCoordinate','ROI_Centers','ConfidenceScore','Nf');
 end
 
 %% plot ROI quants with microplateplot

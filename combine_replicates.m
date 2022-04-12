@@ -2,9 +2,9 @@ clear all
 close all
 
 % load data
-data1 = load('/Volumes/GoogleDrive/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/B-lib-1/B-lib-1_plate4_rep1_stable-37C_P_1_4/B-lib-1_plate4_rep1_stable-37C_P_1_4_data_220404-16-18-03.mat');
-data2 = load('/Volumes/GoogleDrive/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/B-lib-1/B-lib-1_plate4_rep2_stable-37C_P_1_2/220331_B-lib-1_plate4_rep2_stable-37C_P_1_2_data_220404-17-32-32.mat');
-data3 = load('/Volumes/GoogleDrive/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/B-lib-1/B-lib-1_plate4_rep3_stable-37C_P_2_2/220331_B-lib-1_plate4_rep3_stable-37C_P_2_2_data_220404-17-46-39.mat');
+data1 = load('/Volumes/GoogleDrive/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/A-lib-1/A-lib-1_plate4_rep1_stable-37C_P_1_1/A-lib-1_plate4_rep1_stable-37C_P_1_1_data_220406-19-24-17.mat');
+data2 = load('/Volumes/GoogleDrive/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/A-lib-1/A-lib-1_plate4_rep2_stable-37C_P_1_1/A-lib-1_plate4_rep2_stable-37C_P_1_1_data_220411-15-10-25.mat');
+data3 = load('/Volumes/GoogleDrive/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/A-lib-1/A-lib-1_plate4_rep3_stable-37C_P_2_1/A-lib-1_plate4_rep3_stable-37C_P_2_1_data_220411-17-28-48.mat');
 
 %%
 data = data1;
