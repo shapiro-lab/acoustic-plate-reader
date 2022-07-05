@@ -1,5 +1,11 @@
-close all
+% close all
 clear iZt
+
+%remove later
+% clear all
+% load (fullfile(pathName, 'imgs.mat'))
+
+
 
 %%
 sample_depth = [1.9 9.1]; % display/sample depth range in mm
@@ -54,7 +60,7 @@ skip = zeros(1,total_n); % ROI correction in well indices to skip processing
 % zcorrection(22) = -2;
 
 %% quantify ROIs
-for wellIx = 1:10
+for wellIx = 1:total_n
     if ~skip(wellIx)
         ImTemp = Imi{1,2,wellIx}; % Fetch Bmode image at first voltage to use for ROI detection
         noise_slice = noise_slices(wellIx,:); % Fetch noise depth slice to select noise ROI
@@ -134,7 +140,7 @@ end
 
 %% plot ROI quants with microplateplot
 % reshape ROI CNRs
-% sampCNR new dimensions: well rows, well columns, frames, imaging modes
+% sampCNRs new dimensions: well rows, well columns, frames, imaging modes
 sampCNRs = permute(reshape(sampCNR, Nf, 2, PlateSize(2), PlateSize(1)), [4 3 1 2]);
 confScore = permute(reshape(confScore, PlateSize(2), PlateSize(1)), [1 2]);
 
