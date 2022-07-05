@@ -3,14 +3,14 @@
 % saveName = '/Users/Sanyo 1/Documents/MATLAB/Vantage-3.3.0-1710061400/Data/PlateReader/';
 % pathName = '/Volumes/Seagate Expansion Drive/Rob/';
 % ExperimentDate = '210329_RCH';
-% SampleName = 'A3F9';
+SampleName = 'A3F9';
 
 %PlateProc1;
 
 dImi = nan(length(Zi),length(Xi), 2, total_n);
 for i = 1:total_n
     for k = 1:2
-        dImi(:,:,k,i) = Imi{6,k,i};
+        dImi(:,:,k,i) = Imi{15,k,i};
     end
 end
 imgMode = 1;
@@ -23,7 +23,7 @@ else
     colorm = 'bone';
 end
 %colorm = 'jet';
-PlateSize = [5 8];
+PlateSize = [12 8];
 
 if imgMode == 1
     FigTitle = [SampleName '-xAM-Imgs'];

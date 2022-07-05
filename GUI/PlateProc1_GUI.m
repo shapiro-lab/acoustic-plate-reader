@@ -1,8 +1,9 @@
-clear all
+% clear all
 close all
 
 
-pathName = '/Volumes/GoogleDrive/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/A-lib-1/A-lib-1_plate3_rep1_stable-37C_P_1_2';
+% pathName = '/Volumes/GoogleDrive/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/A-lib-1/A-lib-1_plate3_rep1_stable-37C_P_1_2';
+% pathName = '/Users/Rob/Dropbox/verasonics system/Vantage-4.6.2-RCH/acoustic-plate-reader/GUI/Example_data/A-lib-1_plate2_rep2_stable-37C_P_1_1';
 saveName = pathName;
 
 
@@ -103,7 +104,7 @@ clear well pressure mode;
 close(h);
 
 PlateSize = [P.xLines P.zLines]; % rows and columns of wells scanned
-% save(fullfile(saveName, 'imgs.mat'), 'Imi', 'dImi', 'P', 'Zi', 'PlateSize', '-v7.3')
+save(fullfile(saveName, 'imgs.mat'), 'Imi', 'dImi', 'P', 'Zi', 'PlateSize', '-v7.3')
 
 %% Function definitions
 function [subDirsNames] = GetSubDirs(parentDir)

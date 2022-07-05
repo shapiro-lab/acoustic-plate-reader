@@ -10,12 +10,12 @@ numcondition = 96; % number of unique samples
 
 %%
 % ROI dimensions: voltage, mode, wells
-sampROIx = squeeze(sampROI(:,1,:)); % mean intensity of xAM, linear scale
-sampROIb = squeeze(sampROI(:,2,:)); % mean intensity of Bmode, linear scale
+sampROIx = squeeze(sampROI_means(:,1,:)); % mean intensity of xAM, linear scale
+sampROIb = squeeze(sampROI_means(:,2,:)); % mean intensity of Bmode, linear scale
 sampCNRx = squeeze(sampCNR(:,1,:)); % CNR of xAM, dB scale
 sampCNRb = squeeze(sampCNR(:,2,:)); % CNR of Bmode, dB scale
-noiseROIx = squeeze(noiseROI_mean(:,1,:)); % mean intensity of xAM noise, linear scale
-noiseROIb = squeeze(noiseROI_mean(:,2,:)); % mean intensity of Bmode noise, linear scale
+noiseROIx = squeeze(noiseROI_means(:,1,:)); % mean intensity of xAM noise, linear scale
+noiseROIb = squeeze(noiseROI_means(:,2,:)); % mean intensity of Bmode noise, linear scale
 
 PreV = 1:16; % Define pre-collapse voltage range
 % PostV = PreV(end)+1; % Define post-collapse voltage
@@ -106,16 +106,3 @@ set(gca,'fontsize',16);
 if savefigure
     savefig([saveName '_normx_' datestr(now,'yymmdd-hh-MM-ss') '.fig'])
 end
-
-%%
-sampROIx = squeeze(sampROI(:,1,:)); % mean intensity of xAM, linear scale
-sampROIb = squeeze(sampROI(:,2,:)); % mean intensity of Bmode, linear scale
-sampCNRx = squeeze(sampCNR(:,1,:)); % CNR of xAM, dB scale
-sampCNRb = squeeze(sampCNR(:,2,:)); % CNR of Bmode, dB scale
-noiseROIx = squeeze(noiseROI_mean(:,1,:)); % mean intensity of xAM noise, linear scale
-noiseROIb = squeeze(noiseROI_mean(:,2,:)); % mean intensity of Bmode noise, linear scale
-
-% if savedata
-%     save([saveName 'data_' datestr(now,'yymmdd-hh-MM-ss')],'sampROI','sampCNR','noiseROI_mean','noiseROI_std','voltage','groups', ...
-%             'normx','mnormx_group','normxstd_group');
-% end
