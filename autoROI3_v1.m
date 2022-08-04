@@ -1,8 +1,8 @@
 close all
-clear iZt
+clear iZt ixZtemp
 
 %%
-sample_depth = [1.9 9.1]; % display/sample depth range in mm
+sample_depth = [1 9.1]; % display/sample depth range in mm
 DisplayMode = 1; % How to display images: 0 = show nothing, 1 = always show images + ROIs, 2 = only show images + ROIs with low-confidence ROI selection
 testfilter = 0; % 0 or 1 to display the thresholding filter
 savedata = 1; % 0 or 1 to save processed data
@@ -30,14 +30,14 @@ noiseROI_stds = nan(Nf,2,total_n); % initialize array for noise ROI STDs
 
 %% manual correction of ROI selection
 xcorrection = zeros(1,total_n); % initialize array for ROI correction in x dimension (correction in the unit of voxel count, ~0.1 mm/count)
-zcorrection = 20*ones(1,total_n); % initialize array for ROI correction in z dimension (correction in the unit of voxel count, ~0.0124 mm/count)  
+zcorrection = zeros(1,total_n); % initialize array for ROI correction in z dimension (correction in the unit of voxel count, ~0.0124 mm/count)  
 skip = zeros(1,total_n); % ROI correction in well indices to skip processing
 
-% xcorrection([7]) = -5;
-% xcorrection([13]) = 5;
-% xcorrection([22]) = 5;
-% xcorrection([31]) = 5;
-% xcorrection([32]) = -7;
+% xcorrection([20]) = 2;
+% xcorrection([78]) = 2;
+% xcorrection([38]) = 2;
+% xcorrection([70]) = 2;
+% xcorrection([69]) = 3;
 % xcorrection([47]) = -5;
 % xcorrection([12]) = -5;
 % xcorrection([18]) = 5;
@@ -47,14 +47,22 @@ skip = zeros(1,total_n); % ROI correction in well indices to skip processing
 % xcorrection([27]) = 5;
 % xcorrection([53]) = -5;
 % xcorrection([55]) = -5;
-% xcorrection([78]) = 5;
+% xcorrection([70]) = -2;
 
-% zcorrection(21:24) = 25;
-% zcorrection(7) = 40;
-% zcorrection(22) = -2;
-
+% zcorrection(1:total_n) = 20;
+% zcorrection(15) = -20;
+% zcorrection(23) = -20;
+% zcorrection(40) = -20;
+% zcorrection(67) = -20;
+% zcorrection(4) = -20;
+% zcorrection(10) = -10;
+% zcorrection(25) = 40;
+% zcorrection(31) = 20;
+% zcorrection(81) = -30;
+% zcorrection(87) = 10;
+zcorrection = zcorrection + 20;
 %% quantify ROIs
-for wellIx = 1:10
+for wellIx = 1:total_n
     if ~skip(wellIx)
         ImTemp = Imi{1,2,wellIx}; % Fetch Bmode image at first voltage to use for ROI detection
         noise_slice = noise_slices(wellIx,:); % Fetch noise depth slice to select noise ROI
@@ -125,33 +133,254 @@ for wellIx = 1:10
     end
 end
 sampCNR = 20 * log10(abs(sampROI_means - noiseROI_means) ./ noiseROI_stds); % Calculate sample CNR
+AM_Bmode_ratio = 20*log10(abs((sampROI_means(:,1,:) - noiseROI_means(:,1,:)) ./ (sampROI_means(:,2,:) - noiseROI_means(:,1,:)))); % xAM/Bmode, dB scale
 
 % save data
 clear pressure imMode;
 if savedata
-    save([saveName '_data_' datestr(now,'yymmdd-hh-MM-ss')],'P','saveName','sampROI_means','sampCNR','noiseROI_means','noiseROI_stds','voltage','PlateCoordinate','ROI_Centers','confScore','Nf');
+    save([saveName '_data_' datestr(now,'yymmdd-hh-MM-ss')],'P','saveName','sampROI_means','sampCNR','AM_Bmode_ratio','noiseROI_means','noiseROI_stds','voltage','PlateCoordinate','PlateSize','ROI_Centers','confScore','Nf');
 end
 
 %% plot ROI quants with microplateplot
 % reshape ROI CNRs
 % sampCNR new dimensions: well rows, well columns, frames, imaging modes
 sampCNRs = permute(reshape(sampCNR, Nf, 2, PlateSize(2), PlateSize(1)), [4 3 1 2]);
+AM_Bmode_ratios = permute(reshape(AM_Bmode_ratio, Nf, 1, PlateSize(2), PlateSize(1)), [4 3 1 2]);
 confScore = permute(reshape(confScore, PlateSize(2), PlateSize(1)), [1 2]);
 
-% find max signal achieved by each sample at any voltage
-maxs = squeeze(max(sampCNRs, [], 3));
 
-% make and save microplate plot
+
+A=reshape(sampCNRs(:,1:4,:,:),[32,21,2]);
+B=reshape(sampCNRs(:,5:8,:,:),[32,21,2]);
+C=reshape(sampCNRs(:,9:12,:,:),[32,21,2]);
+combined = cat(4,A,B,C);
+combined_mean = mean(combined,4);
+combined_max = squeeze(max(combined_mean, [], 2));
+
 figure;
-mpplot = microplateplot(maxs(:,:,1));
+% res = reshape(combined_max, 8,12, 2);
+
+res = squeeze(max(res, [], 1));
+bar(sort(res(1,:),'descend'));
+
+
+
+
+
+
+% find max signal achieved by each sample at any voltage
+maxs_AM = squeeze(max(sampCNRs, [], 3));
+maxs_AM_Bmode_ratio = squeeze(max(AM_Bmode_ratios, [], 3));
+
+% make and save microplate plots
+figure;
+mpplot = microplateplot(maxs_AM(:,:,1));
 colormap hot
 colorbar
-title('Max signal achieved at any voltage')
+title('Max xAM signal achieved at any voltage')
 mpplot;
-savefig([saveName '_max-signal'])
+savefig([saveName '_max-xAM'])
+
+figure;
+microplateplot(maxs_AM_Bmode_ratio(:,:))
+colormap hot
+colorbar
+title('Max xAM:Bmode ratio signal achieved at any voltage')
+mpplot;
+savefig([saveName '_max-xAM-Bmode'])
+
+
+%% multiplexing 1
+% plot all samples of a given type
+% Quant_ROIs dimensions: well rows, well columns, pressures, imaging modes
+% pressure_range = voltages;
+pressure_range = [1:10];
+A_WT = reshape(squeeze(Quant_ROIs(3,[1 5 9],pressure_range,1)), [], length(pressure_range));
+A_T6A = reshape(squeeze(Quant_ROIs(5,[2 6 10],pressure_range,1)), [], length(pressure_range));
+B_WT = reshape(squeeze(Quant_ROIs(5,[1 5 9],pressure_range,1)), [], length(pressure_range));
+B_S87I = reshape(squeeze(Quant_ROIs(4,[4 8 12],pressure_range,1)), [], length(pressure_range));
+% Mega13 = reshape(squeeze(Quant_ROIs(4,:,:,1)), [], length(pressure_range));
+% Mega14 = reshape(squeeze(Quant_ROIs(5,:,:,1)), [], length(pressure_range));
+% Serratia = reshape(squeeze(Quant_ROIs(6,:,:,1)), [], length(pressure_range));
+
+
+% % plot all replicates of each sample
+figure;
+hold on
+plot(voltages(pressure_range), reshape(A_WT,[],length(pressure_range)))
+plot(voltages(pressure_range), reshape(A_T6A,[],length(pressure_range)))
+plot(voltages(pressure_range), reshape(B_WT,[],length(pressure_range)))
+plot(voltages(pressure_range), reshape(B_S87I,[],length(pressure_range)))
+% plot(voltages, reshape(AC,[],length(voltages)))
+% plot(voltages, reshape(Serratia,[],length(voltages)))
+% plot(voltages, reshape(S50C_G82L,[],length(voltages)))
+title('xAM'),xlabel('Transducer voltage (V)'),ylabel('xAM signal')
+legend({'A_WT', 'A_T6A', 'B_WT', 'B_S87I'})
+% xlim([2 25])
+hold off
+
+% plot average of each sample
+figure;
+hold on
+plot(voltages(pressure_range), mean(A_WT))
+plot(voltages(pressure_range), mean(A_T6A))
+plot(voltages(pressure_range), mean(B_WT))
+plot(voltages(pressure_range), mean(B_S87I))
+% plot(voltages(pressure_range), mean(Mega13))
+% plot(voltages(pressure_range), mean(Mega14))
+% plot(voltages(pressure_range), mean(Serratia))
+title('xAM'),xlabel('Transducer voltage (V)'),ylabel('xAM signal')
+legend({'A_WT', 'A_T6A', 'B_WT', 'B_S87I'}, 'Location','northwest', 'Interpreter', 'none')
+% legend({'pMetTU1-A_Sv6K_lacI-Ptac-lacO_RC_AnaACNJKFGVW_BBa-B0015','pMetTU1-A_Sv7K_araC-PBAD_RC_AnaA_T_AnaCNJKFGW','pMetTU1-A_Sv5K_lacI-Ptac-lacO_RC_AnaA-A68R_T_AnaC-MegaRNFGLSKJTU_Bba-B0015','Mega13','Mega14','Serratia'}, 'Location','northwest', 'Interpreter', 'none')
+% xlim([10 20])
+set(findall(gca, 'Type', 'Line'),'LineWidth',2);
+hold off
+
+figure;
+hold on
+plot(voltages(pressure_range), mean(Ana1))
+plot(voltages(pressure_range), mean(Ana2))
+plot(voltages(pressure_range), mean(AC))
+plot(voltages(pressure_range), mean(Mega13))
+title('xAM'),xlabel('Transducer voltage (V)'),ylabel('xAM signal')
+legend({'Sv6K_Ptac-lacO_AnaACNJKFGVW_BBa-B0015','Sv7K_PBAD_AnaACNJKFGW','Sv5K_Ptac-lacO_AnaA-A68R_AnaC-MegaRNFGLSKJTU_Bba-B0015','Mega13'}, 'Location','northwest', 'Interpreter', 'none')
+xlim([10 20])
+set(findall(gca, 'Type', 'Line'),'LineWidth',2);
+hold off
+
+%% multiplexing 2
+% plot highest concentration normalized
+% Quant_ROIs dimensions: well rows, well columns, pressures, imaging modes
+% Serratia = rescale(mean(squeeze(Quant_ROIs(1:2,1,pressure_range,1))));
+A_WT = rescale(mean(squeeze(Quant_ROIs(3,[1 5 9],pressure_range,1))));
+A_T6A = rescale(mean(squeeze(Quant_ROIs(5,[2 6 10],pressure_range,1))));
+B_WT = rescale(mean(squeeze(Quant_ROIs(5,[1 5 9],pressure_range,1))));
+B_S87I = rescale(mean(squeeze(Quant_ROIs(4,[4 8 12],pressure_range,1))));
+
+figure;
+hold on
+% plot(voltages(pressure_range), Serratia)
+plot(voltages(pressure_range), A_WT)
+plot(voltages(pressure_range), A_T6A)
+plot(voltages(pressure_range), B_WT)
+plot(voltages(pressure_range), B_S87I)
+title('xAM (Normalized)'),xlabel('Transducer voltage (V)'),ylabel('Normalized xAM signal')
+legend({'A_WT', 'A_T6A', 'B_WT', 'B_S87I'})
+% legend({'Sv5K_Ptac-lacO_AnaA-A68R_AnaC-MegaRNFGLSKJTU_Bba-B0015', 'Serratia', 'GvpB-S50C-G82L'}, 'Location','northwest', 'Interpreter', 'none')
+% xlim([5 20])
+set(findall(gca, 'Type', 'Line'),'LineWidth',2);
+hold off
+
+%% linear unmixing based on xAM turn-on at different voltages
+%multiplexing 3
+
+% input turn-on matrix representing the fraction of each type of GV that is producing xAM signal at each applied pressure
+% this can be calculated from the image data by comparing the intensities of each sample across pressures
+% rows are different types of GVs; columns are different pressures
+% values don't have to be scaled from 0 to 1, but all rows should have the same min and max
+colmat = rescale([A_T6A' B_S87I']');
+
+alpha = diff(colmat,1,2); % compute differential turn-on matrix "alpha" (i.e., fraction turning on at each step)
+
+Is = nan([zsize xsize Nw length(pressure_range)]); % dimensions: x, y, wells, voltages
+Ss = nan([zsize xsize Nw length(pressure_range)-1]); % dimensions: x, y, wells, voltages
+Cs = nan([zsize xsize Nw size(colmat,1)]); % dimensions: x, y, wells, GV type
+for well = 1:Nw
+    % unmix image using differential turn-on matrix alpha
+    % Imgs dimensions: zs, xs, pressures, imaging modes, wells
+    [Is(:,:,well,:), Ss(:,:,well,:), Cs(:,:,well,:)] = Unmix(squeeze(Imgs(:,:,pressure_range,1,well)), alpha);
+end
+
+% view sequential difference images
+montages = []; % initalize montage images array
+for pressure = 1:length(pressure_range)-1
+    m = montage(squeeze(Ss(:,:,:,pressure)),'Size',PlateSize); % create a montage image
+    montages = cat(3,montages,m.CData); % add montage image to montage array
+end
+figure;
+sliceViewer(montages, 'Colormap',hot(256),'DisplayRange',[0 100]);
+title('Sequential difference images')
+
+% view unmixed images
+figure;
+montage(squeeze(Cs(:,:,:,1)),'Size',PlateSize, 'DisplayRange',[0 500]);
+title('Species 1')
+figure;
+montage(squeeze(Cs(:,:,:,2)),'Size',PlateSize, 'DisplayRange',[0 500]);
+title('Species 2')
+
+
+% plot desired wells (indexed across rows) unmixed
+wells = [54 44];
+% scale images from 0 to 1, setting negative concentration values to 0 and
+% setting very large values to 1
+Cs_rescaled = rescale(Cs, 'InputMin',0, 'InputMax',max(Cs,[],[1:4])*.25);
+figure;
+for Wi = 1:length(wells)
+    subplot(3, length(wells), Wi)
+    im = squeeze(Cs_rescaled(:,:,wells(Wi),1));
+    % convert first image to red and plot
+    imagesc(cat(3, im, zeros(size(im)), zeros(size(im))));
+    set(gca,'xticklabel',[], 'yticklabel',[])
+    axis square
+end
+for Wi = 1:length(wells)
+    subplot(3, length(wells), Wi+length(wells))
+    im = squeeze(rescale(Cs_rescaled(:,:,wells(Wi),2)));
+    % convert second image to green and plot
+    imagesc(cat(3, zeros(size(im)), im, zeros(size(im))));
+    set(gca,'xticklabel',[], 'yticklabel',[])
+    axis square
+end
+for Wi = 1:length(wells)
+    subplot(3, length(wells), Wi+2*length(wells))
+    im1 = squeeze(Cs_rescaled(:,:,wells(Wi),1));
+    % convert first image to red
+    im1 = cat(3, im1, zeros(size(im1)), zeros(size(im1)));
+    im2 = squeeze(Cs_rescaled(:,:,wells(Wi),2));
+    % convert second image to green
+    im2 = cat(3, zeros(size(im2)), im2, zeros(size(im2)));
+    % sum images and plot
+    imagesc(im1+im2);
+    set(gca,'xticklabel',[], 'yticklabel',[])
+    axis square
+end
+
 
 
 %% function definitions
+function [I, D, C] = Unmix(vramp, alpha)
+    % Function to unmix image voltage ramp using differential xAM turn-on matrix
+    % Inputs:
+    %   vramp: raw image collected at varying voltages (dimensions: x, y, voltage)
+    %   alpha: differential xAM turn-on matrix
+    % Outputs:
+    %   I: spatially averaged raw images
+    %   D: sequential difference images
+    %       for a given pixel, D contains the calculated sequential difference signals
+    %       i.e. pre minus first collapse, first collapse minus second collapse, etc
+    %   C: unmixed images
+    %       for a given pixel, C contains the concentration of each species
+    %       C = alpha'\S; %concentrations of the three differently-collapsing species
+    %       Cr = C./sum(C); %relative concentrations
+    
+    f = fspecial('average',[10 10]); % create averaging filter of 10x10 pixels
+    I = imfilter(vramp,f); % apply spatial averaging filter to raw image
+    
+    % Iterating over each pixel, make difference and unmixed images
+    for x = 1:size(I,1)
+        for y = 1:size(I,2)
+            D(x,y,:) = diff(I(x,y,:)); % get subtraction signals
+%             size(D)
+%             size(permute(D(x,y,:), [3 2 1]))
+%             size(alpha')
+            C(x,y,:) = alpha'\permute(D(x,y,:), [3 2 1]); % concentrations of the differently-collapsing species
+%             C(x,y,:) = lsqnonneg(alpha',permute(D(x,y,:), [3 2 1])); % concentrations of the differently-collapsing species
+        end
+    end
+end
+
+
 function updateNoiseROI(src,evt)
     disp(['ROI ' src.Tag ' moved. New position: ' mat2str(evt.CurrentPosition)])
     noiseMask = createMask(src); % Create mask for noise ROI

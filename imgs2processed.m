@@ -2,8 +2,8 @@ clear all
 
 %% Inputs
 % file parameters
-pathName = 'G:\My Drive\Shapiro Lab Information\Data\Rob\96-well_plate_scans\RBS-libraries\';
-SampleName = '220323_EFA4-A4-C5_stable_37C';
+pathName = '/Volumes/GoogleDrive/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/A-and-B-hits_stable-37C';
+SampleName = 'A-and-B-hits_R2_stable-37C_P_R1_C1';
 
 % scan_type = 'pre_post'; %'voltage_ramp', 'collapse_ramp' % TODO make these change what types of plots get made
 
@@ -11,7 +11,7 @@ SampleName = '220323_EFA4-A4-C5_stable_37C';
 disp_crange = [40 -3]; % limits of colorbar
 imgMode = 1; % 1 for ramping voltage, 2 for imaging voltage
 computeDiff = 1; % 1 or 0 to compute pre-post-collapse difference image or not
-compar = [1 2]; % indices of voltages to compare for pre-post-collapse difference
+compar = [10 20]; % indices of voltages to compare for pre-post-collapse difference
 trans = 'L22'; % L22 or L10
 
 %%
@@ -31,10 +31,10 @@ raw2imgs;
 load(fullfile(pathName, SampleName, 'imgs.mat'));
 
 if imgMode == 1
-    colorm = 'hot';
+    cmap = 'hot';
     FigTitle = [SampleName '_xAM-Imgs'];
 elseif imgMode == 2
-    colorm = 'bone';
+    cmap = 'bone';
     FigTitle = [SampleName '_Bmode-Imgs'];
 end
 %colorm = 'parula';
@@ -44,23 +44,24 @@ iZd = find(Zi>=disp_depth(1)):find(Zi>=disp_depth(2));
 % get Z indices of noise based on noise_slice
 iZd_noise = find(Zi>=noise_slice(1)):find(Zi>=noise_slice(2));
 % Convert interpolated difference image to dB, cropping based on disp_depth
+% Im_disp dimensions: zs, xs, wells
 Im_disp = 20*log10(squeeze(abs(dImi(iZd,:,imgMode,:))));
 % Calculate noise value
 noise_disp = max(mean(mean(20*log10(squeeze(abs(dImi(iZd_noise,:,imgMode,:)))))))- min(min(min(Im_disp)));
 % Subtract smallest value from all values
 Im_disp = Im_disp - min(Im_disp,[],[1:3]);
 
-% get x and z sizes and number of wells
-[zsize,~,Nw] = size(Im_disp);
-xsize = round(zsize*6.4/diff(disp_depth));
+[zsize,~,~,Nw] = size(dImi);
+xsize = round(6.4*zsize/diff([3 10]));
 % resize images and add RGB colormaps
 % Imgs dimensions: zs, xs, colors, wells
 dImgs = nan(zsize,xsize,3,Nw);
+
 for well = 1:Nw
     % resize image
     temp = imresize(Im_disp(:,:,well),[zsize xsize]);
     % convert resized grayscale image to RGB and add to array
-    dImgs(:,:,:,well) = real2rgb(temp,colorm,[noise_disp max(max(temp))+disp_crange(2)]);
+    dImgs(:,:,:,well) = real2rgb(temp,cmap,[noise_disp max(max(temp))+disp_crange(2)]);
 end
 
 % Plot dB difference image
@@ -102,7 +103,7 @@ for pressure = 1:Np
 %             Imgs_RGB(:,:,:,pressure,mode,well) = cat(3, im_resized, zeros(size(im_resized)), im_resized);
             % real2rgb changes the image scaling--do not use for
             % quantification, unmixing, etc.
-            Imgs_RGB(:,:,:,pressure,mode,well) = real2rgb(im_resized,colorm,[noise_disp max(max(im_resized))+disp_crange(2)]);
+            Imgs_RGB(:,:,:,pressure,mode,well) = real2rgb(im_resized,cmap,[noise_disp max(max(im_resized))+disp_crange(2)]);
         end
     end
 end
@@ -206,11 +207,11 @@ end
 % plot all samples of a given type
 % Quant_ROIs dimensions: well rows, well columns, pressures, imaging modes
 % pressure_range = voltages;
-pressure_range = [5:length(voltages)-1];
-Serratia = reshape(squeeze(Quant_ROIs(1:2,1,pressure_range,1)), [], length(pressure_range));
-Q65Sfs = reshape(squeeze(Quant_ROIs(1:2,2,pressure_range,1)), [], length(pressure_range));
-A68R = reshape(squeeze(Quant_ROIs(1:2,3,pressure_range,1)), [], length(pressure_range));
-B230 = reshape(squeeze(Quant_ROIs(1:2,4,pressure_range,1)), [], length(pressure_range));
+pressure_range = [1:10];
+A_WT = reshape(squeeze(Quant_ROIs(3,[1 5 9],pressure_range,1)), [], length(pressure_range));
+A_T6A = reshape(squeeze(Quant_ROIs(5,[2 6 10],pressure_range,1)), [], length(pressure_range));
+B_WT = reshape(squeeze(Quant_ROIs(6,[1 5 9],pressure_range,1)), [], length(pressure_range));
+B_R85L = reshape(squeeze(Quant_ROIs(5,[4 8 12],pressure_range,1)), [], length(pressure_range));
 % Mega13 = reshape(squeeze(Quant_ROIs(4,:,:,1)), [], length(pressure_range));
 % Mega14 = reshape(squeeze(Quant_ROIs(5,:,:,1)), [], length(pressure_range));
 % Serratia = reshape(squeeze(Quant_ROIs(6,:,:,1)), [], length(pressure_range));
@@ -219,30 +220,27 @@ B230 = reshape(squeeze(Quant_ROIs(1:2,4,pressure_range,1)), [], length(pressure_
 % % plot all replicates of each sample
 figure;
 hold on
-plot(voltages(pressure_range), reshape(A68R,[],length(pressure_range)))
-plot(voltages(pressure_range), reshape(Q65Sfs,[],length(pressure_range)))
-plot(voltages(pressure_range), reshape(Serratia,[],length(pressure_range)))
-plot(voltages(pressure_range), reshape(B230,[],length(pressure_range)))
+plot(voltages(pressure_range), reshape(A_WT,[],length(pressure_range)))
+plot(voltages(pressure_range), reshape(A_T6A,[],length(pressure_range)))
+plot(voltages(pressure_range), reshape(B_WT,[],length(pressure_range)))
+plot(voltages(pressure_range), reshape(B_R85L,[],length(pressure_range)))
 % plot(voltages, reshape(AC,[],length(voltages)))
 % plot(voltages, reshape(Serratia,[],length(voltages)))
 % plot(voltages, reshape(S50C_G82L,[],length(voltages)))
 title('xAM'),xlabel('Transducer voltage (V)'),ylabel('xAM signal')
-legend({'A68R', 'Q65Sfs', 'Serratia', 'GvpB-S50C-G82L'})
+legend({'A_WT', 'A_T6A', 'B_WT', 'B_R85L'})
 % xlim([2 25])
 hold off
 
 % plot average of each sample
 figure;
 hold on
-plot(voltages(pressure_range), mean(A68R))
-plot(voltages(pressure_range), mean(Q65Sfs))
-plot(voltages(pressure_range), mean(Serratia))
-plot(voltages(pressure_range), mean(B230))
-% plot(voltages(pressure_range), mean(Mega13))
-% plot(voltages(pressure_range), mean(Mega14))
-% plot(voltages(pressure_range), mean(Serratia))
+plot(voltages(pressure_range), mean(A_WT))
+plot(voltages(pressure_range), mean(A_T6A))
+plot(voltages(pressure_range), mean(B_WT))
+plot(voltages(pressure_range), mean(B_R85L))
 title('xAM'),xlabel('Transducer voltage (V)'),ylabel('xAM signal')
-legend({'A68R', 'Q65Sfs', 'Serratia', 'GvpB-S50C-G82L'}, 'Location','northwest', 'Interpreter', 'none')
+legend({'A_WT', 'A_T6A', 'B_WT', 'B_R85L'}, 'Location','northwest', 'Interpreter', 'none')
 % legend({'pMetTU1-A_Sv6K_lacI-Ptac-lacO_RC_AnaACNJKFGVW_BBa-B0015','pMetTU1-A_Sv7K_araC-PBAD_RC_AnaA_T_AnaCNJKFGW','pMetTU1-A_Sv5K_lacI-Ptac-lacO_RC_AnaA-A68R_T_AnaC-MegaRNFGLSKJTU_Bba-B0015','Mega13','Mega14','Serratia'}, 'Location','northwest', 'Interpreter', 'none')
 % xlim([10 20])
 set(findall(gca, 'Type', 'Line'),'LineWidth',2);
@@ -263,19 +261,19 @@ hold off
 %%
 % plot highest concentration normalized
 % Quant_ROIs dimensions: well rows, well columns, pressures, imaging modes
-% Serratia = rescale(mean(squeeze(Quant_ROIs(1:2,1,pressure_range,1))));
-Q65Sfs = rescale(mean(squeeze(Quant_ROIs(1:2,2,pressure_range,1))));
-A68R = rescale(mean(squeeze(Quant_ROIs(1:2,3,pressure_range,1))));
-B230 = rescale(mean(squeeze(Quant_ROIs(1:2,4,pressure_range,1))));
+A_WT = rescale(mean(squeeze(Quant_ROIs(3,[1 5 9],pressure_range,1))));
+A_T6A = rescale(mean(squeeze(Quant_ROIs(5,[2 6 10],pressure_range,1))));
+B_WT = rescale(mean(squeeze(Quant_ROIs(6,[1 5 9],pressure_range,1))));
+B_R85L = rescale(mean(squeeze(Quant_ROIs(5,[4 8 12],pressure_range,1))));
 
 figure;
 hold on
-% plot(voltages(pressure_range), Serratia)
-plot(voltages(pressure_range), Q65Sfs)
-plot(voltages(pressure_range), A68R)
-plot(voltages(pressure_range), B230)
+plot(voltages(pressure_range), A_WT)
+plot(voltages(pressure_range), A_T6A)
+plot(voltages(pressure_range), B_WT)
+plot(voltages(pressure_range), B_R85L)
 title('xAM (Normalized)'),xlabel('Transducer voltage (V)'),ylabel('Normalized xAM signal')
-legend({'Q65Sfs', 'A68R', 'GvpB-S50C-G82L'})
+legend({'A_WT', 'A_T6A', 'B_WT', 'B_R85L'}, 'Location','northwest', 'Interpreter', 'none')
 % legend({'Sv5K_Ptac-lacO_AnaA-A68R_AnaC-MegaRNFGLSKJTU_Bba-B0015', 'Serratia', 'GvpB-S50C-G82L'}, 'Location','northwest', 'Interpreter', 'none')
 % xlim([5 20])
 set(findall(gca, 'Type', 'Line'),'LineWidth',2);
@@ -287,7 +285,7 @@ hold off
 % this can be calculated from the image data by comparing the intensities of each sample across pressures
 % rows are different types of GVs; columns are different pressures
 % values don't have to be scaled from 0 to 1, but all rows should have the same min and max
-colmat = rescale([A68R' B230']');
+colmat = rescale([A_T6A' B_R85L']');
 
 alpha = diff(colmat,1,2); % compute differential turn-on matrix "alpha" (i.e., fraction turning on at each step)
 
@@ -320,7 +318,7 @@ title('Species 2')
 
 
 % plot desired wells (indexed across rows) unmixed
-wells = [5 8];
+wells = [54 52];
 % scale images from 0 to 1, setting negative concentration values to 0 and
 % setting very large values to 1
 Cs_rescaled = rescale(Cs, 'InputMin',0, 'InputMax',max(Cs,[],[1:4])*.25);

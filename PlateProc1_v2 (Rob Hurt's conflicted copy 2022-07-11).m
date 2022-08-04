@@ -1,18 +1,13 @@
 clear all
 close all
 
-% saveName = '/Volumes/GoogleDrive/My Drive/';
-% pathName = '/Volumes/GoogleDrive/My Drive/';
-% ExperimentDate = 'Verasonics_Raw';
-% SampleName = '211124_EF31-80-93-Mega13-Mega14-Serratia_stable_37C';
-% saveName = fullfile(saveName,'Verasonics_Processed','APR',SampleName,filesep);
 
-pathName = '/Volumes/GoogleDrive/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/A-and-B-hits_stable-37C/A-and-B-hits_R2_stable-37C_P_R1_C1';
+pathName = '/Volumes/GoogleDrive/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/A-lib-1/A-lib-1_plate3_rep1_stable-37C_P_1_2';
 saveName = pathName;
 
+
 % mkdir(saveName);
-                                                                                            
-% pathName = fullfile(pathName, ExperimentDate, SampleName);
+
 SubDirs = GetSubDirs(pathName);
 total_n = length(SubDirs);
 PlateCoordinate = strings(1,total_n);
@@ -106,7 +101,6 @@ for well = 1:total_n
 end
 clear well pressure mode;
 close(h);
-
 
 PlateSize = [P.xLines P.zLines]; % rows and columns of wells scanned
 % save(fullfile(saveName, 'imgs.mat'), 'Imi', 'dImi', 'P', 'Zi', 'PlateSize', '-v7.3')
