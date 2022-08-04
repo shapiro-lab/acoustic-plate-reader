@@ -2,7 +2,7 @@
 close all
 
 
-% pathName = '/Volumes/GoogleDrive/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/A-lib-1/A-lib-1_plate3_rep1_stable-37C_P_1_2';
+pathName = '/Volumes/GoogleDrive/.shortcut-targets-by-id/0BxwpjHPQKJe5bVd6dTF1eWx2Wms/Shapiro Lab/Acoustic plate reader project/Example data/A-lib-1_plate2_rep2_stable-37C_P_1_1';
 % pathName = '/Users/Rob/Dropbox/verasonics system/Vantage-4.6.2-RCH/acoustic-plate-reader/GUI/Example_data/A-lib-1_plate2_rep2_stable-37C_P_1_1';
 saveName = pathName;
 
