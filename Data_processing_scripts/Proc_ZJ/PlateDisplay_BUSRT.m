@@ -1,13 +1,13 @@
 %clear all
 
-% saveName = '/Users/Sanyo 1/Documents/MATLAB/Vantage-3.3.0-1710061400/Data/PlateReader/';
-% pathName = '/Volumes/Seagate Expansion Drive/Rob/';
-% ExperimentDate = '210329_RCH';
-% SampleName = 'A3F9';
+saveName = '/Users/verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\Data\nivin_220806_BURST/';
+pathName = '/Users/verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\Data\nivin_220806_BURST/';
+%ExperimentDate = '210329_RCH';
+SampleName = '293T_pNN009_6w_mutGvpCs';
 
 %PlateProc1;
 
-imgMode = 1;
+imgMode = 2;
 disp_depth = [5 10];
 noise_slice = [2 3];
 disp_crange = [0 0];
@@ -17,7 +17,7 @@ else
     colorm = 'bone';
 end
 %colorm = 'jet';
-PlateSize = [8 12];
+PlateSize = [6 6];
 
 if imgMode == 1
     FigTitle = [SampleName '-BURST-Imgs'];

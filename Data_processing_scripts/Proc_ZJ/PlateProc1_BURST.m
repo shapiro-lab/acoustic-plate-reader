@@ -1,13 +1,13 @@
 clear all
 
-saveName = '/Users/Sanyo 1/Documents/MATLAB/Vantage-3.3.0-1710061400/Data/PlateReader/';
-pathName = '/Users/Sanyo 1/Documents/MATLAB/Vantage-3.3.0-1710061400/Data/PlateReader/';
-ExperimentDate = 'Raw';
-SampleName = '210901_Ana-cluster_BURST';
+saveName = '/Users/verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\Data\nivin_220806_BURST/';
+pathName = '/Users/verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\Data\nivin_220806_BURST/';
+%ExperimentDate = '293T_pNN009_6w_mutGvpCs_2022-08-06@19-51-20';
+SampleName = '293T_pNN009_6w_mutGvpCs_2022-08-06@19-51-20';
 
-pathName = fullfile(pathName, ExperimentDate, SampleName);
+pathName = fullfile(pathName, SampleName);
 SubSet = GetSubDirs(pathName);
-PlateCoordinate = strings(1,96);
+PlateCoordinate = strings(1,36);
 total_n = length(SubSet);
 disp_depth = [5 10];
 BURST_filehead = append(extractBefore(SubSet(1),strlength(SubSet(1))-3),"_BURST");
@@ -44,6 +44,6 @@ for i = 1:total_n
 end
 clear i j;
 close(h);
-BURST_sum = reshape(sum_temp(2,:) - sum_temp(3,:),12,8)';
+BURST_sum = reshape(sum_temp(2,:) - sum_temp(3,:),6,6)';
 
-
+%BURST_sum = reshape(sum_temp(2,:) - sum_temp(3,:),12,8)

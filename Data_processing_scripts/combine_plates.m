@@ -4,10 +4,10 @@ close all
 PlateSize = [8,12];
 
 % load data
-data1 = load('/Volumes/GoogleDrive/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/B-lib-1_old/B-lib-1_plate1_rep1-3_stable-37C_data_220406-16-41-01.mat');
-data2 = load('/Volumes/GoogleDrive/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/B-lib-1_old/B-lib-1_plate2_rep1-3_stable-37C_data_220406-16-46-56.mat');
-data3 = load('/Volumes/GoogleDrive/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/B-lib-1_old/B-lib-1_plate3_rep1-3_stable-37C_data_220406-16-49-06.mat');
-data4 = load('/Volumes/GoogleDrive/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/B-lib-1_old/B-lib-1_plate4_rep1-3_stable-37C_data_220406-16-51-04.mat');
+data1 = load('/Users/Rob/Library/CloudStorage/GoogleDrive-rchurt@caltech.edu/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/A-lib-1/A-lib_P1_R2-4_stable-37C_P_1_1_data_220727-11-54-47.mat');
+data2 = load('/Users/Rob/Library/CloudStorage/GoogleDrive-rchurt@caltech.edu/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/A-lib-1/A-lib_P2_R1-3_stable-37C_data_220727-11-58-06.mat');
+data3 = load('/Users/Rob/Library/CloudStorage/GoogleDrive-rchurt@caltech.edu/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/A-lib-1/A-lib_P3_R1-3_stable-37C_data_220727-12-02-59.mat');
+data4 = load('/Users/Rob/Library/CloudStorage/GoogleDrive-rchurt@caltech.edu/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/A-lib-1/A-lib_P4_R1-3_stable-37C_P_2_4_data_220727-12-07-08.mat');
 
 %%
 %combine arrays
@@ -20,8 +20,33 @@ max_noiseROI_means = squeeze(max(noiseROI_means, [], 1));
 max_sampROI_means = squeeze(max(sampROI_means, [], 1));
 
 combined = reshape(max_CNRs, [2,384]);
+save([data1.saveName '_data-combined_' datestr(now,'yymmdd-hh-MM-ss')],'combined');
 
+
+%% plot samples from one plate sorted by CNR
+figure;
+y = squeeze(max(data1.sampCNR,[],1));
+s=table;
+s.names = categorical(data1.PlateCoordinate).';
+s.values = y(1,:).';
+s = sortrows(s,2,'descend');
+bar(reordercats(s.names,cellstr(s.names)), s.values)
+title('Max signal achieved at any voltage')
+xlabel('Colony');
+ylabel('xAM CNR (dB)')
+
+%% plot all samples
+figure;
 bar(sort(combined(1,:),'descend'))
 title('Max signal achieved at any voltage')
 xlabel('Colony');
 ylabel('xAM CNR (dB)')
+savefig([data1.saveName '_max-signal_combined'])
+pause(0.5)
+
+figure;
+histogram(combined(1,:),20)
+title('Max signal achieved at any voltage')
+xlabel('xAM CNR (dB)');
+ylabel('# Colonies')
+savefig([data1.saveName '_max-signal_combined_hist'])
