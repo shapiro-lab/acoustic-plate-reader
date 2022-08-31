@@ -165,26 +165,6 @@ end
 sampCNRs = permute(reshape(sampCNR, Nf, 2, PlateSize(2), PlateSize(1)), [4 3 1 2]);
 AM_Bmode_ratios = permute(reshape(AM_Bmode_ratio, Nf, 1, PlateSize(2), PlateSize(1)), [4 3 1 2]);
 confScore = permute(reshape(confScore, PlateSize(2), PlateSize(1)), [1 2]);
-% 
-% 
-% 
-% A=reshape(sampCNRs(:,1:4,:,:),[32,21,2]);
-% B=reshape(sampCNRs(:,5:8,:,:),[32,21,2]);
-% C=reshape(sampCNRs(:,9:12,:,:),[32,21,2]);
-% combined = cat(4,A,B,C);
-% combined_mean = mean(combined,4);
-% combined_max = squeeze(max(combined_mean, [], 2));
-% 
-% figure;
-% % res = reshape(combined_max, 8,12, 2);
-% 
-% res = squeeze(max(res, [], 1));
-% bar(sort(res(1,:),'descend'));
-
-
-
-
-
 
 % find max signal achieved by each sample at any voltage
 maxs_AM = squeeze(max(sampCNRs, [], 3));

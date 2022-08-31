@@ -7,7 +7,7 @@ close all
 % SampleName = '211124_EF31-80-93-Mega13-Mega14-Serratia_stable_37C';
 % saveName = fullfile(saveName,'Verasonics_Processed','APR',SampleName,filesep);
 
-pathName = 'G:\My Drive\Shapiro Lab Information\Data\Rob\96-well_plate_scans\GvpA-B-mutants\B-parents_P1-4_R1-3_stable-37C\B-parents_P4_R3_stable-37C_P_R3_C4';
+pathName = '/Users/Rob/Library/CloudStorage/GoogleDrive-rchurt@caltech.edu/My Drive/Shapiro lab/Acoustic plate reader project/Example data/A-lib-1_plate2_rep2_stable-37C_P_1_1';
 saveName = pathName;
 
 % mkdir(saveName);
@@ -64,8 +64,7 @@ for well = 1:total_n
         %Imi = nan(length(Zi),length(Xi),Nf, 2, total_n);
         if computeDiff
             % make array to store pre-post-collapse difference images
-            % dImi dimensions: zs, xs, imaging modes, wells
-            compar = [Nf-1 Nf];
+            % dImi dimensions: n_pressures-1, imaging modes, wells
             %dImi = nan(length(Zi),length(Xi), 2, total_n);
             dImi = cell(Nf-1,2,total_n);
         end

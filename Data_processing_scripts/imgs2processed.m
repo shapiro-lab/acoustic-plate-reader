@@ -47,14 +47,14 @@ iZd_noise = find(Zi>=noise_slice(1)):find(Zi>=noise_slice(2));
 % Im_disp dimensions: zs, xs, wells
 Im_disp = 20*log10(squeeze(abs(dImi(iZd,:,imgMode,:))));
 % Calculate noise value
-noise_disp = max(mean(mean(20*log10(squeeze(abs(dImi(iZd_noise,:,imgMode,:)))))))- min(min(min(Im_disp)));
+noise_disp = max(mean(mean(20*log10(squeeze(abs(dImi(iZd_noise,:,imgMode,:))))))) - min(min(min(Im_disp)));
 % Subtract smallest value from all values
-Im_disp = Im_disp - min(Im_disp,[],[1:3]);
+Im_disp = Im_disp - min(Im_disp,[],'all');
 
 [zsize,~,~,Nw] = size(dImi);
 xsize = round(6.4*zsize/diff([3 10]));
 % resize images and add RGB colormaps
-% Imgs dimensions: zs, xs, colors, wells
+% dImgs dimensions: zs, xs, colors, wells
 dImgs = nan(zsize,xsize,3,Nw);
 
 for well = 1:Nw
