@@ -85,7 +85,7 @@ for well = 1:total_n
         waitbar((well*Nf+pressure)/(Nf*total_n))
     end
     % load in rest of images for all wells
-    for pressure = Nf:-1:2
+    for pressure = Nf:-1:1
         load(fullfile(pathName, char(SubDirs(well)), fileName(pressure).name));
         Im{pressure,1,well} = ImgData.Imx; % get xAM image
         Im{pressure,2,well} = ImgData.Imb; % get Bmode image
@@ -96,14 +96,14 @@ for well = 1:total_n
             % size
             Imi{pressure,mode,well} = interp2(zmesh_temp{mode},xmesh_temp{mode}, Im{pressure,mode,well},Zi_mesh,Xi_mesh);
             if computeDiff && (pressure < Nf)
-                dImi{pressure-1,mode,well} = interp2(zmesh_temp{mode},xmesh_temp{mode}, (Im{pressure,mode,well} - Im{Nf,mode,well}),Zi_mesh,Xi_mesh);
+                dImi{pressure,mode,well} = interp2(zmesh_temp{mode},xmesh_temp{mode}, (Im{pressure,mode,well} - Im{Nf,mode,well}),Zi_mesh,Xi_mesh);
             end
         end
         waitbar((well*Nf+(Nf+1-pressure))/(Nf*total_n))
     end
             
 end
-clear well pressure mode;
+% clear well pressure mode;
 close(h);
 
 

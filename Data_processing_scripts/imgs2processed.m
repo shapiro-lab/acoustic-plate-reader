@@ -1,4 +1,4 @@
-clear all
+wclear all
 
 %% Inputs
 % file parameters

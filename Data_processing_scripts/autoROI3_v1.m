@@ -2,7 +2,8 @@ close all
 clear iZt ixZtemp
 
 %%
-sample_depth = [1 9.1]; % display/sample depth range in mm
+% sample_depth = [1 9.1]; % display/sample depth range in mm
+sample_depth = [3 8]; % display/sample depth range in mm
 DisplayMode = 1; % How to display images: 0 = show nothing, 1 = always show images + ROIs, 2 = only show images + ROIs with low-confidence ROI selection
 testfilter = 0; % 0 or 1 to display the thresholding filter
 savedata = 1; % 0 or 1 to save processed data
