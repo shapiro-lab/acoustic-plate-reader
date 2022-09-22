@@ -14,29 +14,36 @@ P.TargetDepth = 5; % in mm, just for instruction purpose
 params = sub_AllSettings('ZJScanTest');
 params = sub_Stage_Initialize(params);
 
-% P.savepath = [pwd '\Data\211109\'];
-% P.saveDirName = 'HS32-80-93-Ser_stable_Bmut_DE3_37_vramp';
-% P.saveDirName1 = [datestr(now, 'yyyymmdd') '_'];
-
+% P.savePath = [pwd '\Data\220825\'];
+% P.saveDirName = 'A-B-hits-and-cloned_uninduced_vramp_stable-37C';
+% 
+% 
 % Initial_Pos = 'A1'; %Starting point
+% Initial_PlatePos = [1 1];
 
 
-% P.seed = [25]; % Voltge ramp range, min voltage = 1.6V 
-% PostCollapse = 25; % post-collapse voltage(s)
+% P.seed = [12:2:30]; % Voltge ramp range, min voltage = 1.6V 
+% PostCollapse = [12:2:30]; % post-collapse voltage(s)
+PostCollapse = [PostCollapse 2];
+% PostCollapse = [PostCollapse P.seed(1)];
 P.Focus = 5e-3; % focus of parabolic beam [m]
-P.rc_threshold = 1;
+P.rc_threshold = 2;
 P.numAccum = 50;
 
-% P.xLines = 5; % number of scanned lines in the x-direction
-% P.zLines = 5; % number of scanned lines in the z-direction
+% P.xLines = 8; % number of scanned lines in the x-direction
+% P.zLines = 12; % number of scanned lines in the z-direction.
 P.xDist = 9; % distance (in mm) to move in each x step
 P.zDist = 9; % distance (in mm) to move in each z step
+
+% P.pNum = [3 4]; % number of plates [row column] in [x z] direction (max [3 4])
+P.pDist = [90 132]; % distance (in mm) to move across plate in [x,z] direction
 
 Scan.Pos = cell(P.xLines,P.zLines);
 Scan.xOffset = 0; % offset (in mm) in x between two zlines 
 
+P.LiveRecon = 1;
 P.RForImg = [0 0];% RF data = [1 0], Img data = [0 0]
-P.EqTime1 = 5; % time to wait before ramping up
+P.EqTime1 = 0; % time to wait before ramping up
 P.EqTime2 = 3; % Parabolic collapse time
 P.EqTime3 = 0; % Post-collpase waiting time before changing voltages
 
@@ -44,9 +51,10 @@ P.EqTime3 = 0; % Post-collpase waiting time before changing voltages
 % P.BI = 1.6; % Parabolic B-mode imaging voltage
 P.fps = 100; % maximal frame rate
 
-P.autoDepthRange = 1; % max travel range from the center (dz in z +/- dz) in mm
+P.autoDepthRange = 2; % max travel range from the center (dz in z +/- dz) in mm
 P.autoDepth = [5 0]; %349 = 5 mm for Bmode, 923 for 12 mm
 P.autoROI = 1;
+P.Setup = 1;
 
 if isempty(Initial_Pos)
     Initial_Pos = 'A1';
@@ -58,7 +66,11 @@ if ~mod(P.ScanCount(2),2)
 else
     P.ScanCount(1) = (double(Initial_Pos(1))-64);
 end
+P.PlateCount = [Initial_PlatePos 0];
+P.saveDirName1 = [P.saveDirName '_P_R' num2str(P.PlateCount(1)) '_C' num2str(P.PlateCount(2))];
+
 P.SampleCount = (P.ScanCount(1) - 1) * P.xLines + P.ScanCount(2);
+
 P.Collapse = 0;
 P.PostCollapse = 0;
 P.EqTime = P.EqTime1;
@@ -136,33 +148,16 @@ P.noiseROI = [nL nL+w_width ; nD nD+w_height];
 P.wellROI = [wL wL+w_width ; wD wD+w_height];
 P.CNR = 0;
 P.VRampStep = 1;
+P.rtime = [0,0,inf;0,0,0];
 
 
-% %% regular ramp
-% P.seed = 4:1:12;
-% %P.Vseq = P.seed;
-% P.wc = 0;
-% % voltage for parabolic collapse
-% bmode_collapse = 25;
-% % voltage for XAM blank after collapse
-% xam_post_collapse = max(P.seed);
-%  for i = 1:2*length(P.seed)
-%     if mod(i,2) == 1
-%         P.Vseq(i) = P.seed((i+1)/2);
-%         P.wc(i) = 2;
-%     else
-%         P.Vseq(i) = 1.6;
-%         P.wc(i) = 1;
-%     end
-%  end
-% % first 25 is for collapse (parabolic bmode), and the second for XAM blank.
-% P.Vseq = [P.Vseq bmode_collapse xam_post_collapse 1.6];
-% P.CNR_record = zeros(1,length(P.Vseq)+5);
-% P.wc = [P.wc 3 2 1];
+
 %% no bmode ramp
 
 P.wc = 0;
 P.Vseq = [P.seed PostCollapse];
+P.TotalCount = [0 P.xLines*P.zLines*P.pNum(1)*P.pNum(2)*length(P.Vseq)+2];
+LiveDisp = nan(P.xLines,P.zLines,P.pNum(1),P.pNum(2),length(P.Vseq));
 
 P.HP.hpCurveFile = 'myData/X-AM/20171115_HPVoltageCScans/hpVoltageCScans_FP126-16t.mat';
 P.HP.peakPressure = 275; % kPa
@@ -175,18 +170,18 @@ P.HP.HighVoltage = [4.6 4.3 3.7 3.3 3.4 3.8 3.9 4.2 4.1 4.5 4.5 4.7 5.0 5.5 6.0 
 paramsUpdated = false;
 
 % Define system parameters
-Resource.Parameters.connector = 1;
+% Resource.Parameters.connector = 2;
 Resource.Parameters.numTransmit = 128;  % number of transmit channels.
 Resource.Parameters.numRcvChannels = 128;  % number of receive channels.
 Resource.Parameters.speedOfSound = 1500;  % speed of sound in m/s
 Resource.Parameters.speedCorrectionFactor = 1.0;
 Resource.Parameters.simulateMode = 0;
 Resource.Parameters.startEvent = 1;
-Resource.VDAS.dmaTimeout = 10000; % (ms)
+Resource.VDAS.dmaTimeout = 100000; % (ms)
 P.cSI = Resource.Parameters.speedOfSound;
 
 % Specify Trans structure array.
-% Trans.name = 'L22-14vX';
+Trans.name = 'L22-14vX';
 Trans.units = 'wavelengths';
 Trans.frequency = P.txFreq; % 62.5Mhz sampling / 4 samples per wave
 % Trans.maxHighVoltage = 25;
@@ -773,13 +768,13 @@ for L = 1:2
         Event(n).seqControl = 0;
         n = n + 1;
         
-        Event(n).info = 'Stage xLine';
-        Event(n).tx = 0;         % no transmit
-        Event(n).rcv = 0;        % no rcv
-        Event(n).recon = 0;      % no reconstruction
-        Event(n).process = nproc_motorStepX;    % external processing function
-        Event(n).seqControl = 0;
-        n = n + 1;
+%         Event(n).info = 'Stage xLine';
+%         Event(n).tx = 0;         % no transmit
+%         Event(n).rcv = 0;        % no rcv
+%         Event(n).recon = 0;      % no reconstruction
+%         Event(n).process = nproc_motorStepX;    % external processing function
+%         Event(n).seqControl = 0;
+%         n = n + 1;
 
         Event(n).info = 'Stage zLine';
         Event(n).tx = 0;         % no transmit
@@ -807,7 +802,7 @@ for L = 1:2
             SeqControl(nsc).argument = n_lastTTH;   
         nsc = nsc + 1;
         n = n+1;
-        
+
         SeqControl(nsc).command = 'jump';
         SeqControl(nsc).argument = nAngleEvent(L,k);
         Event(n).info = 'Jump back to start of kth angle sequence';
@@ -937,8 +932,14 @@ return
 
 %saveRF - save RF
 P = evalin('base','P');
+P.ScanCount(4) = 1;
+P.Setup = 0;
+P.t2 = clock;
+P.autoDepth(2) = 1;
+params = evalin('base','sub_Stage_Update_Positions(params)');
+params.Stages.Origin = params.Stages.Position;
+assignin('base','params', params);
 fprintf('Ramp starts.\n')
-P.ramp = 1;
 assignin('base','P', P);
 return
 %saveRF
@@ -1089,7 +1090,14 @@ P = evalin('base','P');
 Receive = evalin('base','Receive');
 ImgData = evalin('base','ImgData');
 
-if P.ramp && (etime(clock,P.t1) > P.EqTime)% && (P.rc > P.rc_threshold)
+if P.PlateCount(3)
+    P.saveDirName1 = [P.saveDirName '_P_R' num2str(P.PlateCount(1)) '_C' num2str(P.PlateCount(2))];
+    P.ScanCount(4) = 1;
+    P.PlateCount(3) = 0;
+end
+
+if P.ramp && (etime(clock,P.t1) > P.EqTime) && (P.rc > P.rc_threshold)
+
     if P.Collapse 
         P.Collapse = 0;
         P.PostCollapse = 1;       
@@ -1104,7 +1112,7 @@ if P.ramp && (etime(clock,P.t1) > P.EqTime)% && (P.rc > P.rc_threshold)
             temp_SC = char(temp_SC + 64);
             ScanName = sprintf('%02d',P.ScanCount(2));
             ScanName = ['_' temp_SC ScanName];
-            P.dir_save = [P.savepath P.saveDirName1 P.saveDirName ScanName '\'];
+            P.dir_save = fullfile(P.savePath,P.saveDirName,P.saveDirName1,[P.saveDirName1 ScanName],filesep);
             mkdir(P.dir_save)
         end
         if P.RForImg(1)
@@ -1123,357 +1131,372 @@ if P.ramp && (etime(clock,P.t1) > P.EqTime)% && (P.rc > P.rc_threshold)
     end
 end
 
-% params
-xb = P.half_ap+1; % bissector element index
-x1 = 1; % first element index
-ap = P.numTx; % aperture (nb of elements)
-nTX = P.numRays; % number of TX events
-p = P.pitchSI; % pitch [m]
-c = P.cSI; % speed of sound [m/s]
-if(isfield(P,'alpha')), alpha = P.alpha; end % plane wave angle [degrees]
-
-if (isfield(P,'oversample')), nOvr = P.oversample;
-else, nOvr = 1; end
-
-% Overview of the data
-fSamp = Receive(1).decimSampleRate*1e6; % [Hz]
-dt = 1/fSamp; % [s]
-Sig = rfData;
-%Sig = rfData;%reshape(rfData,[size(rfData,1)*size(rfData,2),size(rfData,3)]);
-RF1 = Sig(Receive(1).startSample:Receive(1).endSample,:);
-
-% RF data
-RF = zeros(size(RF1,1),ap,nTX);
-t = 0:dt:dt*(size(RF1,1)-1);
-for ii = 1:nTX
-    n = ceil(ii/nOvr);
-    RF(:,:,ii) = Sig(Receive(ii).startSample:Receive(ii).endSample,P.offset+(n:n+ap-1));
-end
-
-% Derive depth from arrival time of echoes + min recon time & max recon depth
-t_min = (P.half_ap+1-x1)*p/(2*c); % time criteria cf Renaud 2015
-i_t_min = 2*find(t>round(t_min*1e8)/1e8,1); % !!! factor 2 arbitrary
-d = c*t(i_t_min:end-i_t_min);
-Nz = length(d);
-L = (xb-x1)*p;
-z = nan(Nz,nOvr);
-zMaxAng = nan(Nz,1);
-for k = 1:nOvr
-    l = (k-1)*p/nOvr;
-    % depth derived from the arrival time
-    if (strcmpi(P.pulseShape,'axicon'))
-        z(:,k) = (d - L*sind(alpha) ) / (cosd(alpha)+1);
-    elseif (strcmpi(P.pulseShape,'parabola'))
-        z(:,k) = real(sqrt((d.^2-L^2).^2 - 2*l^2*(d.^2+L^2) + l^4)./(2*d));
-    else
-        error('Invalid pulse shape')
+if P.Setup || P.RForImg(2) || P.ScanCount(4) || P.LiveRecon
+    % params
+    xb = P.half_ap+1; % bissector element index
+    x1 = 1; % first element index
+    ap = P.numTx; % aperture (nb of elements)
+    nTX = P.numRays; % number of TX events
+    p = P.pitchSI; % pitch [m]
+    c = P.cSI; % speed of sound [m/s]
+    if(isfield(P,'alpha')), alpha = P.alpha; end % plane wave angle [degrees]
+    
+    if (isfield(P,'oversample')), nOvr = P.oversample;
+    else, nOvr = 1; end
+    
+    % Overview of the data
+    fSamp = Receive(1).decimSampleRate*1e6; % [Hz]
+    dt = 1/fSamp; % [s]
+    Sig = rfData;
+    %Sig = rfData;%reshape(rfData,[size(rfData,1)*size(rfData,2),size(rfData,3)]);
+    RF1 = Sig(Receive(1).startSample:Receive(1).endSample,:);
+    
+    % RF data
+    RF = zeros(size(RF1,1),ap,nTX);
+    t = 0:dt:dt*(size(RF1,1)-1);
+    for ii = 1:nTX
+        n = ceil(ii/nOvr);
+        RF(:,:,ii) = Sig(Receive(ii).startSample:Receive(ii).endSample,P.offset+(n:n+ap-1));
     end
-    zMaxAng = (d - L*sind(21) ) / (cosd(21)+1);
-end
-
-% compute delays
-delta = zeros(Nz,ap*nOvr);
-for xi = 1:ap
+    
+    % Derive depth from arrival time of echoes + min recon time & max recon depth
+    t_min = (P.half_ap+1-x1)*p/(2*c); % time criteria cf Renaud 2015
+    i_t_min = 2*find(t>round(t_min*1e8)/1e8,1); % !!! factor 2 arbitrary
+    d = c*t(i_t_min:end-i_t_min);
+    Nz = length(d);
+    L = (xb-x1)*p;
+    z = nan(Nz,nOvr);
+    zMaxAng = nan(Nz,1);
     for k = 1:nOvr
-        dx = (k-1)/nOvr;
-        delta(:,(xi-1)*nOvr+k) = (1/c)*(sqrt(((xi-xb-dx)^2*p^2+z(:,k).^2)) ...
-            - sqrt((dx^2*p^2+z(:,k).^2)));
+        l = (k-1)*p/nOvr;
+        % depth derived from the arrival time
+        if (strcmpi(P.pulseShape,'axicon'))
+            z(:,k) = (d - L*sind(alpha) ) / (cosd(alpha)+1);
+        elseif (strcmpi(P.pulseShape,'parabola'))
+            z(:,k) = real(sqrt((d.^2-L^2).^2 - 2*l^2*(d.^2+L^2) + l^4)./(2*d));
+        else
+            error('Invalid pulse shape')
+        end
+        zMaxAng = (d - L*sind(21) ) / (cosd(21)+1);
     end
-end
-
-% apply delays and sums
-for iTX = 1:nTX
-    for j = 1:ap
-        delayed_RF(:,j,iTX) = RF(i_t_min-1+(1:Nz)' + round(delta(:,j)/dt),j,iTX); % apply delays
+    
+    % compute delays
+    delta = zeros(Nz,ap*nOvr);
+    for xi = 1:ap
+        for k = 1:nOvr
+            dx = (k-1)/nOvr;
+            delta(:,(xi-1)*nOvr+k) = (1/c)*(sqrt(((xi-xb-dx)^2*p^2+z(:,k).^2)) ...
+                - sqrt((dx^2*p^2+z(:,k).^2)));
+        end
     end
+    
+    % apply delays and sums
+    for iTX = 1:nTX
+        for j = 1:ap
+            delayed_RF(:,j,iTX) = RF(i_t_min-1+(1:Nz)' + round(delta(:,j)/dt),j,iTX); % apply delays
+        end
+    end
+    
+    RFX = squeeze(mean(delayed_RF,2));
+    
+    if (~isfield(P,'noiseROI'))
+        P.noiseROI = [[40 60]/64; [560 660]/1792];
+    end
+    xNoiseROI = floor(nTX*P.noiseROI(1,1))+1:round(nTX*P.noiseROI(1,2));
+    zNoiseROI = floor(Nz*P.noiseROI(2,1))+1:round(Nz*P.noiseROI(2,2));
+    
+    % xWellROI = floor(nTX*P.wellROI(1,1))+1:round(nTX*P.wellROI(1,2));
+    % zWellROI = floor(Nz*P.wellROI(2,1))+1:round(Nz*P.wellROI(2,2));
+    
+    Im = abs(hilbert(RFX));
+    Im_dB = 20*log10(Im);
+    Im_dB(isinf(Im_dB)) = 0;
+    Im_dB = Im_dB-max(Im_dB(:));
+    noiseFloor = mean(mean(Im_dB(zNoiseROI,xNoiseROI)));
+    Im_dB = Im_dB-noiseFloor;
+    
+    % wellROI = mean(mean(Im(zWellROI,xWellROI)));
+    % wellNoiseROI = mean(mean(Im(zNoiseROI,xNoiseROI)));
+    % CNR = 20*log10(wellROI/wellNoiseROI);
+    % P.CNR = CNR;
+    
+    
+    
+    myIm = Im_dB;
+    
+    x = linspace(-nTX/2,nTX/2,nTX)*P.pitchSI*1e3;
+    z = z*1e3; % convert to mm
+    % zMaxAng = zMaxAng*1e3;
+    % dispLen = find(zMaxAng>=P.endDepth_mm,1) - find(zMaxAng(zMaxAng>=2.5),1);
+    % iIm = find(z>=2.5,1,'first'):(find(z>=2.5,1,'first')+dispLen);
+    persistent iIm
+    if isempty(iIm)
+        disp_depth = [2.5 P.endDepth_mm];
+        iIm = find(z>=disp_depth(1),1,'first'):find(z>=disp_depth(2),1,'first');
+    end
+    ImgData.Xx = x;
+    ImgData.Zx = z;
+    ImgData.Imx = Im;
+    assignin('base','ImgData',ImgData);
+    
+    persistent imgHandle
+    
+    % Create the figure if it does not exist.
+    if isempty(imgHandle)||~ishandle(imgHandle)
+        imgHandle = figure('name','Receive Signal',...
+            'NumberTitle','off','Position',[610 49 630 948]);
+        imagesc(x,fliplr(z(iIm)),myIm(iIm,:)); 
+        xlabel('(mm)'), colormap hot, colorbar
+    end
+    
+    % Plot the element's RF data.
+    
+    % figure(imgHandle); imagesc(x,fliplr(z(iIm)),myIm(iIm,:),[0 max(myIm(:))]); 
+    if (max(max(myIm(iIm,:)))>0)
+        imagesc(imgHandle.CurrentAxes,x,fliplr(z(iIm)),myIm(iIm,:),[0 max(max(myIm(iIm,:)))]);
+    else
+        imagesc(imgHandle.CurrentAxes,x,fliplr(z(iIm)),myIm(iIm,:));
+    end
+    axis(imgHandle.CurrentAxes,'image')
+    colorbar(imgHandle.CurrentAxes)
+    % Noise ROI
+    rectangle(imgHandle.CurrentAxes,'Position',[x(xNoiseROI(1)), z(zNoiseROI(1)),...
+        x(xNoiseROI(end))-x(xNoiseROI(1)),z(zNoiseROI(end))-z(zNoiseROI(1))],'EdgeColor','y')
+    % Well ROI
+    % rectangle(imgHandle.CurrentAxes,'Position',[x(xWellROI(1)), z(zWellROI(1)),...
+    %     x(xWellROI(end))-x(xWellROI(1)),z(zWellROI(end))-z(zWellROI(1))],'EdgeColor','r')
+    % CNR value as text
+    % text(imgHandle.CurrentAxes,x(end)-2,z(iIm(1))+1,sprintf('CNR = %2.1f',CNR),'Color','y')
+%     if P.RForImg(2) && P.ROI_found
+%         Ind_dZ = P.id_cur(2,:);
+%         Ind_dX = P.id_cur(1,:);
+%     
+%         if sum(sign([Ind_dX Ind_dZ])) == 4 && (Ind_dZ(2) <= length(z)) && (Ind_dX(2) <= length(x)) 
+%             P.CNR = 20*log10((mean(mean(Im(Ind_dZ(1):Ind_dZ(2),Ind_dX(1):Ind_dX(2)))) - mean(mean(Im(zNoiseROI,xNoiseROI))))...
+%                                     / std2(Im(zNoiseROI,xNoiseROI)));
+%         end
+%     end
+    
+    title(imgHandle.CurrentAxes,['Time elapsed: ' char(duration(P.rtime(2,:))) '. Time remaining: ' char(duration(P.rtime(1,:)))]);
+    drawnow limitrate   
 end
-
-RFX = squeeze(mean(delayed_RF,2));
-
-if (~isfield(P,'noiseROI'))
-    P.noiseROI = [[40 60]/64; [560 660]/1792];
-end
-xNoiseROI = floor(nTX*P.noiseROI(1,1))+1:round(nTX*P.noiseROI(1,2));
-zNoiseROI = floor(Nz*P.noiseROI(2,1))+1:round(Nz*P.noiseROI(2,2));
-
-xWellROI = floor(nTX*P.wellROI(1,1))+1:round(nTX*P.wellROI(1,2));
-zWellROI = floor(Nz*P.wellROI(2,1))+1:round(Nz*P.wellROI(2,2));
-
-Im = abs(hilbert(RFX));
-Im_dB = 20*log10(Im);
-Im_dB(isinf(Im_dB)) = 0;
-Im_dB = Im_dB-max(Im_dB(:));
-noiseFloor = mean(mean(Im_dB(zNoiseROI,xNoiseROI)));
-Im_dB = Im_dB-noiseFloor;
-
-wellROI = mean(mean(Im(zWellROI,xWellROI)));
-wellNoiseROI = mean(mean(Im(zNoiseROI,xNoiseROI)));
-CNR = 20*log10(wellROI/wellNoiseROI);
-P.CNR = CNR;
-
 P.rc = P.rc + 1;
-
 assignin('base','P',P);
-
-myIm = Im_dB;
-
-x = linspace(-nTX/2,nTX/2,nTX)*P.pitchSI*1e3;
-z = z*1e3; % convert to mm
-zMaxAng = zMaxAng*1e3;
-dispLen = find(zMaxAng>=P.endDepth_mm,1) - find(zMaxAng(zMaxAng>=2.5),1);
-iIm = find(z>=2.5,1,'first'):(find(z>=2.5,1,'first')+dispLen);
-ImgData.Xx = x;
-ImgData.Zx = z;
-ImgData.Imx = Im;
-assignin('base','ImgData',ImgData);
-
-persistent imgHandle
-
-% Create the figure if it does not exist.
-if isempty(imgHandle)||~ishandle(imgHandle)
-    imgHandle = figure('name','Receive Signal',...
-        'NumberTitle','off','Position',[610 49 630 948]);
-    imagesc(x,fliplr(z(iIm)),myIm(iIm,:)); 
-    xlabel('(mm)'), colormap hot, colorbar
-end
-
-% Plot the element's RF data.
-
-% figure(imgHandle); imagesc(x,fliplr(z(iIm)),myIm(iIm,:),[0 max(myIm(:))]); 
-if (max(max(myIm(iIm,:)))>0)
-    imagesc(imgHandle.CurrentAxes,x,fliplr(z(iIm)),myIm(iIm,:),[0 max(max(myIm(iIm,:)))]);
-else
-    imagesc(imgHandle.CurrentAxes,x,fliplr(z(iIm)),myIm(iIm,:));
-end
-axis(imgHandle.CurrentAxes,'image')
-colorbar(imgHandle.CurrentAxes)
-% Noise ROI
-rectangle(imgHandle.CurrentAxes,'Position',[x(xNoiseROI(1)), z(zNoiseROI(1)),...
-    x(xNoiseROI(end))-x(xNoiseROI(1)),z(zNoiseROI(end))-z(zNoiseROI(1))],'EdgeColor','y')
-% Well ROI
-rectangle(imgHandle.CurrentAxes,'Position',[x(xWellROI(1)), z(zWellROI(1)),...
-    x(xWellROI(end))-x(xWellROI(1)),z(zWellROI(end))-z(zWellROI(1))],'EdgeColor','r')
-% CNR value as text
-text(imgHandle.CurrentAxes,x(end)-2,z(iIm(1))+1,sprintf('CNR = %2.1f',CNR),'Color','y')
-
-drawnow limitrate   
-
 end
 
 
 
 function B_Recon(rfData)
-%% automated ROI selection parameters
-persistent xROI_size zROI_size zoffset rangeoffset filter_size1 filter_size2...
-           filter_sigma filter_box threshold_ratio noise_stdratio auto_noise ...
-           noiseSize iZt iZn sample_width
-if isempty(xROI_size)
-    xROI_size = 10;
-    zROI_size = 40;
-    zoffset = 100;
-    rangeoffset = 10;
 
-    filter_size1 = [20 5];
-    filter_size2 = [5 5];
-    filter_sigma = 2.5;
-    filter_box = [9 1];
-    threshold_ratio = 1;
-    noise_stdratio = 1;
-    auto_noise = 1;
-    noiseSize = [2 2];
-    iZt = 169:400;
-    iZn = 118:168;
-    sample_width = 10;
-end
 %%
 P = evalin('base','P');
-Receive = evalin('base','Receive');
-ImgData = evalin('base','ImgData');
-% Accumulate raw RF data
-% persistent RFaccum
-% paramsUpdated = evalin('base','paramsUpdated');
-% if (isempty(RFaccum) || paramsUpdated)
-%     RFaccum = rfData;
-%     assignin('base','paramsUpdated',false);
-% else
-%     RFaccum = RFaccum*P.pers + rfData*(1-P.pers);
-% end
-% RcvData_pers = RFaccum;
-% assignin('base','RcvData_pers',RcvData_pers);
-
-% params
-xb = P.bhalf_ap+1; % bissector element index
-x1 = 1; % first element index
-ap = P.bnumTx; % aperture (nb of elements)
-nTX = P.numRays; % number of TX events
-p = P.pitchSI; % pitch [m]
-c = P.cSI; % speed of sound [m/s]
-
-p = P.pitchSI; % pitch [m]
-c = P.cSI; % speed of sound [m/s]
-if(isfield(P,'alpha')), alpha = P.alpha; end % plane wave angle [degrees]
-
-if (isfield(P,'oversample')), nOvr = P.oversample;
-else, nOvr = 1; end
-
-% Overview of the data
-fSamp = Receive(1).decimSampleRate*1e6; % [Hz]
-dt = 1/fSamp; % [s]
-Sig = rfData;
-%Sig = rfData;%reshape(rfData,[size(rfData,1)*size(rfData,2),size(rfData,3)]);
-RF1 = Sig(Receive(1).startSample:Receive(1).endSample,:);
-
-% RF data
-RF = zeros(size(RF1,1),ap,nTX);
-t = 0:dt:dt*(size(RF1,1)-1);
-for ii = 1:nTX
-    n = ceil(ii/nOvr);
-    RF(:,:,ii) = Sig(Receive(ii).startSample:Receive(ii).endSample,P.boffset+(n:n+ap-1));
-end
-
-% Derive depth from arrival time of echoes + min recon time & max recon depth
-t_min = (P.bhalf_ap+1-x1)*p/(2*c); % time criteria cf Renaud 2015
-i_t_min = 2*find(t>round(t_min*1e8)/1e8,1); % !!! factor 2 arbitrary
-d = c*t(i_t_min:end-i_t_min);
-Nz = length(d);
-L = (xb-x1)*p;
-z = nan(Nz,nOvr);
-zMaxAng = nan(Nz,1);
-for k = 1:nOvr
-    l = (k-1)*p/nOvr;
-    z(:,k) = real(sqrt((d.^2-L^2).^2 - 2*l^2*(d.^2+L^2) + l^4)./(2*d));
-    zMaxAng = (d - L*sind(21) ) / (cosd(21)+1);
-end
-
-% compute delays
-delta = zeros(Nz,ap*nOvr);
-for xi = 1:ap
+if P.Setup || P.RForImg(2) || P.ScanCount(4) || P.LiveRecon
+    Receive = evalin('base','Receive');
+    ImgData = evalin('base','ImgData');
+    
+    xb = P.bhalf_ap+1; % bissector element index
+    x1 = 1; % first element index
+    ap = P.bnumTx; % aperture (nb of elements)
+    nTX = P.numRays; % number of TX events
+    p = P.pitchSI; % pitch [m]
+    c = P.cSI; % speed of sound [m/s]
+    
+    p = P.pitchSI; % pitch [m]
+    c = P.cSI; % speed of sound [m/s]
+    if(isfield(P,'alpha')), alpha = P.alpha; end % plane wave angle [degrees]
+    
+    if (isfield(P,'oversample')), nOvr = P.oversample;
+    else, nOvr = 1; end
+    
+    % Overview of the data
+    fSamp = Receive(1).decimSampleRate*1e6; % [Hz]
+    dt = 1/fSamp; % [s]
+    Sig = rfData;
+    %Sig = rfData;%reshape(rfData,[size(rfData,1)*size(rfData,2),size(rfData,3)]);
+    RF1 = Sig(Receive(1).startSample:Receive(1).endSample,:);
+    
+    % RF data
+    RF = zeros(size(RF1,1),ap,nTX);
+    t = 0:dt:dt*(size(RF1,1)-1);
+    for ii = 1:nTX
+        n = ceil(ii/nOvr);
+        RF(:,:,ii) = Sig(Receive(ii).startSample:Receive(ii).endSample,P.boffset+(n:n+ap-1));
+    end
+    
+    % Derive depth from arrival time of echoes + min recon time & max recon depth
+    t_min = (P.bhalf_ap+1-x1)*p/(2*c); % time criteria cf Renaud 2015
+    i_t_min = 2*find(t>round(t_min*1e8)/1e8,1); % !!! factor 2 arbitrary
+    d = c*t(i_t_min:end-i_t_min);
+    Nz = length(d);
+    L = (xb-x1)*p;
+    z = nan(Nz,nOvr);
+    zMaxAng = nan(Nz,1);
     for k = 1:nOvr
-        dx = (k-1)/nOvr;
-        delta(:,(xi-1)*nOvr+k) = (1/c)*(sqrt(((xi-xb-dx)^2*p^2+z(:,k).^2)) ...
-            - sqrt((dx^2*p^2+z(:,k).^2)));
+        l = (k-1)*p/nOvr;
+        z(:,k) = real(sqrt((d.^2-L^2).^2 - 2*l^2*(d.^2+L^2) + l^4)./(2*d));
+        zMaxAng = (d - L*sind(21) ) / (cosd(21)+1);
     end
-end
-
-% apply delays and sums
-for iTX = 1:nTX
-    for j = 1:ap
-        delayed_RF(:,j,iTX) = RF(i_t_min-1+(1:Nz)' + round(delta(:,j)/dt),j,iTX); % apply delays
+    
+    % compute delays
+    delta = zeros(Nz,ap*nOvr);
+    for xi = 1:ap
+        for k = 1:nOvr
+            dx = (k-1)/nOvr;
+            delta(:,(xi-1)*nOvr+k) = (1/c)*(sqrt(((xi-xb-dx)^2*p^2+z(:,k).^2)) ...
+                - sqrt((dx^2*p^2+z(:,k).^2)));
+        end
     end
-end
-
-RFX = squeeze(mean(delayed_RF,2));
-
-if (~isfield(P,'noiseROI'))
-    P.noiseROI = [[40 60]/64; [560 660]/1792];
-end
-xNoiseROI = floor(nTX*P.noiseROI(1,1))+1:round(nTX*P.noiseROI(1,2));
-zNoiseROI = floor(Nz*P.noiseROI(2,1))+1:round(Nz*P.noiseROI(2,2));
-
-xWellROI = floor(nTX*P.wellROI(1,1))+1:round(nTX*P.wellROI(1,2));
-zWellROI = floor(Nz*P.wellROI(2,1))+1:round(Nz*P.wellROI(2,2));
-
-Im = abs(hilbert(RFX));
-Im_dB = 20*log10(Im);
-Im_dB(isinf(Im_dB)) = 0;
-Im_dB = Im_dB-max(Im_dB(:));
-noiseFloor = mean(mean(Im_dB(zNoiseROI,xNoiseROI)));
-Im_dB = Im_dB-noiseFloor;
-
-wellROI = mean(mean(Im(zWellROI,xWellROI)));
-wellNoiseROI = mean(mean(Im(zNoiseROI,xNoiseROI)));
-% CNR = 20*log10(wellROI/wellNoiseROI);
-% P.CNR = CNR;
-
-myIm = Im_dB;
-
-x = linspace(-nTX/2,nTX/2,nTX)*P.pitchSI*1e3;
-z = z*1e3; % convert to mm
-zMaxAng = zMaxAng*1e3;
-dispLen = find(zMaxAng>=P.endDepth_mm,1) - find(zMaxAng(zMaxAng>=2.5),1);
-iIm = find(z>=2.5,1,'first'):(find(z>=2.5,1,'first')+dispLen);
-ImgData.Xb = x;
-ImgData.Zb = z;
-ImgData.Imb = Im;
-assignin('base','ImgData',ImgData);
-
-persistent imgHandle_b
-
-% Create the figure if it does not exist.
-if isempty(imgHandle_b)||~ishandle(imgHandle_b)
-    imgHandle_b = figure('name','Receive Signal',...
-        'NumberTitle','off','Position',[0 49 630 948]);
-    imagesc(x,fliplr(z(iIm)),myIm(iIm,:)); 
-    xlabel('(mm)'), colormap bone, colorbar
-    title('B-mode');
-end
-
-% Plot the element's RF data.
-V = version;
-MatlabV = V(end-5:end-1);
-% figure(imgHandle); imagesc(x,fliplr(z(iIm)),myIm(iIm,:),[0 max(myIm(:))]); 
-if (max(max(myIm(iIm,:)))>0)
-    imagesc(imgHandle_b.CurrentAxes,x,fliplr(z(iIm)),myIm(iIm,:),[0 max(max(myIm(iIm,:)))]);
-else
-    imagesc(imgHandle_b.CurrentAxes,x,fliplr(z(iIm)),myIm(iIm,:));
-end
-axis(imgHandle_b.CurrentAxes,'image')
-colorbar(imgHandle_b.CurrentAxes)
-% Noise ROI
-rectangle(imgHandle_b.CurrentAxes,'Position',[x(xNoiseROI(1)), z(zNoiseROI(1)),...
-    x(xNoiseROI(end))-x(xNoiseROI(1)),z(zNoiseROI(end))-z(zNoiseROI(1))],'EdgeColor','y')
-% Well ROI
-rectangle(imgHandle_b.CurrentAxes,'Position',[x(xWellROI(1)), z(zWellROI(1)),...
-    x(xWellROI(end))-x(xWellROI(1)),z(zWellROI(end))-z(zWellROI(1))],'EdgeColor','r')
-% CNR value as text
-% text(imgHandle_b.CurrentAxes,x(end)-2,z(iIm(1))+1,sprintf('CNR = %2.1f',CNR),'Color','y')
-
-%% auto ROI selection
-if P.autoROI == 1
-%     filter_depth = zeros(size(Im));
-%     filter_depth(iZt,:) = 1;
-    noiseROIt = mean(mean(Im(iZn,:))) + noise_stdratio * std2(Im(iZn,:));
-    Imt_f1 = medfilt2(Im(iZt,:),filter_size1);
-    Imt_f2 = (Imt_f1 > noiseROIt);
-    Xm = repmat(1:length(x),length(iZt),1).* Imt_f2;
-    Xm(Xm==0) = nan;
-    bx1 = max(Xm,[],2) - min(Xm,[],2);
-    if any(bx1)
-        [~,ztop] = max(bx1);% find the z position where the max x span occurs, set as the top interface (water-agarose)
-        Xm(isnan(Xm)) = 0;
-        izbot = max(any(Imt_f2,2).*(1:length(iZt))'); % find the deepest over-threshold-voxel (OTV) as the bottom of the well 
-        izbot_range = -ztop + izbot - rangeoffset;% define the depth range of the well, use rangeoffset to exclude the very bottom
-        ixcenter = round(sum(sum((Xm(izbot - izbot_range:izbot,:)))) / nnz(Xm(izbot - izbot_range:izbot,:))); % Take the mean x position of all the OTVs in the depth range as the x center
-        if ~isnan(ixcenter)
-            Ind_dX = [ixcenter-xROI_size ixcenter+xROI_size]; % Define ROI x dimension by expanding from the x center
-            ztop = iZt(ztop); % Convert the top of the well to full z indices
+    
+    % apply delays and sums
+    for iTX = 1:nTX
+        for j = 1:ap
+            delayed_RF(:,j,iTX) = RF(i_t_min-1+(1:Nz)' + round(delta(:,j)/dt),j,iTX); % apply delays
+        end
+    end
+    
+    RFX = squeeze(mean(delayed_RF,2));
+    
+    if (~isfield(P,'noiseROI'))
+        P.noiseROI = [[40 60]/64; [560 660]/1792];
+    end
+    xNoiseROI = floor(nTX*P.noiseROI(1,1))+1:round(nTX*P.noiseROI(1,2));
+    zNoiseROI = floor(Nz*P.noiseROI(2,1))+1:round(Nz*P.noiseROI(2,2));
+    
+    xWellROI = floor(nTX*P.wellROI(1,1))+1:round(nTX*P.wellROI(1,2));
+    zWellROI = floor(Nz*P.wellROI(2,1))+1:round(Nz*P.wellROI(2,2));
+    
+    Im = abs(hilbert(RFX));
+    Im_dB = 20*log10(Im);
+    Im_dB(isinf(Im_dB)) = 0;
+    Im_dB = Im_dB-max(Im_dB(:));
+    noiseFloor = mean(mean(Im_dB(zNoiseROI,xNoiseROI)));
+    Im_dB = Im_dB-noiseFloor;
+    
+    wellROI = mean(mean(Im(zWellROI,xWellROI)));
+    wellNoiseROI = mean(mean(Im(zNoiseROI,xNoiseROI)));
+    % CNR = 20*log10(wellROI/wellNoiseROI);
+    % P.CNR = CNR;
+    
+    myIm = Im_dB;
+    
+    x = linspace(-nTX/2,nTX/2,nTX)*P.pitchSI*1e3;
+    z = z*1e3; % convert to mm
+    persistent iIm
+    if isempty(iIm)
+        disp_depth = [2.5 P.endDepth_mm];
+        iIm = find(z>=disp_depth(1),1,'first'):find(z>=disp_depth(2),1,'first');
+    end
+    % zMaxAng = zMaxAng*1e3;
+    % dispLen = find(zMaxAng>=P.endDepth_mm,1) - find(zMaxAng(zMaxAng>=2.5),1);
+    % iIm = find(z>=2.5,1,'first'):(find(z>=2.5,1,'first')+dispLen);
+    ImgData.Xb = x;
+    ImgData.Zb = z;
+    ImgData.Imb = Im;
+    assignin('base','ImgData',ImgData);
+    
+    persistent imgHandle_b
+    
+    % Create the figure if it does not exist.
+    if isempty(imgHandle_b)||~ishandle(imgHandle_b)
+        imgHandle_b = figure('name','Receive Signal',...
+            'NumberTitle','off','Position',[0 49 630 948]);
+        imagesc(x,fliplr(z(iIm)),myIm(iIm,:)); 
+        xlabel('(mm)'), colormap bone, colorbar
+        title('B-mode');
+    end
+    
+    % Plot the element's RF data.
+    V = version;
+    MatlabV = V(end-5:end-1);
+    % figure(imgHandle); imagesc(x,fliplr(z(iIm)),myIm(iIm,:),[0 max(myIm(:))]); 
+    if (max(max(myIm(iIm,:)))>0)
+        imagesc(imgHandle_b.CurrentAxes,x,fliplr(z(iIm)),myIm(iIm,:),[0 max(max(myIm(iIm,:)))]);
+    else
+        imagesc(imgHandle_b.CurrentAxes,x,fliplr(z(iIm)),myIm(iIm,:));
+    end
+    axis(imgHandle_b.CurrentAxes,'image')
+    colorbar(imgHandle_b.CurrentAxes)
+    % Noise ROI
+    rectangle(imgHandle_b.CurrentAxes,'Position',[x(xNoiseROI(1)), z(zNoiseROI(1)),...
+        x(xNoiseROI(end))-x(xNoiseROI(1)),z(zNoiseROI(end))-z(zNoiseROI(1))],'EdgeColor','y')
+    % Well ROI
+    rectangle(imgHandle_b.CurrentAxes,'Position',[x(xWellROI(1)), z(zWellROI(1)),...
+        x(xWellROI(end))-x(xWellROI(1)),z(zWellROI(end))-z(zWellROI(1))],'EdgeColor','r')
+    % CNR value as text
+    % text(imgHandle_b.CurrentAxes,x(end)-2,z(iIm(1))+1,sprintf('CNR = %2.1f',CNR),'Color','y')
+    
+    
+%% automated ROI selection parameters
+    persistent xROI_size zROI_size zoffset  filter_size1 ...
+                  noise_stdratio  ...
+                iZt iZn d_samp filter_depth
+    %% auto ROI selection parameters
+    if isempty(xROI_size)
+        xROI_size = 10;
+        zROI_size = 40;
+        zoffset = 100;
+        filter_size1 = [40 5];
+        noise_stdratio = 1;
+        sample_depth = [3 6];
+        iZt = find(z>=sample_depth(1),1,'first'):find(z>=sample_depth(2),1,'first');
+        filter_depth = zeros(size(Im));
+        filter_depth(iZt,:) = 1;
+        noise_slice = [2 3];
+        iZn = find(z>=noise_slice(1),1,'first'):find(z>=noise_slice(2),1,'first');
+        d_samp = [P.TargetDepth 0 0];
+    end
+    %% auto ROI selection 
+    if P.autoROI == 1
+        if P.ScanCount(4) || P.Setup
+            
+            noiseROIt = mean(mean(Im(iZn,:))) + noise_stdratio * std2(Im(iZn,:));
+            Imt_f1 = medfilt2(Im,filter_size1);
+            Imt_f2 = (Imt_f1 > noiseROIt) .* filter_depth;
+            Xm = repmat(1:length(x),length(z),1).* Imt_f2;
+            Xm2 = Imt_f2;
+            bx2 = sum(Xm2,2);
+            [~,ztop] = max(bx2);% find the z position where the max x span occurs, set as the top interface (water-agarose)
+            % ztop = iZt(ztop);
             Ind_dZ = [ztop-zROI_size ztop+zROI_size]; % Define ROI z dimension by expanding from the z top first 
             Ind_dZ = Ind_dZ + zoffset; % Move the ROI z position to lower by zoffset (distance from the interface to well center)
-            P.d_cur = [x(ixcenter) mean(z(Ind_dZ))]; % convert the center of the ROI to mm 
-            persistent d_samp
-            if isempty(d_samp) && P.ramp
-                d_samp = [P.d_cur(2) 0 0];
-            end
-            if P.ScanCount(4)
+            ixcenter = round(sum(sum((Xm(Ind_dZ(1):Ind_dZ(2),:)))) / nnz(Xm(Ind_dZ(1):Ind_dZ(2),:)));% Take the mean x position of all the OTVs in the depth range as the x center
+            if ~isnan(ixcenter) 
+                Ind_dX = [ixcenter-xROI_size ixcenter+xROI_size]; % Define ROI x dimension by expanding from the x center     
+                P.d_cur = [x(ixcenter) mean(z(Ind_dZ))]; % convert the center of the ROI to mm 
+                P.id_cur = [Ind_dX;Ind_dZ];
+                P.ROI_found = 1;
                 d_temp = (P.d_cur(2) - d_samp(1)); % negative sign for the motor definition
-                d_samp(3) = d_samp(2) + d_temp;
-                if abs(d_samp(3)) > 1
-                    d_samp(3) = sign(d_samp(3))*P.autoDepthRange;
+                if ~P.Setup    
+                    d_samp(3) = d_samp(2) + d_temp; % calculate how much distance to travel from the origin
+                     if abs(d_samp(3)) > P.autoDepthRange 
+                        d_samp(3) = sign(d_samp(3))*P.autoDepthRange; % if out of range, go to the max range
+                     end 
+                    P.autoDepth = [d_samp(3) - d_samp(2) P.ScanCount(4)]; 
+                    d_samp(2) = d_samp(3);
+                else
+                    d_samp(3) = d_temp; % calculate how much distance to travel from the origin
+                    d_samp(2) = 0;
+                    P.autoDepth = [0 P.ScanCount(4)]; 
                 end
-                P.autoDepth = [d_samp(3) - d_samp(2) P.ScanCount(4)];
-                d_samp(2) = d_samp(3);
             else
-                P.autoDepth = [0 P.ScanCount(4)];
+                d_samp(3) = 0; % go back to origin if cannot find ROIs
+                P.autoDepth = [d_samp(3) - d_samp(2) P.ScanCount(4)]; 
+                d_samp(2) = d_samp(3);
+                P.ROI_found = 0;
             end
-            
-            % auto ROI
+        else
+            P.autoDepth = [0 0];
+        end
+
+         % auto ROI drawing
+        if P.ROI_found
+            if ~exist("Ind_dX",'var') || ~exist("Ind_dZ",'var')
+                Ind_dZ = P.id_cur(2,:);
+                Ind_dX = P.id_cur(1,:);
+            end
             if sum(sign([Ind_dX Ind_dZ])) == 4 && (Ind_dZ(2) <= length(z)) && (Ind_dX(2) <= length(x)) 
                 rectangle(imgHandle_b.CurrentAxes,'Position',[x(Ind_dX(1)) z(Ind_dZ(1))...
                     x(Ind_dX(2))-x(Ind_dX(1)) z(Ind_dZ(2))-z(Ind_dZ(1))],'EdgeColor','w')             % draw the predicted ROI
-                CNR = 20*log10((mean(mean(Im(Ind_dZ(1):Ind_dZ(2),Ind_dX(1):Ind_dX(2)))) - mean(mean(Im(zNoiseROI,xNoiseROI))))...
-                                / std2(Im(zNoiseROI,xNoiseROI)));
-                P.CNR = CNR;
-                text(imgHandle_b.CurrentAxes,x(end)-2,z(iIm(1))+1,sprintf('CNR = %2.1f',CNR),'Color','w')
             end
             if abs(P.TargetDepth - P.d_cur(2)) < 0.1        
                 text(imgHandle_b.CurrentAxes,x(end)-2,z(iIm(1))+0.5,sprintf('Depth = %2.1f',P.d_cur(2)),'Color','w')
@@ -1481,39 +1504,12 @@ if P.autoROI == 1
                 text(imgHandle_b.CurrentAxes,x(end)-2,z(iIm(1))+0.5,sprintf('Depth = %2.1f',P.d_cur(2)),'Color','r')
             end
         end
-    else
-        P.autoDepth = [0 P.ScanCount(4)];
     end
-elseif P.autoROI == 2
-    iZt2 = iZt(end)+1:length(z);
-    noiseROIt = mean(mean(Im(iZn,:))) + noise_stdratio * 100 * std2(Im(iZn,:));
-    Imt_f1 = medfilt2(Im(iZt2,:),filter_size1);
-    Imt_f2 = (Imt_f1 > noiseROIt);
-    Xm = repmat(1:length(x),length(iZt2),1).* Imt_f2;
-    bx1 = max(Xm,[],2) - min(Xm,[],2);
-    if any(bx1)
-        [~,ztop] = max(bx1);
-        Ind_dZ = iZt2(ztop);
-        persistent d_bot
-        if isempty(d_bot) && P.ramp
-            d_bot = z(Ind_dZ);
-        end
-        temp = d_bot - z(Ind_dZ);
-        P.autoDepth = [sign(temp) * P.autoDepthRange * (abs(temp) > P.autoDepthRange) ...
-                       + temp * (abs(temp) <= P.autoDepthRange) P.ScanCount(4)];
-        % auto ROI
-        rectangle(imgHandle_b.CurrentAxes,'Position',[x(2) z(Ind_dZ(1))...
-            x(end-1)-x(2) z(5)-z(1)],'EdgeColor','k')
-        text(imgHandle_b.CurrentAxes,x(end)-2,z(iIm(1))+0.5,sprintf('Bottom = %2.1f',z(Ind_dZ)),'Color','w')
-    else
-        P.autoDepth = [0 0];
-    end
+    assignin('base','P',P);
+    %%
+    
+    drawnow limitrate   
 end
-assignin('base','P',P);
-%%
-
-drawnow limitrate   
-
 end
 
 
@@ -1533,6 +1529,7 @@ if P.ramp
         P.t1 = clock;
         P.rc = 0;
         P.EqTime = P.EqTime1;
+        P.RForImg(2) = 0;
         assignin('base','P', P);
         assignin('base','paramsUpdated',true);
         evalin('base','clear RcvData_pers'); % Clear persistent variables
@@ -1551,7 +1548,6 @@ if P.ramp
         end
         
         Index = sprintf('Vseq%03d',P.rampi);
-
         if P.RForImg(1)
             RFfilename = sprintf('RFdataB_%s_%s_%s_%s_%dap_%1.1fV_%0.1fPers.mat',...
             Index,P.pulseShape,P.code,beamParam,P.numTx,hv,P.pers);
@@ -1563,6 +1559,22 @@ if P.ramp
             Index,P.pulseShape,P.code,beamParam,P.numTx,hv,P.pers);
             save([P.dir_save RFfilename],'ImgData','P','-v6');
             fprintf('The image data has been saved at %s \n',[P.dir_save RFfilename]);
+            if P.xDist < 0
+                temp_SC = P.xLines - P.ScanCount(1) + 1;
+            else
+                temp_SC = P.ScanCount(1);
+            end
+            if P.pDist(1) < 0
+                temp_PC = P.pNum(1) - P.PlateCount(1) + 1;
+            else
+                temp_PC = P.PlateCount(1);
+            end
+            LiveDisp = evalin('base','LiveDisp');
+            LiveDisp(temp_PC,P.PlateCount(2),temp_SC,P.ScanCount(2),P.rampi) = P.CNR;
+            assignin('base','LiveDisp', LiveDisp);
+            P.TotalCount(1) = P.TotalCount(1)+1;
+            P.rtime(1,3) = round(etime(clock,P.t2) / P.TotalCount(1) * (P.TotalCount(2) - P.TotalCount(1)),0);
+            P.rtime(2,3) = round(etime(clock,P.t2),0);
             P.RForImg(2) = 0;
         end
         
@@ -1587,7 +1599,7 @@ if P.ramp
         elseif P.rampi == length(P.seed) % set collapse frame
             if length(P.seed) == length(P.Vseq)
                 P.ramp = 0;
-                P.rampi = 1;
+                P.rampi = 0;
                 P.PCf = 0;
                 fprintf('Voltage ramp is done!\n');
                 P.ScanCount(3) = 1;
@@ -1671,7 +1683,7 @@ end
 
 function motorStepX
 P = evalin('base','P');
-if P.ScanCount(3) && P.ScanCount(1) < P.xLines && (P.rc > P.rc_threshold)   
+if P.ScanCount(3) && (P.ScanCount(1) < P.xLines)
     params = evalin('base','params');
     evalin('base','sub_Stage_Move(params, params.Stages.x_motor, (P.xDist/1000)/params.Stages.step_distance);');
     pause(1+(abs(P.xDist)/1000)/params.Stages.step_distance/params.Stages.Speed)
@@ -1681,6 +1693,7 @@ if P.ScanCount(3) && P.ScanCount(1) < P.xLines && (P.rc > P.rc_threshold)
     P.ScanCount(1) = P.ScanCount(1) + 1;
     P.SampleCount = (P.ScanCount(1) - 1) * P.xLines + P.ScanCount(2);
     P.ScanCount(4) = 1;
+    P.rc = 0;
     assignin('base','Scan',Scan);
     assignin('base','P', P);
     fprintf('motorStepX\n')
@@ -1689,48 +1702,69 @@ end
 
 function motorReturnXStepZ
 P = evalin('base','P');
-if P.ScanCount(3) && P.ScanCount(1) == P.xLines && (P.rc > P.rc_threshold)
-    if P.ScanCount(2) < P.zLines
-        Scan = evalin('base','Scan');
-        params = evalin('base','params');
-        % evalin('base','sub_Stage_Move(params, params.Stages.x_motor, (-(P.ScanCount(1) - 1)*P.xDist + Scan.xOffset * (2 * (mod(P.ScanCount(2),2) - 0.5)))/1000/params.Stages.step_distance);');
-        evalin('base','sub_Stage_Move(params, params.Stages.x_motor, (Scan.xOffset * (2 * (mod(P.ScanCount(2),2) - 0.5)))/1000/params.Stages.step_distance);');
-        pause(0.5* (Scan.xOffset~=0)+(Scan.xOffset * (2 * (mod(P.ScanCount(2),2) - 0.5)))/1000/params.Stages.step_distance/params.Stages.Speed)
-        evalin('base','sub_Stage_Move(params, params.Stages.z_motor, (P.zDist/1000)/params.Stages.step_distance);');
-        pause(1+(P.zDist/1000)/params.Stages.step_distance/params.Stages.Speed)
-        P.xDist = P.xDist * (-1);
-
-        % Apply any x offset
-%         evalin('base',['sub_Stage_Move(params, params.Stages.x_motor, '...
-%             '(Scan(P.nScan-1).xOffset(P.zLineIdx+1)/1000)/params.Stages.step_distance);']);
-%         pause(0.5+(P.xDist/1000)/params.Stages.step_distance/params.Stages.Speed)
-        Scan.Pos{P.ScanCount(1),P.ScanCount(2)} = params.Stages.Position;
-        P.ScanCount(1) = 1;
-        P.ScanCount(2) = P.ScanCount(2) + 1;
+params = evalin('base','params');
+if P.ScanCount(3)
+    if P.ScanCount(1) < P.xLines
+        evalin('base','sub_Stage_Move(params, params.Stages.x_motor, (P.xDist/1000)/params.Stages.step_distance);');
+        pause(1+(abs(P.xDist)/1000)/params.Stages.step_distance/params.Stages.Speed)
         P.ScanCount(3) = 0;
+        P.ScanCount(1) = P.ScanCount(1) + 1;
         P.SampleCount = (P.ScanCount(1) - 1) * P.xLines + P.ScanCount(2);
         P.ScanCount(4) = 1;
-        assignin('base','Scan',Scan);
-        assignin('base','P',P);
-        fprintf('motorReturnXStepZ\n')
-    else
-        Scan = evalin('base','Scan');
-        params = evalin('base','params');
-        Scan.Pos{P.ScanCount(1),P.ScanCount(2)} = params.Stages.Position;
-        assignin('base','Scan',Scan);
-        save([P.savepath 'ScanInfo_' P.saveDirName '_' datestr(now, 'yyyy-mm-dd@HH-MM-SS')],'Scan','P','-v6');
-        evalin('base','Release_Stage;');
-        if P.xDist > 0
-            evalin('base','sub_Stage_Move(params, params.Stages.x_motor, (-P.xDist*(P.ScanCount(1)-1)/1000)/params.Stages.step_distance);');
-            pause(1+(abs(P.xDist*(P.ScanCount(1)-1))/1000)/params.Stages.step_distance/params.Stages.Speed)
+        fprintf('motorStepX\n')
+    elseif P.ScanCount(1) == P.xLines
+        if P.ScanCount(2) < P.zLines            
+            evalin('base','sub_Stage_Move(params, params.Stages.z_motor, (P.zDist/1000)/params.Stages.step_distance);');
+            pause(1+(P.zDist/1000)/params.Stages.step_distance/params.Stages.Speed)
+            P.xDist = P.xDist * (-1);
+            P.ScanCount(1) = 1;
+            P.ScanCount(2) = P.ScanCount(2) + 1;
+            P.ScanCount(3) = 0;
+            P.SampleCount = (P.ScanCount(1) - 1) * P.xLines + P.ScanCount(2);
+            P.ScanCount(4) = 1;
+            fprintf('motorReturnXStepZ\n')
+        else
+            if all(P.PlateCount(1:2) == P.pNum)
+                evalin('base','BackToOrigin;');
+                evalin('base','Release_Stage;');
+                close all % end of the scan
+            else
+                XD_temp = -P.xDist*(P.ScanCount(1)-1)*(P.xDist>0);
+                ZD_temp = -P.zDist*(P.ScanCount(2)-1);
+
+                if P.PlateCount(1) < P.pNum(1)
+                    XD_temp = XD_temp + P.pDist(1);
+                    P.PlateCount(1) = P.PlateCount(1) + 1;
+                elseif P.PlateCount(1) == P.pNum(1)
+                    ZD_temp = ZD_temp + P.pDist(2);
+                    XD_temp = XD_temp - (P.pNum(1)-1)*P.pDist(1);
+                    P.PlateCount(1) = 1;
+                    P.PlateCount(2) = P.PlateCount(2) + 1;
+                end
+                
+                if XD_temp
+                    assignin('base','XD_temp',XD_temp);
+                    evalin('base','sub_Stage_Move(params, params.Stages.x_motor, (XD_temp/1000)/params.Stages.step_distance);');
+                    pause(0.5+(abs(XD_temp)/1000)/params.Stages.step_distance/params.Stages.Speed)
+                    disp('Motor Plate X')
+                end
+                
+                if ZD_temp
+                    assignin('base','ZD_temp',ZD_temp);
+                    evalin('base','sub_Stage_Move(params, params.Stages.z_motor, (ZD_temp/1000)/params.Stages.step_distance);');
+                    pause(0.5+(abs(ZD_temp)/1000)/params.Stages.step_distance/params.Stages.Speed)
+                    disp('Motor Plate Z')
+                end
+                
+                P.PlateCount(3) = 1;
+                P.ScanCount = [1 1 0 0];
+                P.xDist = 9; % reset the sign of xDist
+                % fprintf('motorReturnXReturnZ\n')
+            end
         end
-        evalin('base','sub_Stage_Move(params, params.Stages.z_motor, (-P.zDist*(P.ScanCount(2)-1)/1000)/params.Stages.step_distance);');
-        pause(1+(abs(P.zDist*(P.ScanCount(2)-1))/1000)/params.Stages.step_distance/params.Stages.Speed)
-        evalin('base','Release_Stage');
-        assignin('base','P',P);
-        fprintf('motorReturnXReturnZ\n')
-        close all
     end
+    P.rc = 0;
+    assignin('base','P', P);
 end
 end 
 
@@ -1782,7 +1816,11 @@ if P.autoDepth(2)
     P.ScanCount(3:4) = [0 0];
     P.ramp = 1;
     P.rampi = 0;
+    P.autoDepth(2) = 0;
     P.t1 = clock;
+    disp('ScanC')
+    disp(P.ScanCount);
+    disp(P.autoDepth);
     assignin('base','P', P);
     fprintf('motorAdjustY\n')
 end
