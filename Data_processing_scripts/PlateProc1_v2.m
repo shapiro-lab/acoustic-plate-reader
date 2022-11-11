@@ -7,7 +7,7 @@ close all
 % SampleName = '211124_EF31-80-93-Mega13-Mega14-Serratia_stable_37C';
 % saveName = fullfile(saveName,'Verasonics_Processed','APR',SampleName,filesep);
 
-pathName = '/Users/Rob/Library/CloudStorage/GoogleDrive-rchurt@caltech.edu/My Drive/Shapiro lab/Acoustic plate reader project/Example data/A-lib-1_plate2_rep2_stable-37C_P_1_1';
+pathName = 'C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\Data\221110\A-lib-K22R-A2_P1-2_R1-3_stable-37C\A-lib-K22R-A2_P1-2_R1-3_stable-37C_P_R2_C3';
 saveName = pathName;
 
 % mkdir(saveName);

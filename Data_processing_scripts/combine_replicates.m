@@ -4,9 +4,9 @@ close all
 PlateSize = [8,12];
 
 % load data
-data1 = load('/Users/Rob/Library/CloudStorage/GoogleDrive-rchurt@caltech.edu/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/B-parents_P1-4_R1-3_stable-37C/B-parents_P1_R1_stable-37C_P_R1_C1/B-parents_P1-4_R1-3_stable-37C_P_R1_C1_data_220809-16-24-55.mat');
-data2 = load('/Users/Rob/Library/CloudStorage/GoogleDrive-rchurt@caltech.edu/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/B-parents_P1-4_R1-3_stable-37C/B-parents_P1_R2_stable-37C_P_R2_C1/B-parents_P1_R2_stable-37C_P_R2_C1_data_220809-16-44-05.mat');
-data3 = load('/Users/Rob/Library/CloudStorage/GoogleDrive-rchurt@caltech.edu/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/B-parents_P1-4_R1-3_stable-37C/B-parents_P1_R3_stable-37C_P_R3_C1_redo/B-parents_P1_R3_stable-37C_P_R3_C1_data_220809-17-52-21.mat');
+data1 = load('/Volumes/GoogleDrive/.shortcut-targets-by-id/0B24ONICaZ0z9djczVE1ZR3BnWU0/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/A-lib-2/A-lib-K22R-A2/A-lib-K22R-A2_P2_R1_stable-37C_P_R2_C1/A-lib-K22R-A2_P1-2_R1-3_stable-37C_P_R2_C1_data_221111-10-02-42.mat');
+data2 = load('/Volumes/GoogleDrive/.shortcut-targets-by-id/0B24ONICaZ0z9djczVE1ZR3BnWU0/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/A-lib-2/A-lib-K22R-A2/A-lib-K22R-A2_P2_R2_stable-37C_P_R2_C2/A-lib-K22R-A2_P1-2_R1-3_stable-37C_P_R2_C2_data_221111-10-05-09.mat');
+data3 = load('/Volumes/GoogleDrive/.shortcut-targets-by-id/0B24ONICaZ0z9djczVE1ZR3BnWU0/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/A-lib-2/A-lib-K22R-A2/A-lib-K22R-A2_P2_R3_stable-37C_P_R2_C3/A-lib-K22R-A2_P1-2_R1-3_stable-37C_P_R2_C3_data_221111-10-07-38.mat');
 
 %%
 %combine arrays
@@ -34,25 +34,63 @@ data.sampROI_means_stds = std(sampROI_means,0,4);
 % reshape ROI CNRs
 % sampCNR new dimensions: well rows, well columns, frames, imaging modes
 sampCNRs = permute(reshape(data.sampCNR, data.Nf, 2, PlateSize(2), PlateSize(1)), [4 3 1 2]);
+sampCNRs_stds = permute(reshape(data.sampCNR_stds, data.Nf, 2, PlateSize(2), PlateSize(1)), [4 3 1 2]);
 
-% find max signal achieved by each sample at any voltage
-maxs = squeeze(max(sampCNRs, [], 3));
+% find max signal achieved by each sample at any voltage and get std of all
+% replicates of that sample at that voltage
+[maxs,max_ix] = max(sampCNRs, [], 3,'linear');
+maxs = squeeze(maxs);
+max_ix = squeeze(max_ix);
+sampCNRs_stds_maxs = sampCNRs_stds(max_ix);
 
-% make and save microplate plot
+% make and save microplate plots
 figure;
 mpplot = microplateplot(maxs(:,:,1));
 colormap hot
 colorbar
 title('Max signal achieved at any voltage')
 mpplot;
-savefig([data.saveName '_max-signal'])
+savefig([data.saveName '_max-signal.fig'])
+
+figure;
+mpplot = microplateplot(sampCNRs_stds_maxs(:,:,1));
+colormap hot
+colorbar
+title('STD of max signal achieved at any voltage')
+mpplot;
+savefig([data.saveName '_max-signal-STD.fig'])
 
 %%
-save([data.saveName '_data_' datestr(now,'yymmdd-hh-MM-ss')],'-struct','data');
+save([data.saveName '_data_' datestr(now,'yymmdd-hh-MM-ss') '.mat'],'-struct','data');
 
 %after saving, clear all and re-import data to use with PlateQuan4_split
 
+pause(0.5)
+% Make bar plot of max signals
+y = squeeze(max(data.sampCNR,[],1));
+signals = table;
+signals.names = categorical(data.PlateCoordinate).';
+signals.values = y(1,:).';
+signals_sorted = sortrows(signals,2,'descend');
+figure;
+bar(reordercats(signals_sorted.names,cellstr(signals_sorted.names)), signals_sorted.values)
+title('Max signal achieved at any voltage')
+xlabel('Well');
+ylabel('xAM CNR (dB)')
+savefig([data.saveName '_max-signal_bar.fig'])
 
+% writetable(signals_sorted,[data1.saveName '_quants.xlsx'])
+
+% Process whole plate
+% A=reshape(maxs(:,:,:),96,1,2);
+% figure;
+% bar(sort(A(:,1,1),'descend'))
+% title('Max signal achieved at any voltage')
+% xlabel('Colony');
+% ylabel('xAM CNR (dB)')
+% % ylim([-10 20])
+
+% Split plate in half by columns
 % A=reshape(maxs(:,1:6,:),48,1,2);
 % B=reshape(maxs(:,7:12,:),48,1,2);
 % 
@@ -61,15 +99,14 @@ save([data.saveName '_data_' datestr(now,'yymmdd-hh-MM-ss')],'-struct','data');
 % title('Max signal achieved at any voltage')
 % xlabel('Colony');
 % ylabel('xAM CNR (dB)')
-% ylim([-10 20])
+% % ylim([-10 20])
 % 
 % figure;
 % bar(sort(B(:,1,1),'descend'))
 % title('Max signal achieved at any voltage')
 % xlabel('Colony');
 % ylabel('xAM CNR (dB)')
-% ylim([-10 20])
-
+% % ylim([-10 20])
 
 
 
