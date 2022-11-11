@@ -121,7 +121,7 @@ for wellIx = 1:total_n
         end
         if DisplayMode == 1 % Always-on display mode, show images and predicted ROIs
             figure(wellIx);
-            imagesc(Xi, ZixTemp, 20*log10(abs(ImTemp)), [20 80]); axis image; colormap hot;
+            imagesc(Xi, ZixTemp, 20*log10(abs(ImTemp)), [20 80]); axis image; colormap bone;
             hold on;
             noiseROI = drawrectangle('Position',[Xi(1) ZixTemp(iZd_noise(1)) Xi(end)-Xi(1) ZixTemp(iZd_noise(end))-ZixTemp(iZd_noise(1))], 'EdgeColor','w', 'LineWidth',2, 'Tag',['noise_' num2str(wellIx)]); % Draw noise ROI
             %addlistener(noiseROI,'ROIMoved',@updateNoiseROI);
@@ -134,7 +134,7 @@ for wellIx = 1:total_n
             pause(0.3);
         elseif DisplayMode == 2 && (confScore(wellIx) < CST) % Only display images below confidence score threshold
             figure(wellIx);
-            imagesc(Xi, ZixTemp, 20*log10(abs(ImTemp)), [20 80]); axis image; colormap hot;
+            imagesc(Xi, ZixTemp, 20*log10(abs(ImTemp)), [20 80]); axis image; colormap bone;
             hold on;
             noiseROI = drawrectangle('Position',[Xi(1) ZixTemp(iZd_noise(1)) Xi(end)-Xi(1) ZixTemp(iZd_noise(end))-ZixTemp(iZd_noise(1))], 'EdgeColor','w', 'LineWidth',2, 'Tag',['noise_' num2str(wellIx)]); % Draw noise ROI
             %addlistener(noiseROI,'ROIMoved',@updateNoiseROI);
@@ -188,13 +188,13 @@ mpplot;
 
 figure;
 microplateplot(maxs_AM_Bmode_ratio(:,:))
-colormap hot
+colormap parula
 colorbar
 title('Max xAM:Bmode ratio signal achieved at any voltage')
 mpplot;
 %savefig([saveName '_max-xAM-Bmode'])
 
-montagefigures(figs,PlateSize(1),PlateSize(2)) %create figure montage
+layout = layoutfigures(figs,PlateSize(1),PlateSize(2)); %create figure layout
 
 %% function definitions
 function make_plots(sampCNR, PlateSize, Nf, AM_Bmode_ratio,confScore,saveName)
@@ -226,7 +226,7 @@ end
 function plot_AM_Bmode_ratio(maxs_AM_Bmode_ratio, saveName)
     figure;
     AM_Bmode_mpplot = microplateplot(maxs_AM_Bmode_ratio(:,:));
-    colormap hot
+    colormap parula
     colorbar
     title('Max xAM:Bmode ratio signal achieved at any voltage')
     AM_Bmode_mpplot;
@@ -301,20 +301,24 @@ function updateROI(src,evt)
     evalin('base','make_plots(sampCNR, PlateSize, Nf, AM_Bmode_ratio,confScore,saveName)');
 end
 
-function layout = montagefigures(figs_array,n_rows,n_cols)
-    % figurearray is a gobjects array for the figures that you'd like
+function layout = layoutfigures(figs_array,n_rows,n_cols)
+    % figs_array is a gobjects array for the figures that you'd like
     % included in the montage
-    layout = tiledlayout(n_rows,n_cols)
+    h = figure;
+    h.WindowState = 'maximized';
+    colormap bone
+    layout = tiledlayout(n_rows,n_cols);
     for wellIx = 1:length(figs_array)
+        nexttile
         curr_axes = gca;
-        disp(wellIx);
-        fig = figs_array(wellIx).CurrentAxes
+        disp(wellIx); % print current well #
+        fig = figs_array(wellIx).CurrentAxes; % pull fig object from array
         graphics = fig.Children; %CurrentObject
         for graph_index = 1:length(graphics)
             copyobj(graphics(graph_index),curr_axes,'legacy');
         end
+        set(curr_axes, 'YDir','reverse')
         axis off;
-        nexttile
     end
     layout.TileSpacing = 'compact';
     layout.Padding = 'compact';
