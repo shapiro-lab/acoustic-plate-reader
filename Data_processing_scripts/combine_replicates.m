@@ -4,9 +4,9 @@ close all
 PlateSize = [8,12];
 
 % load data
-data1 = load('/Volumes/GoogleDrive/.shortcut-targets-by-id/0B24ONICaZ0z9djczVE1ZR3BnWU0/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/A-lib-2/A-lib-K22R-A2/A-lib-K22R-A2_P2_R1_stable-37C_P_R2_C1/A-lib-K22R-A2_P1-2_R1-3_stable-37C_P_R2_C1_data_221111-10-02-42.mat');
-data2 = load('/Volumes/GoogleDrive/.shortcut-targets-by-id/0B24ONICaZ0z9djczVE1ZR3BnWU0/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/A-lib-2/A-lib-K22R-A2/A-lib-K22R-A2_P2_R2_stable-37C_P_R2_C2/A-lib-K22R-A2_P1-2_R1-3_stable-37C_P_R2_C2_data_221111-10-05-09.mat');
-data3 = load('/Volumes/GoogleDrive/.shortcut-targets-by-id/0B24ONICaZ0z9djczVE1ZR3BnWU0/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/A-lib-2/A-lib-K22R-A2/A-lib-K22R-A2_P2_R3_stable-37C_P_R2_C3/A-lib-K22R-A2_P1-2_R1-3_stable-37C_P_R2_C3_data_221111-10-07-38.mat');
+data1 = load('G:\.shortcut-targets-by-id\0B24ONICaZ0z9djczVE1ZR3BnWU0\Shapiro Lab Information\Data\Rob\96-well_plate_scans\GvpA-B-mutants\A-lib-2\A-lib-K22R-A2\A-lib-K22R-A2_P2_R1_stable-37C_P_R1_C2\A-lib-K22R-A2_P2_R2_stable-37C_P_R1_C2_data_221202-12-49-23.mat');
+data2 = load('G:\.shortcut-targets-by-id\0B24ONICaZ0z9djczVE1ZR3BnWU0\Shapiro Lab Information\Data\Rob\96-well_plate_scans\GvpA-B-mutants\A-lib-2\A-lib-K22R-A2\A-lib-K22R-A2_P2_R2_stable-37C_P_R1_C3\A-lib-K22R-A2_P2_R3_stable-37C_P_R1_C3_data_221202-12-53-16.mat');
+data3 = load('G:\.shortcut-targets-by-id\0B24ONICaZ0z9djczVE1ZR3BnWU0\Shapiro Lab Information\Data\Rob\96-well_plate_scans\GvpA-B-mutants\A-lib-2\A-lib-K22R-A2\A-lib-K22R-A2_P2_R3_stable-37C_P_R1_C4\A-lib-K22R-A2_P2_R4_stable-37C_P_R1_C4_data_221202-12-56-25.mat');
 
 %%
 %combine arrays
@@ -52,6 +52,7 @@ title('Max signal achieved at any voltage')
 mpplot;
 savefig([data.saveName '_max-signal.fig'])
 
+pause(0.3)
 figure;
 mpplot = microplateplot(sampCNRs_stds_maxs(:,:,1));
 colormap hot

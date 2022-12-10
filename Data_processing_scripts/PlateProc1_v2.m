@@ -1,18 +1,9 @@
 clear all
 close all
-
-% saveName = '/Volumes/GoogleDrive/My Drive/';
-% pathName = '/Volumes/GoogleDrive/My Drive/';
-% ExperimentDate = 'Verasonics_Raw';
-% SampleName = '211124_EF31-80-93-Mega13-Mega14-Serratia_stable_37C';
-% saveName = fullfile(saveName,'Verasonics_Processed','APR',SampleName,filesep);
-
-pathName = 'C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\Data\221110\A-lib-K22R-A2_P1-2_R1-3_stable-37C\A-lib-K22R-A2_P1-2_R1-3_stable-37C_P_R2_C3';
+% 
+pathName = 'G:\.shortcut-targets-by-id\0B24ONICaZ0z9djczVE1ZR3BnWU0\Shapiro Lab Information\Data\Rob\96-well_plate_scans\GvpA-B-mutants\A-lib-2\A-lib-K22R-A2\A-lib-K22R-A2_P1_R1-4_stable-37C_P_R1_C1';
 saveName = pathName;
 
-% mkdir(saveName);
-                                                                                            
-% pathName = fullfile(pathName, ExperimentDate, SampleName);
 SubDirs = GetSubDirs(pathName);
 total_n = length(SubDirs);
 PlateCoordinate = strings(1,total_n);

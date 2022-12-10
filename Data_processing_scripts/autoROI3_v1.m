@@ -1,6 +1,12 @@
+% clear all
+% close all
+% 
+% pathName = 'G:\.shortcut-targets-by-id\0B24ONICaZ0z9djczVE1ZR3BnWU0\Shapiro Lab Information\Data\Rob\96-well_plate_scans\GvpA-B-mutants\A-lib-2\A-lib-K22R-A2\A-lib-K22R-A2_P3_4_stable-37C_P_R1_C3';
+
+% PlateProc1_v2
+% 
 close all
 clear iZt ixZtemp
-
 %%
 % sample_depth = [1 9.1]; % display/sample depth range in mm
 sample_depth = [3 8]; % display/sample depth range in mm
@@ -184,7 +190,7 @@ colormap hot
 colorbar
 title('Max xAM signal achieved at any voltage')
 mpplot;
-%savefig([saveName '_max-xAM'])
+savefig([saveName '_max-xAM'])
 
 figure;
 microplateplot(maxs_AM_Bmode_ratio(:,:))
@@ -192,7 +198,7 @@ colormap parula
 colorbar
 title('Max xAM:Bmode ratio signal achieved at any voltage')
 mpplot;
-%savefig([saveName '_max-xAM-Bmode'])
+savefig([saveName '_max-xAM-Bmode'])
 
 layout = layoutfigures(figs,PlateSize(1),PlateSize(2)); %create figure layout
 
@@ -297,8 +303,12 @@ function updateROI(src,evt)
     evalin('base','AM_Bmode_ratio = 20*log10(abs((sampROI_means(:,1,:) - noiseROI_means(:,1,:)) ./ (sampROI_means(:,2,:) - noiseROI_means(:,1,:))));'); % Recalculate xAM/Bmode, dB scale
     disp(['Updated ' src.Tag ' mean']);
     
-    %update plots
+    % update plots
     evalin('base','make_plots(sampCNR, PlateSize, Nf, AM_Bmode_ratio,confScore,saveName)');
+    layout = evalin('base','layoutfigures(figs,PlateSize(1),PlateSize(2))'); %create figure layout
+    
+    % save updated quants
+    save([saveName '_data_' datestr(now,'yymmdd-hh-MM-ss')],'P','saveName','sampROI_means','sampCNR','AM_Bmode_ratio','noiseROI_means','noiseROI_stds','voltage','PlateCoordinate','PlateSize','ROI_Centers','confScore','Nf');
 end
 
 function layout = layoutfigures(figs_array,n_rows,n_cols)
@@ -311,7 +321,7 @@ function layout = layoutfigures(figs_array,n_rows,n_cols)
     for wellIx = 1:length(figs_array)
         nexttile
         curr_axes = gca;
-        disp(wellIx); % print current well #
+%         disp(wellIx); % print current well #
         fig = figs_array(wellIx).CurrentAxes; % pull fig object from array
         graphics = fig.Children; %CurrentObject
         for graph_index = 1:length(graphics)

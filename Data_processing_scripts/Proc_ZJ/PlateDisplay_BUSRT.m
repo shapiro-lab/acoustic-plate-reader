@@ -1,9 +1,9 @@
 %clear all
 
-saveName = '/Users/verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\Data\nivin_220806_BURST/';
-pathName = '/Users/verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\Data\nivin_220806_BURST/';
+saveName = 'C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\Data\Wheesoo_221119_BURST/';
+pathName = 'C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\Data\Wheesoo_221119_BURST/';
 %ExperimentDate = '210329_RCH';
-SampleName = '293T_pNN009_6w_mutGvpCs';
+SampleName = 'GV3_2022-11-19@14-41-402';
 
 %PlateProc1;
 

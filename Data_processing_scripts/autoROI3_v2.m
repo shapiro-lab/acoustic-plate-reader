@@ -1,6 +1,12 @@
+% clear all
+% close all
+% 
+% pathName = '/Volumes/GoogleDrive-118305181097921812507/.shortcut-targets-by-id/0B24ONICaZ0z9djczVE1ZR3BnWU0/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/B-lib-2/B-lib_P1_R1_stable-37C_P_R1_C1';
+% 
+% PlateProc1_v2
+
 close all
 clear iZt ixZtemp
-
 %%
 % sample_depth = [1 9.1]; % display/sample depth range in mm
 sample_depth = [1 8]; % display/sample depth range in mm
@@ -49,7 +55,7 @@ skip = zeros(1,total_n); % ROI correction in well indices to skip processing
 % xcorrection([53]) = -5;
 % xcorrection([59]) = -5;
 % xcorrection([85]) = -5;
-%xcorrection([37]) =55;
+% xcorrection([37]) =55;
 
 % zcorrection(1:total_n) = 20;
 % zcorrection(1) = -20;
