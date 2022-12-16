@@ -28,6 +28,7 @@ WellTemplate = WellTemplates{TemplateMode}; % Apply ROI template as selected.
 CST = ConfidenceScoreThreshold(TemplateMode); % Apply corresponding confidence score threshold for reminder to adjust ROIs (abitrary defined thresholds)
 
 figs = gobjects(1,total_n); % initialize array to hold figure objects
+maxs_plots = gobjects(1,2); % initialize array to hold maxs_XAM and Bmode figures
 noiseZ = nan(2,total_n); % initialize array for noise slice bounds
 confScore = nan(1,total_n); % initialize array for ROI prediction confidence score 
 ROI_Centers = nan(total_n,2); % initialize array for locations of ROI centers
@@ -126,30 +127,28 @@ for wellIx = 1:total_n
             disp(['Warning: well#' num2str(wellIx) ' might be off.'])
         end
         if DisplayMode == 1 % Always-on display mode, show images and predicted ROIs
-            figure(wellIx);
+            f = figure(wellIx);
             imagesc(Xi, ZixTemp, 20*log10(abs(ImTemp)), [20 80]); axis image; colormap bone;
             hold on;
             noiseROI = drawrectangle('Position',[Xi(1) ZixTemp(iZd_noise(1)) Xi(end)-Xi(1) ZixTemp(iZd_noise(end))-ZixTemp(iZd_noise(1))], 'EdgeColor','w', 'LineWidth',2, 'Tag',['noise_' num2str(wellIx)]); % Draw noise ROI
-            %addlistener(noiseROI,'ROIMoved',@updateNoiseROI);
             sampROI = drawrectangle('Position',[Xi(XixROI(1)) ZixTemp(ZixROI(1)) Xi(XixROI(2))-Xi(XixROI(1)) ZixTemp(ZixROI(2))-ZixTemp(ZixROI(1))], 'EdgeColor','g', 'LineWidth',2, 'Tag',['samp_' num2str(wellIx)]); % Draw sample ROI
-            %addlistener(sampROI,'ROIMoved',@updateSampROI);
             addlistener(noiseROI,'ROIMoved',@updateROI);
             addlistener(sampROI,'ROIMoved',@updateROI);
             title(['Frame #' num2str(wellIx)]);
             figs(wellIx) = figure(wellIx); % store figure object in array
+            set(f, 'visible', 'off'); %hide figure
             pause(0.3);
         elseif DisplayMode == 2 && (confScore(wellIx) < CST) % Only display images below confidence score threshold
-            figure(wellIx);
+            f = figure(wellIx);
             imagesc(Xi, ZixTemp, 20*log10(abs(ImTemp)), [20 80]); axis image; colormap bone;
             hold on;
             noiseROI = drawrectangle('Position',[Xi(1) ZixTemp(iZd_noise(1)) Xi(end)-Xi(1) ZixTemp(iZd_noise(end))-ZixTemp(iZd_noise(1))], 'EdgeColor','w', 'LineWidth',2, 'Tag',['noise_' num2str(wellIx)]); % Draw noise ROI
-            %addlistener(noiseROI,'ROIMoved',@updateNoiseROI);
             sampROI = drawrectangle('Position',[Xi(XixROI(1)) ZixTemp(ZixROI(1)) Xi(XixROI(2))-Xi(XixROI(1)) ZixTemp(ZixROI(2))-ZixTemp(ZixROI(1))], 'EdgeColor','g', 'LineWidth',2, 'Tag',['samp_' num2str(wellIx)]); % Draw sample ROI
-            %addlistener(sampROI,'ROIMoved',@updateSampROI);
             addlistener(noiseROI,'ROIMoved',@updateROI);
             addlistener(sampROI,'ROIMoved',@updateROI);
             title(['Frame #' num2str(wellIx)]);
             figs(wellIx) = figure(wellIx); % store figure object in array
+            set(f, 'visible', 'off'); 
             pause(0.3);
         end
 
@@ -184,21 +183,8 @@ maxs_AM = squeeze(max(sampCNRs, [], 3));
 maxs_AM_Bmode_ratio = squeeze(max(AM_Bmode_ratios, [], 3));
 
 % make and save microplate plots
-figure;
-mpplot = microplateplot(maxs_AM(:,:,1));
-colormap hot
-colorbar
-title('Max xAM signal achieved at any voltage')
-mpplot;
-savefig([saveName '_max-xAM'])
-
-figure;
-microplateplot(maxs_AM_Bmode_ratio(:,:))
-colormap parula
-colorbar
-title('Max xAM:Bmode ratio signal achieved at any voltage')
-mpplot;
-savefig([saveName '_max-xAM-Bmode'])
+plot_xAM(maxs_AM, saveName)
+plot_AM_Bmode_ratio(maxs_AM_Bmode_ratio, saveName)
 
 layout = layoutfigures(figs,PlateSize(1),PlateSize(2)); %create figure layout
 
@@ -214,6 +200,17 @@ function make_plots(sampCNR, PlateSize, Nf, AM_Bmode_ratio,confScore,saveName)
     maxs_AM = squeeze(max(sampCNRs, [], 3));
     maxs_AM_Bmode_ratio = squeeze(max(AM_Bmode_ratios, [], 3));
     
+    %delete previous plots %NEED TO DEBUG THIS
+    open_figs = findobj('type', 'figure');
+    disp("checkpoint")
+    for fig_ind = 1:length(open_figs)
+        fig = open_figs(fig_ind);
+        disp(fig.CurrentAxes.Tag)
+        if strcmp(fig.CurrentAxes.Tag, 'max-xAM') || strcmp(fig.CurrentAxes.Tag, 'max-xAM:Bmode')%this will delete the previous maxs figures if they exist, we remake them later
+            delete(fig);
+        end
+    end
+    
     % make and save microplate plots
     plot_xAM(maxs_AM, saveName);
     plot_AM_Bmode_ratio(maxs_AM_Bmode_ratio, saveName);
@@ -225,6 +222,7 @@ function plot_xAM(maxs_AM, saveName)
     colormap hot
     colorbar
     title('Max xAM signal achieved at any voltage')
+    set(xAM_mpplot, 'tag', 'max-xAM');
     xAM_mpplot;
     savefig([saveName '_max-xAM'])
 end
@@ -235,6 +233,7 @@ function plot_AM_Bmode_ratio(maxs_AM_Bmode_ratio, saveName)
     colormap parula
     colorbar
     title('Max xAM:Bmode ratio signal achieved at any voltage')
+    set(AM_Bmode_mpplot, 'tag', 'max-xAM:Bmode');
     AM_Bmode_mpplot;
     savefig([saveName '_max-xAM-Bmode'])
 end
@@ -304,11 +303,12 @@ function updateROI(src,evt)
     disp(['Updated ' src.Tag ' mean']);
     
     % update plots
+    %delete plots
     evalin('base','make_plots(sampCNR, PlateSize, Nf, AM_Bmode_ratio,confScore,saveName)');
-    layout = evalin('base','layoutfigures(figs,PlateSize(1),PlateSize(2))'); %create figure layout
-    
+    %layout = evalin('base','layoutfigures(figs,PlateSize(1),PlateSize(2))'); %don't need to recreate layoutfigures?
+ 
     % save updated quants
-    save([saveName '_data_' datestr(now,'yymmdd-hh-MM-ss')],'P','saveName','sampROI_means','sampCNR','AM_Bmode_ratio','noiseROI_means','noiseROI_stds','voltage','PlateCoordinate','PlateSize','ROI_Centers','confScore','Nf');
+    evalin('base', "save([saveName '_data_' datestr(now,'yymmdd-hh-MM-ss')],'P','saveName','sampROI_means','sampCNR','AM_Bmode_ratio','noiseROI_means','noiseROI_stds','voltage','PlateCoordinate','PlateSize','ROI_Centers','confScore','Nf');")
 end
 
 function layout = layoutfigures(figs_array,n_rows,n_cols)
@@ -316,16 +316,21 @@ function layout = layoutfigures(figs_array,n_rows,n_cols)
     % included in the montage
     h = figure;
     h.WindowState = 'maximized';
+    title('ROI selection')
+    set(h, 'tag', 'ROI-layout');
     colormap bone
     layout = tiledlayout(n_rows,n_cols);
     for wellIx = 1:length(figs_array)
         nexttile
         curr_axes = gca;
-%         disp(wellIx); % print current well #
         fig = figs_array(wellIx).CurrentAxes; % pull fig object from array
         graphics = fig.Children; %CurrentObject
-        for graph_index = 1:length(graphics)
-            copyobj(graphics(graph_index),curr_axes,'legacy');
+        for graph_index = 1:length(graphics) %copy over all of the objects in the figure
+            old_object = graphics(graph_index);
+            new_object = copyobj(old_object,curr_axes,'legacy'); %copy over the object with legacy
+            if strcmp(old_object.Tag, sprintf("samp_%d", wellIx)) || strcmp(old_object.Tag, sprintf("noise_%d", wellIx)) %I objects with these tags need callbacks
+                addlistener(new_object,'ROIMoved',@updateROI); %updateROI is the callback function
+            end
         end
         set(curr_axes, 'YDir','reverse')
         axis off;
