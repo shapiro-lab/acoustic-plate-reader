@@ -202,10 +202,8 @@ function make_plots(sampCNR, PlateSize, Nf, AM_Bmode_ratio,confScore,saveName)
     
     %delete previous plots %NEED TO DEBUG THIS
     open_figs = findobj('type', 'figure');
-    disp("checkpoint")
     for fig_ind = 1:length(open_figs)
         fig = open_figs(fig_ind);
-        disp(fig.CurrentAxes.Tag)
         if strcmp(fig.CurrentAxes.Tag, 'max-xAM') || strcmp(fig.CurrentAxes.Tag, 'max-xAM:Bmode')%this will delete the previous maxs figures if they exist, we remake them later
             delete(fig);
         end
@@ -236,35 +234,6 @@ function plot_AM_Bmode_ratio(maxs_AM_Bmode_ratio, saveName)
     set(AM_Bmode_mpplot, 'tag', 'max-xAM:Bmode');
     AM_Bmode_mpplot;
     savefig([saveName '_max-xAM-Bmode'])
-end
-
-function updateNoiseROI(src,evt)
-    disp(['ROI ' src.Tag ' moved. New position: ' mat2str(evt.CurrentPosition)])
-    noiseMask = createMask(src); % Create mask for noise ROI
-    
-    % Calculate new quants
-    wellIx = str2double(src.Tag(7:end));
-    meanTemp = mean(nonzeros(evalin('base', sprintf('data(:,:,:, %d)', wellIx)).*noiseMask), [1 2 4], 'omitnan');
-    stdTemp = std2(nonzeros(evalin('base', sprintf('data(:,:,:, %d)', wellIx)).*noiseMask));
-    
-    % Assign new quants into array
-    evalin('base',sprintf('noiseROI_means(1,:, %d)=%d;',wellIx,meanTemp));
-    disp(['New ' src.Tag ' mean: ' num2str(meanTemp)]);
-    evalin('base',sprintf('noiseROI_stds(1,:, %d)=%d;',wellIx,stdTemp));
-    disp(['New ' src.Tag ' STD: ' num2str(stdTemp)]);
-end
-
-function updateSampROI(src,evt)
-    disp(['ROI ' src.Tag ' moved. New position: ' mat2str(evt.CurrentPosition)])
-    sampMask = createMask(src); % Create mask for samp ROI
-    wellIx = str2double(src.Tag(6:end)); %Get well index from the tag
-
-    % Calculate new quant
-    meanTemp = mean(nonzeros(evalin('base', sprintf('data(:,:, %d)', wellIx)).*sampMask), 'all', 'omitnan');
-    
-    % Assign new quant into array
-    evalin('base',sprintf('sampROI_means(1, %d)=%d;',wellIx,meanTemp));
-    disp(['New ' src.Tag ' mean: ' num2str(meanTemp)]);
 end
 
 function updateROI(src,evt)
@@ -305,7 +274,6 @@ function updateROI(src,evt)
     % update plots
     %delete plots
     evalin('base','make_plots(sampCNR, PlateSize, Nf, AM_Bmode_ratio,confScore,saveName)');
-    %layout = evalin('base','layoutfigures(figs,PlateSize(1),PlateSize(2))'); %don't need to recreate layoutfigures?
  
     % save updated quants
     evalin('base', "save([saveName '_data_' datestr(now,'yymmdd-hh-MM-ss')],'P','saveName','sampROI_means','sampCNR','AM_Bmode_ratio','noiseROI_means','noiseROI_stds','voltage','PlateCoordinate','PlateSize','ROI_Centers','confScore','Nf');")
