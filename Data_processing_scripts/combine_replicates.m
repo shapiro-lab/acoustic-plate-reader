@@ -4,9 +4,9 @@ close all
 PlateSize = [8,12];
 
 % load data
-data1 = load('G:\.shortcut-targets-by-id\0B24ONICaZ0z9djczVE1ZR3BnWU0\Shapiro Lab Information\Data\Rob\96-well_plate_scans\GvpA-B-mutants\A-lib-2\A-lib-K22R-A2\A-lib-K22R-A2_P2_R1_stable-37C_P_R1_C2\A-lib-K22R-A2_P2_R2_stable-37C_P_R1_C2_data_221202-12-49-23.mat');
-data2 = load('G:\.shortcut-targets-by-id\0B24ONICaZ0z9djczVE1ZR3BnWU0\Shapiro Lab Information\Data\Rob\96-well_plate_scans\GvpA-B-mutants\A-lib-2\A-lib-K22R-A2\A-lib-K22R-A2_P2_R2_stable-37C_P_R1_C3\A-lib-K22R-A2_P2_R3_stable-37C_P_R1_C3_data_221202-12-53-16.mat');
-data3 = load('G:\.shortcut-targets-by-id\0B24ONICaZ0z9djczVE1ZR3BnWU0\Shapiro Lab Information\Data\Rob\96-well_plate_scans\GvpA-B-mutants\A-lib-2\A-lib-K22R-A2\A-lib-K22R-A2_P2_R3_stable-37C_P_R1_C4\A-lib-K22R-A2_P2_R4_stable-37C_P_R1_C4_data_221202-12-56-25.mat');
+data1 = load('/Volumes/GoogleDrive-118305181097921812507/.shortcut-targets-by-id/0B24ONICaZ0z9djczVE1ZR3BnWU0/Shapiro Lab Information/Data/Rob/EFA4-A8-A9_R1-4_stable_37C/EFA4-A9_R1-4_stable_37C_P_R2_C1/EFA4-A8-A9_R1-4_stable_37C_P_R2_C1_data_221220-13-33-34.mat');
+data2 = load('/Volumes/GoogleDrive-118305181097921812507/.shortcut-targets-by-id/0B24ONICaZ0z9djczVE1ZR3BnWU0/Shapiro Lab Information/Data/Rob/EFA4-A8-A9_R1-4_stable_37C/EFA4-A9_R1-4_stable_37C_P_R2_C2/EFA4-A8-A9_R1-4_stable_37C_P_R2_C2_data_221220-13-36-50.mat');
+data3 = load('/Volumes/GoogleDrive-118305181097921812507/.shortcut-targets-by-id/0B24ONICaZ0z9djczVE1ZR3BnWU0/Shapiro Lab Information/Data/Rob/EFA4-A8-A9_R1-4_stable_37C/EFA4-A9_R1-4_stable_37C_P_R2_C3/EFA4-A8-A9_R1-4_stable_37C_P_R2_C3_data_221220-13-40-51.mat');
 
 %%
 %combine arrays
@@ -44,22 +44,39 @@ max_ix = squeeze(max_ix);
 sampCNRs_stds_maxs = sampCNRs_stds(max_ix);
 
 % make and save microplate plots
-figure;
-mpplot = microplateplot(maxs(:,:,1));
-colormap hot
-colorbar
-title('Max signal achieved at any voltage')
-mpplot;
-savefig([data.saveName '_max-signal.fig'])
+% figure;
+% mpplot = microplateplot(maxs(:,:,1));
+% colormap hot
+% colorbar
+% title('Max signal achieved at any voltage')
+% mpplot;
+% savefig([data.saveName '_max-signal.fig'])
+% 
+% pause(0.3)
+% figure;
+% mpplot = microplateplot(sampCNRs_stds_maxs(:,:,1));
+% colormap hot
+% colorbar
+% title('STD of max signal achieved at any voltage')
+% mpplot;
+% savefig([data.saveName '_max-signal-STD.fig'])
 
-pause(0.3)
 figure;
-mpplot = microplateplot(sampCNRs_stds_maxs(:,:,1));
+mpplot = microplateplot(squeeze(sampCNRs(:,:,1,1)));
 colormap hot
 colorbar
-title('STD of max signal achieved at any voltage')
+title('Pre-collapse xAM')
 mpplot;
-savefig([data.saveName '_max-signal-STD.fig'])
+savefig([data.saveName '_pre-collapse-xAM.fig'])
+
+figure;
+mpplot = microplateplot(squeeze(sampCNRs_stds(:,:,1,1)));
+colormap hot
+colorbar
+title('STD of Pre-collapse xAM')
+mpplot;
+savefig([data.saveName '_pre-collapse-xAM-STD.fig'])
+
 
 %%
 save([data.saveName '_data_' datestr(now,'yymmdd-hh-MM-ss') '.mat'],'-struct','data');
