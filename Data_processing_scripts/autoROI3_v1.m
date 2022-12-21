@@ -28,6 +28,7 @@ WellTemplate = WellTemplates{TemplateMode}; % Apply ROI template as selected.
 CST = ConfidenceScoreThreshold(TemplateMode); % Apply corresponding confidence score threshold for reminder to adjust ROIs (abitrary defined thresholds)
 
 Bmode_figs = gobjects(1,total_n); % initialize array to hold Bmode figure objects
+xAM_figs = gobjects(1,total_n); % initialize array to hold Bmode figure objects
 maxs_plots = gobjects(1,2); % initialize array to hold maxs_XAM and Bmode figures
 noiseZ = nan(2,total_n); % initialize array for noise slice bounds
 confScore = nan(1,total_n); % initialize array for ROI prediction confidence score 
@@ -41,35 +42,6 @@ Ixz_cell = cell(Nf,1); %initialize empty cell to hold ixZtemp from each well
 xcorrection = zeros(1,total_n); % initialize array for ROI correction in x dimension (correction in the unit of voxel count, ~0.1 mm/count)
 zcorrection = zeros(1,total_n); % initialize array for ROI correction in z dimension (correction in the unit of voxel count, ~0.0124 mm/count)  
 skip = zeros(1,total_n); % ROI correction in well indices to skip processing
-
-% xcorrection([2]) = 7;
-% xcorrection([37]) = 55;
-% xcorrection([61]) = 25;
-% xcorrection([74]) = 25;
-% xcorrection([76]) = 55;
-% xcorrection([85]) = 25;
-% xcorrection([86]) = 30;
-% xcorrection([18]) = 5;
-% xcorrection([34]) = -5;
-% xcorrection([38]) = 5;
-% xcorrection([60]) = -5;
-% xcorrection([27]) = 5;
-% xcorrection([53]) = -5;
-% xcorrection([55]) = -5;
-% xcorrection([86]) = 15;
-%xcorrection([37]) =55;
-
-% zcorrection(1:total_n) = 20;
-% zcorrection(37) = -20;
-% zcorrection(61) = -90;
-% zcorrection(74) = -90;
-% zcorrection(76) = -20;
-% zcorrection(85) = -60;
-% zcorrection(86) = -80;
-% zcorrection(25) = 40;
-% zcorrection(31) = 20;
-% zcorrection(81) = -30;
-% zcorrection(87) = 10;
 zcorrection = zcorrection + 20;
 %% quantify ROIs
 for wellIx = 1:total_n
@@ -80,7 +52,7 @@ for wellIx = 1:total_n
             ixZtemp = find(Zi>=sample_depth(1),1,'first'):find(Zi>=sample_depth(2),1,'first'); 
         end
         ImTemp = ImTemp(ixZtemp,:); % Crop the images to defined sample depth to decrease data size
-        Ixz_cell(wellIx) = {ixZtemp};%store ImTemp in cell for callback purposes
+        Ixz_cell(wellIx) = {ixZtemp}; % store ImTemp in cell for callback purposes
         ZixTemp = Zi(ixZtemp); % Define new z-axis after cropping
         noiseZ(:,wellIx) = [find(ZixTemp>=noise_slice(1),1,'first') find(ZixTemp>=noise_slice(2),1,'first')]; % Find start/end indices for corresponding noise ROI
         iZd_noise = noiseZ(1,wellIx):noiseZ(2,wellIx); % Make vector of noise Z indices
@@ -127,7 +99,7 @@ for wellIx = 1:total_n
             disp(['Warning: well#' num2str(wellIx) ' might be off.'])
         end
         if DisplayMode == 1 % Always-on display mode, show images and predicted ROIs
-            f = figure(wellIx);
+            Bmode_fig = figure(wellIx);
             imagesc(Xi, ZixTemp, 20*log10(abs(ImTemp)), [20 80]); axis image; colormap bone;
             hold on;
             noiseROI = drawrectangle('Position',[Xi(1) ZixTemp(iZd_noise(1)) Xi(end)-Xi(1) ZixTemp(iZd_noise(end))-ZixTemp(iZd_noise(1))], 'EdgeColor','w', 'LineWidth',2, 'Tag',['noise_' num2str(wellIx)]); % Draw noise ROI
@@ -135,11 +107,11 @@ for wellIx = 1:total_n
             addlistener(noiseROI,'ROIMoved',@updateROI);
             addlistener(sampROI,'ROIMoved',@updateROI);
             title(['Frame #' num2str(wellIx)]);
-            Bmode_figs(wellIx) = figure(wellIx); % store figure object in array
-            set(f, 'visible', 'off'); %hide figure
+            Bmode_figs(wellIx) = Bmode_fig; % store figure object in array
+            set(Bmode_fig, 'visible', 'off'); % hide figure
             pause(0.3);
         elseif DisplayMode == 2 && (confScore(wellIx) < CST) % Only display images below confidence score threshold
-            f = figure(wellIx);
+            Bmode_fig = figure(wellIx);
             imagesc(Xi, ZixTemp, 20*log10(abs(ImTemp)), [20 80]); axis image; colormap bone;
             hold on;
             noiseROI = drawrectangle('Position',[Xi(1) ZixTemp(iZd_noise(1)) Xi(end)-Xi(1) ZixTemp(iZd_noise(end))-ZixTemp(iZd_noise(1))], 'EdgeColor','w', 'LineWidth',2, 'Tag',['noise_' num2str(wellIx)]); % Draw noise ROI
@@ -147,8 +119,8 @@ for wellIx = 1:total_n
             addlistener(noiseROI,'ROIMoved',@updateROI);
             addlistener(sampROI,'ROIMoved',@updateROI);
             title(['Frame #' num2str(wellIx)]);
-            Bmode_figs(wellIx) = figure(wellIx); % store figure object in array
-            set(f, 'visible', 'off'); 
+            Bmode_figs(wellIx) = Bmode_fig; % store figure object in array
+            set(Bmode_fig, 'visible', 'off'); % hide figure
             pause(0.3);
         end
 
