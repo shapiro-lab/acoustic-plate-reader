@@ -33,7 +33,11 @@ Bmode_figs = gobjects(1,total_n); % initialize array to hold Bmode figure object
 xAM_figs = gobjects(1,total_n); % initialize array to hold xAM figure objects
 ZixROI_array = nan(total_n,2); % initialize array to hold ZiX ROI values
 XixROI_array = nan(total_n,2); % initialize array to hold XiX ROI values
+Xi_cell = cell(total_n,1); %cell to hold Xi doubles
+ZixTemp_cell = cell(total_n,1); %cell to hold ZiXTemp doubles
 maxs_plots = gobjects(1,2); % initialize array to hold maxs_XAM and Bmode figures
+
+%% other arrays that need to be initialized
 noiseZ = nan(2,total_n); % initialize array for noise slice bounds
 confScore = nan(1,total_n); % initialize array for ROI prediction confidence score 
 ROI_Centers = nan(total_n,2); % initialize array for locations of ROI centers
@@ -102,8 +106,11 @@ for wellIx = 1:total_n
             XixROI(1) = XixROI(2)-2*xROI_size;
             disp(['Warning: well#' num2str(wellIx) ' might be off.'])
         end
+        %store data needed for callbacks
         ZixROI_array(wellIx, :) = ZixROI; %store rectangle coords in array
         XixROI_array(wellIx, :) = XixROI; %store rectangle coords in array
+        
+        %make the figures
         if DisplayMode == 1 % Always-on display mode, show images and predicted ROIs
             %create Bmode figure
             Bmode_fig = figure();
@@ -116,7 +123,7 @@ for wellIx = 1:total_n
             title(['Bmode Frame #' num2str(wellIx)]);
             Bmode_figs(wellIx) = Bmode_fig; % store figure object in array
             set(Bmode_fig, 'visible', 'off'); % hide figure
-            pause(0.3);
+%             pause(0.3);
            
             %create xAM figure
             xAM_fig = figure();
@@ -131,7 +138,9 @@ for wellIx = 1:total_n
             title(['xAM Frame #' num2str(wellIx)]);
             xAM_figs(wellIx) = xAM_fig; % store figure object in array
             set(xAM_fig, 'visible', 'off'); % hide figure
-            pause(0.3);
+            Xi_cell(wellIx) = {Xi}; %store Xi in cell
+            ZixTemp_cell(wellIx) = {ZixTemp}; % store ZiXTemp in cell
+%             pause(0.3);
             
         elseif DisplayMode == 2 && (confScore(wellIx) < CST) % Only display images below confidence score threshold
             Bmode_fig = figure(wellIx);
@@ -159,6 +168,8 @@ for wellIx = 1:total_n
             title(['xAM Frame #' num2str(wellIx)]);
             xAM_figs(wellIx) = xAM_fig; % store figure object in array
             set(xAM_fig, 'visible', 'off'); % hide figure
+            Xi_cell(wellIx) = {Xi}; %store Xi in cell
+            ZixTemp_cell(wellIx) = {ZixTemp}; % store ZiXTemp in cell
             %pause(0.3);
         end
 
@@ -213,7 +224,7 @@ function make_plots(sampCNR, PlateSize, Nf, AM_Bmode_ratio,confScore,saveName)
     maxs_AM = squeeze(max(sampCNRs, [], 3));
     maxs_AM_Bmode_ratio = squeeze(max(AM_Bmode_ratios, [], 3));
     
-    %delete previous plots %NEED TO DEBUG THIS
+    %delete previous plots
     open_figs = findobj('type', 'figure');
     for fig_ind = 1:length(open_figs)
         fig = open_figs(fig_ind);
@@ -264,6 +275,8 @@ function updateROI(src,evt)
     
     %get data we need to recompute values
     Nf = evalin('base','Nf');
+    Xi = evalin('base','Xi_cell{wellIx}');
+    ZixTemp = evalin('base','ZixTemp_cell{wellIx}');
     
     for frame = 1:Nf % Recalulate sample mean, noise mean, and noise STD using the new ROI for all frames
         for imMode = 1:2
@@ -288,6 +301,26 @@ function updateROI(src,evt)
     %update ZixROI and XixROI arrays
     evalin('base','ZixROI_array(wellIx, :) = ZixROI;');
     evalin('base','XixROI_array(wellIx, :) = XixROI;');
+    
+    %update samp rectangle for both the xAM and Bmode figures
+    open_figs = findobj('type', 'figure'); %find all the figures
+    for fig_ind = 1:length(open_figs)
+        fig = open_figs(fig_ind);
+        disp(fig.Tag);
+        if strcmp(fig.Tag, 'ROI-layout') %specifically find the layout figures
+            disp('Found fig');
+            roi_axes_array = fig.Children.Children;
+            roi_axes = roi_axes_array(length(roi_axes_array) + 1 - wellIx); %get the axes for the updated ROI, need to search in reverse order
+            graphics = roi_axes.Children; %get graphics array for specific figure in layout
+            for graph_index = 1:length(graphics) %iterate through graphics array to find samp rectangle
+                object = graphics(graph_index);
+                if strcmp(object.Tag, sprintf("samp_%d", wellIx))
+                    object.Position = [Xi(XixROI(1)) ZixTemp(ZixROI(1)) Xi(XixROI(2))-Xi(XixROI(1)) ZixTemp(ZixROI(2))-ZixTemp(ZixROI(1))];%update the position of the rectangle
+                end
+            end
+        end
+    end
+    
     % update plots
     evalin('base','make_plots(sampCNR, PlateSize, Nf, AM_Bmode_ratio,confScore,saveName)');
  
