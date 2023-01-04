@@ -1,7 +1,7 @@
 clear all
 close all
 % 
-pathName = '/Volumes/GoogleDrive-118305181097921812507/.shortcut-targets-by-id/0B24ONICaZ0z9djczVE1ZR3BnWU0/Shapiro Lab Information/Data/Rob/EFA4-A8-A9_R1-4_stable_37C/EFA4-A8_R1-4_stable_37C_P_R1_C1';
+pathName = 'G:\.shortcut-targets-by-id\0B24ONICaZ0z9djczVE1ZR3BnWU0\Shapiro Lab Information\Data\Rob\EFA4-C8-C9-E8-E9_R1-4_stable_37C\EFA4-E8_R3_stable_37C_P_R3_C3';
 saveName = pathName;
 
 SubDirs = GetSubDirs(pathName);

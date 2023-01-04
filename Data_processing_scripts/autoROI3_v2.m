@@ -1,15 +1,15 @@
 % clear all
 % close all
 % 
-% pathName = '/Volumes/GoogleDrive-118305181097921812507/.shortcut-targets-by-id/0B24ONICaZ0z9djczVE1ZR3BnWU0/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/B-lib-2/B-lib_P1_R1_stable-37C_P_R1_C1';
-% 
-% PlateProc1_v2
+% pathName = 'G:\.shortcut-targets-by-id\0B24ONICaZ0z9djczVE1ZR3BnWU0\Shapiro Lab Information\Data\Rob\96-well_plate_scans\GvpA-B-mutants\A-lib-2\A-lib-K22R-A2\A-lib-K22R-A2_P3_4_stable-37C_P_R1_C3';
 
+% PlateProc1_v2
+% 
 close all
 clear iZt ixZtemp
 %%
 % sample_depth = [1 9.1]; % display/sample depth range in mm
-sample_depth = [3 8]; % display/sample depth range in mm
+sample_depth = [2 8]; % display/sample depth range in mm
 DisplayMode = 1; % How to display images: 0 = show nothing, 1 = always show images + ROIs, 2 = only show images + ROIs with low-confidence ROI selection
 testfilter = 0; % 0 or 1 to display the thresholding filter
 savedata = 1; % 0 or 1 to save processed data
@@ -27,47 +27,21 @@ end
 WellTemplate = WellTemplates{TemplateMode}; % Apply ROI template as selected.
 CST = ConfidenceScoreThreshold(TemplateMode); % Apply corresponding confidence score threshold for reminder to adjust ROIs (abitrary defined thresholds)
 
-figs = gobjects(1,total_n); % initialize array to hold figure objects
+Bmode_figs = gobjects(1,total_n); % initialize array to hold Bmode figure objects
+xAM_figs = gobjects(1,total_n); % initialize array to hold Bmode figure objects
+maxs_plots = gobjects(1,2); % initialize array to hold maxs_XAM and Bmode figures
 noiseZ = nan(2,total_n); % initialize array for noise slice bounds
 confScore = nan(1,total_n); % initialize array for ROI prediction confidence score 
 ROI_Centers = nan(total_n,2); % initialize array for locations of ROI centers
 sampROI_means = nan(Nf,2,total_n); % initialize array for sample means
 noiseROI_means = nan(Nf,2,total_n); % initialize array for noise means
 noiseROI_stds = nan(Nf,2,total_n); % initialize array for noise ROI STDs
+Ixz_cell = cell(Nf,1); %initialize empty cell to hold ixZtemp from each well
 
 %% manual correction of ROI selection
 xcorrection = zeros(1,total_n); % initialize array for ROI correction in x dimension (correction in the unit of voxel count, ~0.1 mm/count)
 zcorrection = zeros(1,total_n); % initialize array for ROI correction in z dimension (correction in the unit of voxel count, ~0.0124 mm/count)  
 skip = zeros(1,total_n); % ROI correction in well indices to skip processing
-
-% xcorrection([2]) = 7;
-% xcorrection([29]) = -5;
-% xcorrection([61]) = 25;
-% xcorrection([74]) = 25;
-% xcorrection([76]) = 55;
-% xcorrection([85]) = 25;
-% xcorrection([86]) = 30;
-% xcorrection([18]) = 5;
-% xcorrection([34]) = -5;
-% xcorrection([38]) = 5;
-% xcorrection([60]) = -5;
-% xcorrection([27]) = 5;
-% xcorrection([53]) = -5;
-% xcorrection([59]) = -5;
-% xcorrection([85]) = -5;
-% xcorrection([37]) =55;
-
-% zcorrection(1:total_n) = 20;
-% zcorrection(1) = -20;
-% zcorrection(73) = 20;
-% zcorrection(74) = 20;
-% zcorrection(79) = 20;
-% zcorrection(84) = 20;
-% zcorrection(86) = -80;
-% zcorrection(25) = 40;
-% zcorrection(31) = 20;
-% zcorrection(81) = -30;
-% zcorrection(96) = -10;
 zcorrection = zcorrection + 20;
 %% quantify ROIs
 for wellIx = 1:total_n
@@ -78,6 +52,7 @@ for wellIx = 1:total_n
             ixZtemp = find(Zi>=sample_depth(1),1,'first'):find(Zi>=sample_depth(2),1,'first'); 
         end
         ImTemp = ImTemp(ixZtemp,:); % Crop the images to defined sample depth to decrease data size
+        Ixz_cell(wellIx) = {ixZtemp}; % store ImTemp in cell for callback purposes
         ZixTemp = Zi(ixZtemp); % Define new z-axis after cropping
         noiseZ(:,wellIx) = [find(ZixTemp>=noise_slice(1),1,'first') find(ZixTemp>=noise_slice(2),1,'first')]; % Find start/end indices for corresponding noise ROI
         iZd_noise = noiseZ(1,wellIx):noiseZ(2,wellIx); % Make vector of noise Z indices
@@ -124,26 +99,28 @@ for wellIx = 1:total_n
             disp(['Warning: well#' num2str(wellIx) ' might be off.'])
         end
         if DisplayMode == 1 % Always-on display mode, show images and predicted ROIs
-            figure(wellIx);
-            imagesc(Xi, ZixTemp, 20*log10(abs(ImTemp)), [20 80]); axis image; colormap hot;
+            Bmode_fig = figure(wellIx);
+            imagesc(Xi, ZixTemp, 20*log10(abs(ImTemp)), [20 80]); axis image; colormap bone;
             hold on;
             noiseROI = drawrectangle('Position',[Xi(1) ZixTemp(iZd_noise(1)) Xi(end)-Xi(1) ZixTemp(iZd_noise(end))-ZixTemp(iZd_noise(1))], 'EdgeColor','w', 'LineWidth',2, 'Tag',['noise_' num2str(wellIx)]); % Draw noise ROI
-            addlistener(noiseROI,'ROIMoved',@updateNoiseROI);
             sampROI = drawrectangle('Position',[Xi(XixROI(1)) ZixTemp(ZixROI(1)) Xi(XixROI(2))-Xi(XixROI(1)) ZixTemp(ZixROI(2))-ZixTemp(ZixROI(1))], 'EdgeColor','g', 'LineWidth',2, 'Tag',['samp_' num2str(wellIx)]); % Draw sample ROI
-            addlistener(sampROI,'ROIMoved',@updateSampROI);
+            addlistener(noiseROI,'ROIMoved',@updateROI);
+            addlistener(sampROI,'ROIMoved',@updateROI);
             title(['Frame #' num2str(wellIx)]);
-            figs(wellIx) = figure(wellIx); % store figure object in array
+            Bmode_figs(wellIx) = Bmode_fig; % store figure object in array
+            set(Bmode_fig, 'visible', 'off'); % hide figure
             pause(0.3);
         elseif DisplayMode == 2 && (confScore(wellIx) < CST) % Only display images below confidence score threshold
-            figure(wellIx);
-            imagesc(Xi, ZixTemp, 20*log10(abs(ImTemp)), [20 80]); axis image; colormap hot;
+            Bmode_fig = figure(wellIx);
+            imagesc(Xi, ZixTemp, 20*log10(abs(ImTemp)), [20 80]); axis image; colormap bone;
             hold on;
             noiseROI = drawrectangle('Position',[Xi(1) ZixTemp(iZd_noise(1)) Xi(end)-Xi(1) ZixTemp(iZd_noise(end))-ZixTemp(iZd_noise(1))], 'EdgeColor','w', 'LineWidth',2, 'Tag',['noise_' num2str(wellIx)]); % Draw noise ROI
-            addlistener(noiseROI,'ROIMoved',@updateNoiseROI);
             sampROI = drawrectangle('Position',[Xi(XixROI(1)) ZixTemp(ZixROI(1)) Xi(XixROI(2))-Xi(XixROI(1)) ZixTemp(ZixROI(2))-ZixTemp(ZixROI(1))], 'EdgeColor','g', 'LineWidth',2, 'Tag',['samp_' num2str(wellIx)]); % Draw sample ROI
-            addlistener(sampROI,'ROIMoved',@updateSampROI);
+            addlistener(noiseROI,'ROIMoved',@updateROI);
+            addlistener(sampROI,'ROIMoved',@updateROI);
             title(['Frame #' num2str(wellIx)]);
-            figs(wellIx) = figure(wellIx); % store figure object in array
+            Bmode_figs(wellIx) = Bmode_fig; % store figure object in array
+            set(Bmode_fig, 'visible', 'off'); % hide figure
             pause(0.3);
         end
 
@@ -178,50 +155,127 @@ maxs_AM = squeeze(max(sampCNRs, [], 3));
 maxs_AM_Bmode_ratio = squeeze(max(AM_Bmode_ratios, [], 3));
 
 % make and save microplate plots
-figure;
-mpplot = microplateplot(maxs_AM(:,:,1));
-colormap hot
-colorbar
-title('Max xAM signal achieved at any voltage')
-mpplot;
-savefig([saveName '_max-xAM'])
+plot_xAM(maxs_AM, saveName)
+plot_AM_Bmode_ratio(maxs_AM_Bmode_ratio, saveName)
 
-figure;
-microplateplot(maxs_AM_Bmode_ratio(:,:))
-colormap hot
-colorbar
-title('Max xAM:Bmode ratio signal achieved at any voltage')
-mpplot;
-savefig([saveName '_max-xAM-Bmode'])
-
-
+layout = layoutfigures(Bmode_figs,PlateSize(1),PlateSize(2)); %create figure layout
 
 %% function definitions
-function updateNoiseROI(src,evt)
-    disp(['ROI ' src.Tag ' moved. New position: ' mat2str(evt.CurrentPosition)])
-    noiseMask = createMask(src); % Create mask for noise ROI
+function make_plots(sampCNR, PlateSize, Nf, AM_Bmode_ratio,confScore,saveName)
+    % reshape ROI CNRs
+    % sampCNR new dimensions: well rows, well columns, frames, imaging modes
+    sampCNRs = permute(reshape(sampCNR, Nf, 2, PlateSize(2), PlateSize(1)), [4 3 1 2]);
+    AM_Bmode_ratios = permute(reshape(AM_Bmode_ratio, Nf, 1, PlateSize(2), PlateSize(1)), [4 3 1 2]);
+    confScore = permute(reshape(confScore, PlateSize(2), PlateSize(1)), [1 2]);
     
-    % Calculate new quants
-    wellIx = str2double(src.Tag(7:end));
-    meanTemp = mean(nonzeros(evalin('base', sprintf('data(:,:,:, %d)', wellIx)).*noiseMask), [1 2 4], 'omitnan');
-    stdTemp = std2(nonzeros(evalin('base', sprintf('data(:,:,:, %d)', wellIx)).*noiseMask));
+    % find max signal achieved by each sample at any voltage
+    maxs_AM = squeeze(max(sampCNRs, [], 3));
+    maxs_AM_Bmode_ratio = squeeze(max(AM_Bmode_ratios, [], 3));
     
-    % Assign new quants into array
-    evalin('base',sprintf('noiseROI_means(1,:, %d)=%d;',wellIx,meanTemp));
-    disp(['New ' src.Tag ' mean: ' num2str(meanTemp)]);
-    evalin('base',sprintf('noiseROI_stds(1,:, %d)=%d;',wellIx,stdTemp));
-    disp(['New ' src.Tag ' STD: ' num2str(stdTemp)]);
+    %delete previous plots %NEED TO DEBUG THIS
+    open_figs = findobj('type', 'figure');
+    for fig_ind = 1:length(open_figs)
+        fig = open_figs(fig_ind);
+        if strcmp(fig.CurrentAxes.Tag, 'max-xAM') || strcmp(fig.CurrentAxes.Tag, 'max-xAM:Bmode')%this will delete the previous maxs figures if they exist, we remake them later
+            delete(fig);
+        end
+    end
+    
+    % make and save microplate plots
+    plot_xAM(maxs_AM, saveName);
+    plot_AM_Bmode_ratio(maxs_AM_Bmode_ratio, saveName);
 end
 
-function updateSampROI(src,evt)
+function plot_xAM(maxs_AM, saveName)
+    figure;
+    xAM_mpplot = microplateplot(maxs_AM(:,:,1));
+    colormap hot
+    colorbar
+    title('Max xAM signal achieved at any voltage')
+    set(xAM_mpplot, 'tag', 'max-xAM');
+    xAM_mpplot;
+    savefig([saveName '_max-xAM'])
+end
+
+function plot_AM_Bmode_ratio(maxs_AM_Bmode_ratio, saveName)
+    figure;
+    AM_Bmode_mpplot = microplateplot(maxs_AM_Bmode_ratio(:,:));
+    colormap parula
+    colorbar
+    title('Max xAM:Bmode ratio signal achieved at any voltage')
+    set(AM_Bmode_mpplot, 'tag', 'max-xAM:Bmode');
+    AM_Bmode_mpplot;
+    savefig([saveName '_max-xAM-Bmode'])
+end
+
+function updateROI(src,evt)
     disp(['ROI ' src.Tag ' moved. New position: ' mat2str(evt.CurrentPosition)])
     sampMask = createMask(src); % Create mask for samp ROI
+    wellIx = str2double(src.Tag(6:end)); %Get well index from the tag
+
+    %recompute ROI and its dimensions
+    [z_coords, x_coords] = find(sampMask == 1);
+    ZixROI = [min(z_coords) max(z_coords)]; %range of Z coords
+    XixROI = [min(x_coords) max(x_coords)]; %range of X coords
+    assignin('base', 'ZixROI', ZixROI);%need to assign in base so they can be used by the evalin commands below
+    assignin('base', 'XixROI', XixROI);
     
-    % Calculate new quant
-    wellIx = str2double(src.Tag(6:end));
-    meanTemp = mean(nonzeros(evalin('base', sprintf('data(:,:, %d)', wellIx)).*sampMask), 'all', 'omitnan');
+    %get data we need to recompute values
+    Nf = evalin('base','Nf');
     
-    % Assign new quant into array
-    evalin('base',sprintf('sampROI_means(1, %d)=%d;',wellIx,meanTemp));
-    disp(['New ' src.Tag ' mean: ' num2str(meanTemp)]);
+    for frame = 1:Nf % Recalulate sample mean, noise mean, and noise STD using the new ROI for all frames
+        for imMode = 1:2
+            %need to use evalin to run the following commented out commands in the main workspace
+            %ImTemp = Imi{frame,imMode,wellIx}(ixZtemp,:);
+            % sampROI_means(frame,imMode,wellIx) = mean(mean(ImTemp(ZixROI(1):ZixROI(2),XixROI(1):XixROI(2))));
+            %noiseROI_means(frame,imMode,wellIx) = mean(mean(ImTemp(iZd_noise,:)));
+            %noiseROI_stds(frame,imMode,wellIx) = std2(ImTemp(iZd_noise,:));
+            evalin('base',sprintf('ImTemp = Imi{%d,%d,%d}(Ixz_cell{%d},:);',frame,imMode,wellIx, wellIx));
+            evalin('base',sprintf('sampROI_means(%d,%d,%d) = mean(mean(ImTemp(ZixROI(1):ZixROI(2),XixROI(1):XixROI(2))));', frame,imMode,wellIx));
+            evalin('base',sprintf('noiseROI_means(%d,%d,%d) = mean(mean(ImTemp(iZd_noise,:)));', frame,imMode,wellIx));
+            evalin('base',sprintf('noiseROI_stds(%d,%d,%d) = std2(ImTemp(iZd_noise,:));', frame,imMode,wellIx));
+        end
+    end
+    %need to use evalin to run the following commented out commands in the main workspace
+    %sampCNR(:,:,1) = 20 * log10(abs(sampROI_means(:,:,wellIx) - noiseROI_means(:,:,wellIx)) ./ noiseROI_stds(:,:,wellIx)); % Replace sample CNR
+    %AM_Bmode_ratio = 20*log10(abs((sampROI_means(:,1,:) - noiseROI_means(:,1,:)) ./ (sampROI_means(:,2,:) - noiseROI_means(:,1,:)))); % Recalculate xAM/Bmode, dB scale
+    evalin('base',sprintf('sampCNR(:,:,1) = 20 * log10(abs(sampROI_means(:,:,%d) - noiseROI_means(:,:,%d)) ./ noiseROI_stds(:,:,%d));', wellIx, wellIx, wellIx)); % Replace sample CNR
+    evalin('base','AM_Bmode_ratio = 20*log10(abs((sampROI_means(:,1,:) - noiseROI_means(:,1,:)) ./ (sampROI_means(:,2,:) - noiseROI_means(:,1,:))));'); % Recalculate xAM/Bmode, dB scale
+    disp(['Updated ' src.Tag ' mean']);
+    
+    % update plots
+    %delete plots
+    evalin('base','make_plots(sampCNR, PlateSize, Nf, AM_Bmode_ratio,confScore,saveName)');
+    layout = evalin('base','layoutfigures(Bmode_figs,PlateSize(1),PlateSize(2))'); %create figure layout
+ 
+    % save updated quants
+    evalin('base', "save([saveName '_data_' datestr(now,'yymmdd-hh-MM-ss')],'P','saveName','sampROI_means','sampCNR','AM_Bmode_ratio','noiseROI_means','noiseROI_stds','voltage','PlateCoordinate','PlateSize','ROI_Centers','confScore','Nf');")
+end
+
+function layout = layoutfigures(figs_array,n_rows,n_cols)
+    % figs_array is a gobjects array for the figures that you'd like
+    % included in the montage
+    h = figure;
+    h.WindowState = 'maximized';
+    title('ROI selection')
+    set(h, 'tag', 'ROI-layout');
+    colormap bone
+    layout = tiledlayout(n_rows,n_cols);
+    for wellIx = 1:length(figs_array)
+        nexttile
+        curr_axes = gca;
+        fig = figs_array(wellIx).CurrentAxes; % pull fig object from array
+        graphics = fig.Children; %CurrentObject
+        for graph_index = 1:length(graphics) %copy over all of the objects in the figure
+            old_object = graphics(graph_index);
+            new_object = copyobj(old_object,curr_axes,'legacy'); %copy over the object with legacy
+            if strcmp(old_object.Tag, sprintf("samp_%d", wellIx)) || strcmp(old_object.Tag, sprintf("noise_%d", wellIx)) %I objects with these tags need callbacks
+                addlistener(new_object,'ROIMoved',@updateROI); %updateROI is the callback function
+            end
+        end
+        set(curr_axes, 'YDir','reverse')
+        axis off;
+    end
+    layout.TileSpacing = 'compact';
+    layout.Padding = 'compact';
 end

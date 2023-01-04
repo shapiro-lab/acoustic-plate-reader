@@ -3,7 +3,7 @@ close all
 
 PlateSize = [8,12];
 
-% load data
+% load data;
 data1 = load('/Volumes/GoogleDrive-118305181097921812507/.shortcut-targets-by-id/0B24ONICaZ0z9djczVE1ZR3BnWU0/Shapiro Lab Information/Data/Rob/EFA4-A8-A9_R1-4_stable_37C/EFA4-A9_R1-4_stable_37C_P_R2_C1/EFA4-A8-A9_R1-4_stable_37C_P_R2_C1_data_221220-13-33-34.mat');
 data2 = load('/Volumes/GoogleDrive-118305181097921812507/.shortcut-targets-by-id/0B24ONICaZ0z9djczVE1ZR3BnWU0/Shapiro Lab Information/Data/Rob/EFA4-A8-A9_R1-4_stable_37C/EFA4-A9_R1-4_stable_37C_P_R2_C2/EFA4-A8-A9_R1-4_stable_37C_P_R2_C2_data_221220-13-36-50.mat');
 data3 = load('/Volumes/GoogleDrive-118305181097921812507/.shortcut-targets-by-id/0B24ONICaZ0z9djczVE1ZR3BnWU0/Shapiro Lab Information/Data/Rob/EFA4-A8-A9_R1-4_stable_37C/EFA4-A9_R1-4_stable_37C_P_R2_C3/EFA4-A8-A9_R1-4_stable_37C_P_R2_C3_data_221220-13-40-51.mat');
