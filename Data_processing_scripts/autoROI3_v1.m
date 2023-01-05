@@ -193,7 +193,8 @@ for wellIx = 1:total_n
 end
 close(h);
 
-sampCNR = 20 * log10(abs(sampROI_means) ./ noiseROI_means); % Calculate sample CNR
+sampSBR = 20 * log10(abs(sampROI_means) ./ noiseROI_means); % Calculate sample SBR
+sampCNR = 20 * log10(abs(sampROI_means - noiseROI_means) ./ noiseROI_stds); % Calculate sample CNR
 AM_Bmode_ratio = 20*log10(abs((sampROI_means(:,1,:) - noiseROI_means(:,1,:)) ./ (sampROI_means(:,2,:) - noiseROI_means(:,1,:)))); % xAM/Bmode, dB scale
 
 % save data
