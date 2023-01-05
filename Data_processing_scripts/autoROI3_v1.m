@@ -119,7 +119,7 @@ for wellIx = 1:total_n
             imagesc(Xi, ZixTemp, 20*log10(abs(ImTemp)), [20 80]); axis image; colormap bone;
             hold on;
             noiseROI = drawrectangle('Position',[Xi(1) ZixTemp(iZd_noise(1)) Xi(end)-Xi(1) ZixTemp(iZd_noise(end))-ZixTemp(iZd_noise(1))], 'EdgeColor','w', 'LineWidth',2, 'Tag',['noise_' num2str(wellIx)]); % Draw noise ROI
-            sampROI = drawrectangle('Position',[Xi(XixROI(1)) ZixTemp(ZixROI(1)) Xi(XixROI(2))-Xi(XixROI(1)) ZixTemp(ZixROI(2))-ZixTemp(ZixROI(1))], 'EdgeColor','g', 'LineWidth',2, 'Tag',['samp_' num2str(wellIx)]); % Draw sample ROI
+            sampROI = drawrectangle('Position',[Xi(XixROI(1)) ZixTemp(ZixROI(1)) Xi(XixROI(2))-Xi(XixROI(1)) ZixTemp(ZixROI(2))-ZixTemp(ZixROI(1))], 'EdgeColor','g', 'LineWidth',2, 'Tag',['sampl_' num2str(wellIx)]); % Draw sample ROI
             addlistener(noiseROI,'ROIMoved',@updateROI);
             addlistener(sampROI,'ROIMoved',@updateROI);
             title(['Bmode Frame #' num2str(wellIx)]);
@@ -134,7 +134,7 @@ for wellIx = 1:total_n
             imagesc(Xi, ZixTemp, 20*log10(abs(ImTemp_xAM)), [20 80]); axis image; colormap hot;
             hold on;
             noiseROI = drawrectangle('Position',[Xi(1) ZixTemp(iZd_noise(1)) Xi(end)-Xi(1) ZixTemp(iZd_noise(end))-ZixTemp(iZd_noise(1))], 'EdgeColor','w', 'LineWidth',2, 'Tag',['noise_' num2str(wellIx)]); % Draw noise ROI
-            sampROI = drawrectangle('Position',[Xi(XixROI(1)) ZixTemp(ZixROI(1)) Xi(XixROI(2))-Xi(XixROI(1)) ZixTemp(ZixROI(2))-ZixTemp(ZixROI(1))], 'EdgeColor','g', 'LineWidth',2, 'Tag',['samp_' num2str(wellIx)]); % Draw sample ROI
+            sampROI = drawrectangle('Position',[Xi(XixROI(1)) ZixTemp(ZixROI(1)) Xi(XixROI(2))-Xi(XixROI(1)) ZixTemp(ZixROI(2))-ZixTemp(ZixROI(1))], 'EdgeColor','g', 'LineWidth',2, 'Tag',['sampl_' num2str(wellIx)]); % Draw sample ROI
             addlistener(noiseROI,'ROIMoved',@updateROI);
             addlistener(sampROI,'ROIMoved',@updateROI);
             title(['xAM Frame #' num2str(wellIx)]);
@@ -149,7 +149,7 @@ for wellIx = 1:total_n
             imagesc(Xi, ZixTemp, 20*log10(abs(ImTemp)), [20 80]); axis image; colormap bone;
             hold on;
             noiseROI = drawrectangle('Position',[Xi(1) ZixTemp(iZd_noise(1)) Xi(end)-Xi(1) ZixTemp(iZd_noise(end))-ZixTemp(iZd_noise(1))], 'EdgeColor','w', 'LineWidth',2, 'Tag',['noise_' num2str(wellIx)]); % Draw noise ROI
-            sampROI = drawrectangle('Position',[Xi(XixROI(1)) ZixTemp(ZixROI(1)) Xi(XixROI(2))-Xi(XixROI(1)) ZixTemp(ZixROI(2))-ZixTemp(ZixROI(1))], 'EdgeColor','g', 'LineWidth',2, 'Tag',['samp_' num2str(wellIx)]); % Draw sample ROI
+            sampROI = drawrectangle('Position',[Xi(XixROI(1)) ZixTemp(ZixROI(1)) Xi(XixROI(2))-Xi(XixROI(1)) ZixTemp(ZixROI(2))-ZixTemp(ZixROI(1))], 'EdgeColor','g', 'LineWidth',2, 'Tag',['sampl_' num2str(wellIx)]); % Draw sample ROI
             addlistener(noiseROI,'ROIMoved',@updateROI);
             addlistener(sampROI,'ROIMoved',@updateROI);
             title(['Frame #' num2str(wellIx)]);
@@ -164,7 +164,7 @@ for wellIx = 1:total_n
             imagesc(Xi, ZixTemp, 20*log10(abs(ImTemp_xAM)), [20 80]); axis image; colormap hot;
             hold on;
             noiseROI = drawrectangle('Position',[Xi(1) ZixTemp(iZd_noise(1)) Xi(end)-Xi(1) ZixTemp(iZd_noise(end))-ZixTemp(iZd_noise(1))], 'EdgeColor','w', 'LineWidth',2, 'Tag',['noise_' num2str(wellIx)]); % Draw noise ROI
-            sampROI = drawrectangle('Position',[Xi(XixROI(1)) ZixTemp(ZixROI(1)) Xi(XixROI(2))-Xi(XixROI(1)) ZixTemp(ZixROI(2))-ZixTemp(ZixROI(1))], 'EdgeColor','g', 'LineWidth',2, 'Tag',['samp_' num2str(wellIx)]); % Draw sample ROI
+            sampROI = drawrectangle('Position',[Xi(XixROI(1)) ZixTemp(ZixROI(1)) Xi(XixROI(2))-Xi(XixROI(1)) ZixTemp(ZixROI(2))-ZixTemp(ZixROI(1))], 'EdgeColor','g', 'LineWidth',2, 'Tag',['sampl_' num2str(wellIx)]); % Draw sample ROI
             addlistener(noiseROI,'ROIMoved',@updateROI);
             addlistener(sampROI,'ROIMoved',@updateROI);
             title(['xAM Frame #' num2str(wellIx)]);
@@ -317,7 +317,7 @@ function updateROI(src,evt)
             graphics = roi_axes.Children; %get graphics array for specific figure in layout
             for graph_index = 1:length(graphics) %iterate through graphics array to find samp rectangle
                 object = graphics(graph_index);
-                if strcmp(object.Tag, sprintf("samp_%d", wellIx))
+                if strcmp(object.Tag, sprintf("sampl_%d", wellIx))
                     object.Position = [Xi(XixROI(1)) ZixTemp(ZixROI(1)) Xi(XixROI(2))-Xi(XixROI(1)) ZixTemp(ZixROI(2))-ZixTemp(ZixROI(1))];%update the position of the rectangle
                 end
             end
@@ -353,7 +353,7 @@ function layout = layoutfigures(figs_array,n_rows,n_cols, title_str, cmap)
         for graph_index = 1:length(graphics) %copy over all of the objects in the figure
             old_object = graphics(graph_index);
             new_object = copyobj(old_object,curr_axes,'legacy'); %copy over the object with legacy
-            if strcmp(old_object.Tag, sprintf("samp_%d", wellIx)) || strcmp(old_object.Tag, sprintf("noise_%d", wellIx)) %objects with these tags need callbacks
+            if strcmp(old_object.Tag, sprintf("sampl_%d", wellIx)) || strcmp(old_object.Tag, sprintf("noise_%d", wellIx)) %objects with these tags need callbacks
                 addlistener(new_object,'ROIMoved',@updateROI); %updateROI is the callback function
             end
         end
