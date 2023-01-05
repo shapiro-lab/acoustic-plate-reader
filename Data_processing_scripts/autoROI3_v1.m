@@ -8,8 +8,8 @@
 close all
 clear iZt ixZtemp
 %%
-% sample_depth = [1 9.1]; % display/sample depth range in mm
-sample_depth = [3 8]; % display/sample depth range in mm
+sample_depth = [1 10]; % display depth range in mm
+ROI_depth = [3 8]; % sample depth range in mm
 
 %Mohamed 12/27: DisplayMode is now obsolete, only thing that shows is layout and 96 well plots
 DisplayMode = 1; % How to display images: 0 = show nothing, 1 = always show images + ROIs, 2 = only show images + ROIs with low-confidence ROI selection
@@ -18,9 +18,9 @@ testfilter = 0; % 0 or 1 to display the thresholding filter
 xROI_size = 10; % size of the ROI in x dimension    
 zROI_size = 40; % size of the ROI in z dimension 
 filter_size1 = [40 5]; % size of the median filter in [z,x] dimension
-noise_stdratio = 2; % ratio of the noise STD added to the noise mean to decide noise floor 
-noise_slices = repmat([2 3],total_n,1); % default noise depth (in mm) for noise ROI selection
-noise_slices_backup = [8 9;1 2;7 8]; % backup noise depth (in mm) for noise ROI selection in case of abnormal noise level
+noise_stdratio = 3; % ratio of the noise STD added to the noise mean to decide noise floor 
+noise_slices = repmat([9 10],total_n,1); % default noise depth (in mm) for noise ROI selection
+noise_slices_backup = [8 9;9 10;10 11]; % backup noise depth (in mm) for noise ROI selection in case of abnormal noise level
 noiseThresh = 100; % threshold of noise level (mV) for abnormal high noise level / changing noise depth slices
 TemplateMode = 3; % ROI template to use: 1 = filled wells, 2/3 = empty wells with thinner (2) or thicker (3) well wall, use 1 as default and 2/3 if well is not full
 if ~exist('WellTemplates','var') % load the ROI template if needed, please put the .mat file in accessible folders
@@ -64,6 +64,9 @@ for wellIx = 1:total_n
         ImTemp = ImTemp(ixZtemp,:); % Crop the images to defined sample depth to decrease data size
         Ixz_cell(wellIx) = {ixZtemp}; % store ImTemp in cell for callback purposes
         ZixTemp = Zi(ixZtemp); % Define new z-axis after cropping
+        if ~exist('ixZtemp_ROI','var') % Select display depth if not done yet
+            ixZtemp_ROI = find(ZixTemp>=ROI_depth(1),1,'first'):find(ZixTemp>=ROI_depth(2),1,'first'); 
+        end
         noiseZ(:,wellIx) = [find(ZixTemp>=noise_slice(1),1,'first') find(ZixTemp>=noise_slice(2),1,'first')]; % Find start/end indices for corresponding noise ROI
         iZd_noise = noiseZ(1,wellIx):noiseZ(2,wellIx); % Make vector of noise Z indices
         noiseROItemp = mean(mean(ImTemp(iZd_noise,:))) + noise_stdratio * std2(ImTemp(iZd_noise,:)); % Calculate the noise level for thresholding 
@@ -75,9 +78,11 @@ for wellIx = 1:total_n
             noiseROItemp = min(noiseROItemp,mean(mean(ImTemp(iZd_noise,:))) + noise_stdratio * std2(ImTemp(iZd_noise,:))); % Take lower one between the old and new noise level 
             i_noiseThresh = i_noiseThresh + 1; % Iterate 
         end
-        
+        noiseROItemp = 60;
+        depth_filter = zeros(size(ImTemp));
+        depth_filter(ixZtemp_ROI,:) = 1;
         ImTemp_filt1 = medfilt2(ImTemp,filter_size1); % Apply median filter to remove salt&pepper noise
-        ImTemp_filt2 = (ImTemp_filt1 > noiseROItemp); % Apply thresholding based on the noise level
+        ImTemp_filt2 = (ImTemp_filt1 > noiseROItemp) .* depth_filter; % Apply thresholding based on the noise level
         if testfilter % Debugging mode, display applied filters
             figure;
             imagesc(Xi, ZixTemp, ImTemp_filt2); axis image;
@@ -90,7 +95,7 @@ for wellIx = 1:total_n
         ROI_Centers(wellIx,:) = TemplateCenter - [zoffset xoffset]; % Apply the offset to define the ROI center
         ZixROI = [ROI_Centers(wellIx,1) - zROI_size ROI_Centers(wellIx,1) + zROI_size]; % Extend from center to get start/end indices in z dimension 
         XixROI = [ROI_Centers(wellIx,2) - xROI_size ROI_Centers(wellIx,2) + xROI_size]; % Extend from center to get start/end indices in x dimension
-        if ZixROI(1) < 0
+        if ZixROI(1) <= 0
             ZixROI(1) = 1;
             ZixROI(2) = 1+2*zROI_size;
             disp(['Warning: well#' num2str(wellIx) ' might be off.'])
@@ -99,7 +104,7 @@ for wellIx = 1:total_n
             ZixROI(1) = ZixROI(2)-2*zROI_size;
             disp(['Warning: well#' num2str(wellIx) ' might be off.'])
         end
-        if XixROI(1) < 0
+        if XixROI(1) <= 0
             XixROI(1) = 1;
             XixROI(2) = 1+2*xROI_size;
             disp(['Warning: well#' num2str(wellIx) ' might be off.'])
@@ -188,7 +193,7 @@ for wellIx = 1:total_n
 end
 close(h);
 
-sampCNR = 20 * log10(abs(sampROI_means - noiseROI_means) ./ noiseROI_stds); % Calculate sample CNR
+sampCNR = 20 * log10(abs(sampROI_means) ./ noiseROI_means); % Calculate sample CNR
 AM_Bmode_ratio = 20*log10(abs((sampROI_means(:,1,:) - noiseROI_means(:,1,:)) ./ (sampROI_means(:,2,:) - noiseROI_means(:,1,:)))); % xAM/Bmode, dB scale
 
 % save data
