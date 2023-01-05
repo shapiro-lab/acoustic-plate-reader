@@ -9,7 +9,8 @@ close all
 clear iZt ixZtemp
 %%
 % sample_depth = [1 9.1]; % display/sample depth range in mm
-sample_depth = [3 8]; % display/sample depth range in mm
+sample_depth = [1 10]; % display/sample depth range in mm
+ROI_depth = [3 8];
 
 %Mohamed 12/27: DisplayMode is now obsolete, only thing that shows is layout and 96 well plots
 DisplayMode = 1; % How to display images: 0 = show nothing, 1 = always show images + ROIs, 2 = only show images + ROIs with low-confidence ROI selection
@@ -64,6 +65,9 @@ for wellIx = 1:total_n
         ImTemp = ImTemp(ixZtemp,:); % Crop the images to defined sample depth to decrease data size
         Ixz_cell(wellIx) = {ixZtemp}; % store ImTemp in cell for callback purposes
         ZixTemp = Zi(ixZtemp); % Define new z-axis after cropping
+        if ~exist('ixZtemp_ROI','var') % Select display depth if not done yet
+            ixZtemp_ROI = find(ZixTemp>=ROI_depth(1),1,'first'):find(ZixTemp>=ROI_depth(2),1,'first'); 
+        end
         noiseZ(:,wellIx) = [find(ZixTemp>=noise_slice(1),1,'first') find(ZixTemp>=noise_slice(2),1,'first')]; % Find start/end indices for corresponding noise ROI
         iZd_noise = noiseZ(1,wellIx):noiseZ(2,wellIx); % Make vector of noise Z indices
         noiseROItemp = mean(mean(ImTemp(iZd_noise,:))) + noise_stdratio * std2(ImTemp(iZd_noise,:)); % Calculate the noise level for thresholding 
@@ -76,8 +80,10 @@ for wellIx = 1:total_n
             i_noiseThresh = i_noiseThresh + 1; % Iterate 
         end
         
+        depth_filter = zeros(size(ImTemp));
+        depth_filter(ixZtemp_ROI,:) = 1;
         ImTemp_filt1 = medfilt2(ImTemp,filter_size1); % Apply median filter to remove salt&pepper noise
-        ImTemp_filt2 = (ImTemp_filt1 > noiseROItemp); % Apply thresholding based on the noise level
+        ImTemp_filt2 = (ImTemp_filt1 > noiseROItemp) .* depth_filter; % Apply thresholding based on the noise level
         if testfilter % Debugging mode, display applied filters
             figure;
             imagesc(Xi, ZixTemp, ImTemp_filt2); axis image;
@@ -90,7 +96,7 @@ for wellIx = 1:total_n
         ROI_Centers(wellIx,:) = TemplateCenter - [zoffset xoffset]; % Apply the offset to define the ROI center
         ZixROI = [ROI_Centers(wellIx,1) - zROI_size ROI_Centers(wellIx,1) + zROI_size]; % Extend from center to get start/end indices in z dimension 
         XixROI = [ROI_Centers(wellIx,2) - xROI_size ROI_Centers(wellIx,2) + xROI_size]; % Extend from center to get start/end indices in x dimension
-        if ZixROI(1) < 0
+        if ZixROI(1) <= 0
             ZixROI(1) = 1;
             ZixROI(2) = 1+2*zROI_size;
             disp(['Warning: well#' num2str(wellIx) ' might be off.'])
@@ -99,7 +105,7 @@ for wellIx = 1:total_n
             ZixROI(1) = ZixROI(2)-2*zROI_size;
             disp(['Warning: well#' num2str(wellIx) ' might be off.'])
         end
-        if XixROI(1) < 0
+        if XixROI(1) <= 0
             XixROI(1) = 1;
             XixROI(2) = 1+2*xROI_size;
             disp(['Warning: well#' num2str(wellIx) ' might be off.'])
@@ -119,7 +125,7 @@ for wellIx = 1:total_n
             imagesc(Xi, ZixTemp, 20*log10(abs(ImTemp)), [20 80]); axis image; colormap bone;
             hold on;
             noiseROI = drawrectangle('Position',[Xi(1) ZixTemp(iZd_noise(1)) Xi(end)-Xi(1) ZixTemp(iZd_noise(end))-ZixTemp(iZd_noise(1))], 'EdgeColor','w', 'LineWidth',2, 'Tag',['noise_' num2str(wellIx)]); % Draw noise ROI
-            sampROI = drawrectangle('Position',[Xi(XixROI(1)) ZixTemp(ZixROI(1)) Xi(XixROI(2))-Xi(XixROI(1)) ZixTemp(ZixROI(2))-ZixTemp(ZixROI(1))], 'EdgeColor','g', 'LineWidth',2, 'Tag',['samp_' num2str(wellIx)]); % Draw sample ROI
+            sampROI = drawrectangle('Position',[Xi(XixROI(1)) ZixTemp(ZixROI(1)) Xi(XixROI(2))-Xi(XixROI(1)) ZixTemp(ZixROI(2))-ZixTemp(ZixROI(1))], 'EdgeColor','g', 'LineWidth',2, 'Tag',['sampl_' num2str(wellIx)]); % Draw sample ROI
             addlistener(noiseROI,'ROIMoved',@updateROI);
             addlistener(sampROI,'ROIMoved',@updateROI);
             title(['Bmode Frame #' num2str(wellIx)]);
@@ -134,7 +140,7 @@ for wellIx = 1:total_n
             imagesc(Xi, ZixTemp, 20*log10(abs(ImTemp_xAM)), [20 80]); axis image; colormap hot;
             hold on;
             noiseROI = drawrectangle('Position',[Xi(1) ZixTemp(iZd_noise(1)) Xi(end)-Xi(1) ZixTemp(iZd_noise(end))-ZixTemp(iZd_noise(1))], 'EdgeColor','w', 'LineWidth',2, 'Tag',['noise_' num2str(wellIx)]); % Draw noise ROI
-            sampROI = drawrectangle('Position',[Xi(XixROI(1)) ZixTemp(ZixROI(1)) Xi(XixROI(2))-Xi(XixROI(1)) ZixTemp(ZixROI(2))-ZixTemp(ZixROI(1))], 'EdgeColor','g', 'LineWidth',2, 'Tag',['samp_' num2str(wellIx)]); % Draw sample ROI
+            sampROI = drawrectangle('Position',[Xi(XixROI(1)) ZixTemp(ZixROI(1)) Xi(XixROI(2))-Xi(XixROI(1)) ZixTemp(ZixROI(2))-ZixTemp(ZixROI(1))], 'EdgeColor','g', 'LineWidth',2, 'Tag',['sampl_' num2str(wellIx)]); % Draw sample ROI
             addlistener(noiseROI,'ROIMoved',@updateROI);
             addlistener(sampROI,'ROIMoved',@updateROI);
             title(['xAM Frame #' num2str(wellIx)]);
@@ -149,7 +155,7 @@ for wellIx = 1:total_n
             imagesc(Xi, ZixTemp, 20*log10(abs(ImTemp)), [20 80]); axis image; colormap bone;
             hold on;
             noiseROI = drawrectangle('Position',[Xi(1) ZixTemp(iZd_noise(1)) Xi(end)-Xi(1) ZixTemp(iZd_noise(end))-ZixTemp(iZd_noise(1))], 'EdgeColor','w', 'LineWidth',2, 'Tag',['noise_' num2str(wellIx)]); % Draw noise ROI
-            sampROI = drawrectangle('Position',[Xi(XixROI(1)) ZixTemp(ZixROI(1)) Xi(XixROI(2))-Xi(XixROI(1)) ZixTemp(ZixROI(2))-ZixTemp(ZixROI(1))], 'EdgeColor','g', 'LineWidth',2, 'Tag',['samp_' num2str(wellIx)]); % Draw sample ROI
+            sampROI = drawrectangle('Position',[Xi(XixROI(1)) ZixTemp(ZixROI(1)) Xi(XixROI(2))-Xi(XixROI(1)) ZixTemp(ZixROI(2))-ZixTemp(ZixROI(1))], 'EdgeColor','g', 'LineWidth',2, 'Tag',['sampl_' num2str(wellIx)]); % Draw sample ROI
             addlistener(noiseROI,'ROIMoved',@updateROI);
             addlistener(sampROI,'ROIMoved',@updateROI);
             title(['Frame #' num2str(wellIx)]);
@@ -164,7 +170,7 @@ for wellIx = 1:total_n
             imagesc(Xi, ZixTemp, 20*log10(abs(ImTemp_xAM)), [20 80]); axis image; colormap hot;
             hold on;
             noiseROI = drawrectangle('Position',[Xi(1) ZixTemp(iZd_noise(1)) Xi(end)-Xi(1) ZixTemp(iZd_noise(end))-ZixTemp(iZd_noise(1))], 'EdgeColor','w', 'LineWidth',2, 'Tag',['noise_' num2str(wellIx)]); % Draw noise ROI
-            sampROI = drawrectangle('Position',[Xi(XixROI(1)) ZixTemp(ZixROI(1)) Xi(XixROI(2))-Xi(XixROI(1)) ZixTemp(ZixROI(2))-ZixTemp(ZixROI(1))], 'EdgeColor','g', 'LineWidth',2, 'Tag',['samp_' num2str(wellIx)]); % Draw sample ROI
+            sampROI = drawrectangle('Position',[Xi(XixROI(1)) ZixTemp(ZixROI(1)) Xi(XixROI(2))-Xi(XixROI(1)) ZixTemp(ZixROI(2))-ZixTemp(ZixROI(1))], 'EdgeColor','g', 'LineWidth',2, 'Tag',['sampl_' num2str(wellIx)]); % Draw sample ROI
             addlistener(noiseROI,'ROIMoved',@updateROI);
             addlistener(sampROI,'ROIMoved',@updateROI);
             title(['xAM Frame #' num2str(wellIx)]);
@@ -266,7 +272,7 @@ end
 function updateROI(src,evt)
     disp(['ROI ' src.Tag ' moved. New position: ' mat2str(evt.CurrentPosition)])
     sampMask = createMask(src); % Create mask for samp ROI
-    wellIx = str2double(src.Tag(6:end)); %Get well index from the tag
+    wellIx = str2double(src.Tag(7:end)); %Get well index from the tag
     assignin('base', 'wellIx', wellIx);
 
     %recompute ROI and its dimensions
