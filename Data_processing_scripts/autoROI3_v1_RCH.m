@@ -212,14 +212,16 @@ save([saveName '_data_' datestr(now,'yymmdd-hh-MM-ss')],'P','saveName','sampROI_
 
 %% plot ROI quants with microplateplot
 % reshape ROI CNRs
-% sampCNR new dimensions: well rows, well columns, frames, imaging modes
-sampCNRs = permute(reshape(sampCNR, Nf, 2, PlateSize(2), PlateSize(1)), [4 3 1 2]);
-AM_Bmode_ratios = permute(reshape(AM_Bmode_ratio, Nf, 1, PlateSize(2), PlateSize(1)), [4 3 1 2]);
+% sampCNRs_dB new dimensions: well rows, well columns, frames, imaging modes
+sampCNRs_dB = permute(reshape(sampCNR_dB, Nf, 2, PlateSize(2), PlateSize(1)), [4 3 1 2]);
+sampCNRs_diff_dB = permute(reshape(sampCNR_diff_dB, Nf/2, 2, PlateSize(2), PlateSize(1)), [4 3 1 2]);
+AM_Bmode_ratios_dB = permute(reshape(AM_Bmode_ratio_dB, Nf, 1, PlateSize(2), PlateSize(1)), [4 3 1 2]);
 confScore = permute(reshape(confScore, PlateSize(2), PlateSize(1)), [1 2]);
 
 % find max signal achieved by each sample at any voltage
-maxs_AM = squeeze(max(sampCNRs, [], 3));
-maxs_AM_Bmode_ratio = squeeze(max(AM_Bmode_ratios, [], 3));
+maxs_AM = squeeze(max(sampCNRs_dB, [], 3));
+maxs_AM_diff = squeeze(max(sampCNRs_diff_dB, [], 3));
+maxs_AM_Bmode_ratio = squeeze(max(AM_Bmode_ratios_dB, [], 3));
 
 % make and save microplate plots
 plot_xAM(maxs_AM, saveName)
@@ -348,10 +350,10 @@ function updateROI(src,evt)
     evalin('base','XixROI_array(wellIx, :) = XixROI;');
     
     % update plots
-    evalin('base','make_plots(sampCNR, PlateSize, Nf, AM_Bmode_ratio,confScore,saveName)');
+    evalin('base','make_plots(sampCNR_dB, PlateSize, Nf, AM_Bmode_ratio_dB,confScore,saveName)');
  
     % save updated quants
-    evalin('base', "save([saveName '_data_' datestr(now,'yymmdd-hh-MM-ss')],'P','saveName','sampROI_means','sampCNR','AM_Bmode_ratio','noiseROI_means','noiseROI_stds','voltage','PlateCoordinate','PlateSize','ROI_Centers','confScore','Nf');")
+    evalin('base', "save([saveName '_data_' datestr(now,'yymmdd-hh-MM-ss')],'P','saveName','sampROI_means','sampCNR_dB','AM_Bmode_ratio_dB','noiseROI_means','noiseROI_stds','voltage','PlateCoordinate','PlateSize','ROI_Centers','confScore','Nf');")
 end
 
 function layout = layoutfigures(figs_array,n_rows,n_cols, title_str, cmap)

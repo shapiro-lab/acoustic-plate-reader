@@ -283,7 +283,7 @@ end
 function updateROI(src,evt)
     disp(['ROI ' src.Tag ' moved. New position: ' mat2str(evt.CurrentPosition)])
     sampMask = createMask(src); % Create mask for samp ROI
-    wellIx = str2double(src.Tag(7:end)); %Get well index from the tag
+    wellIx = str2double(src.Tag(7:end)); % Get well index from the tag
     assignin('base', 'wellIx', wellIx);
 
     %recompute ROI and its dimensions
@@ -293,7 +293,7 @@ function updateROI(src,evt)
     assignin('base', 'ZixROI', ZixROI);%need to assign in base so they can be used by the evalin commands below
     assignin('base', 'XixROI', XixROI);
     
-    %pull in variables we need to recompute values
+    % pull in variables we need to recompute values
     Nf = evalin('base','Nf');
     Xi = evalin('base','Xi_cell{wellIx}');
     ZixTemp = evalin('base','ZixTemp_cell{wellIx}');
