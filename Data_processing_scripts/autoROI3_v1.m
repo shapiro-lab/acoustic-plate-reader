@@ -212,14 +212,16 @@ save([saveName '_data_' datestr(now,'yymmdd-hh-MM-ss')],'P','saveName','sampROI_
 
 %% plot ROI quants with microplateplot
 % reshape ROI CNRs
-% sampCNR new dimensions: well rows, well columns, frames, imaging modes
-sampCNRs = permute(reshape(sampCNR, Nf, 2, PlateSize(2), PlateSize(1)), [4 3 1 2]);
-AM_Bmode_ratios = permute(reshape(AM_Bmode_ratio, Nf, 1, PlateSize(2), PlateSize(1)), [4 3 1 2]);
+% sampCNRs_dB new dimensions: well rows, well columns, frames, imaging modes
+sampCNRs_dB = permute(reshape(sampCNR_dB, Nf, 2, PlateSize(2), PlateSize(1)), [4 3 1 2]);
+sampCNRs_diff_dB = permute(reshape(sampCNR_diff_dB, Nf/2, 2, PlateSize(2), PlateSize(1)), [4 3 1 2]);
+AM_Bmode_ratios_dB = permute(reshape(AM_Bmode_ratio_dB, Nf, 1, PlateSize(2), PlateSize(1)), [4 3 1 2]);
 confScore = permute(reshape(confScore, PlateSize(2), PlateSize(1)), [1 2]);
 
 % find max signal achieved by each sample at any voltage
-maxs_AM = squeeze(max(sampCNRs, [], 3));
-maxs_AM_Bmode_ratio = squeeze(max(AM_Bmode_ratios, [], 3));
+maxs_AM = squeeze(max(sampCNRs_dB, [], 3));
+maxs_AM_diff = squeeze(max(sampCNRs_diff_dB, [], 3));
+maxs_AM_Bmode_ratio = squeeze(max(AM_Bmode_ratios_dB, [], 3));
 
 % make and save microplate plots
 plot_xAM(maxs_AM, saveName)
@@ -279,50 +281,24 @@ function plot_AM_Bmode_ratio(maxs_AM_Bmode_ratio, saveName)
 end
 
 function updateROI(src,evt)
-    wellIx = str2double(src.Tag(7:end)); % get well index from the tag
+    disp(['ROI ' src.Tag ' moved. New position: ' mat2str(evt.CurrentPosition)])
+    sampMask = createMask(src); % Create mask for samp ROI
+    wellIx = str2double(src.Tag(7:end)); %Get well index from the tag
     assignin('base', 'wellIx', wellIx);
 
-    % pull in variables we need to recompute values
+    %recompute ROI and its dimensions
+    [z_coords, x_coords] = find(sampMask == 1);
+    ZixROI = [min(z_coords) max(z_coords)]; %range of Z coords
+    XixROI = [min(x_coords) max(x_coords)]; %range of X coords
+    assignin('base', 'ZixROI', ZixROI);%need to assign in base so they can be used by the evalin commands below
+    assignin('base', 'XixROI', XixROI);
+    
+    %pull in variables we need to recompute values
     Nf = evalin('base','Nf');
     Xi = evalin('base','Xi_cell{wellIx}');
     ZixTemp = evalin('base','ZixTemp_cell{wellIx}');
     
-    % get sample and noise ROI objects
-    open_figs = findobj('type', 'figure'); %find all figure objects
-    for fig_ind = 1:length(open_figs)
-        fig = open_figs(fig_ind);
-        disp(fig.Tag);
-        if strcmp(fig.Tag, 'ROI-layout') %specifically find the layout figure objects
-            disp('Found fig');
-            roi_axes_array = fig.Children.Children;
-            roi_axes = roi_axes_array(length(roi_axes_array) + 1 - wellIx); %get the axes for the updated ROI, need to search in reverse order
-            graphics = roi_axes.Children; %get graphics array for specific figure in layout
-            for graph_index = 1:length(graphics) %iterate through graphics array to find samp rectangle
-                object = graphics(graph_index);
-                if strcmp(object.Tag, sprintf("sampl_%d", wellIx))
-                    sampROI = object; % get sample ROI object
-                elseif strcmp(object.Tag, sprintf("noise_%d", wellIx))
-                    noiseROI = object; % get noise ROI object
-                end
-            end
-        end
-    end
-
-    disp(['ROI ' sampROI.Tag ' moved. New position: ' mat2str(evt.CurrentPosition)])
-    sampMask = createMask(src); % Create mask for samp ROI
-    noiseMask = createMask(noiseROI); % Create mask for samp ROI
-    
-    %recompute samp ROI and its dimensions
-    [samp_z_coords, samp_x_coords] = find(sampMask == 1);
-    ZixROI = [min(samp_z_coords) max(samp_z_coords)]; %range of Z coords
-    XixROI = [min(samp_x_coords) max(samp_x_coords)]; %range of X coords
-    assignin('base', 'ZixROI', ZixROI); %need to assign in base so they can be used by the evalin commands below
-    assignin('base', 'XixROI', XixROI);
-    src.Position = [Xi(XixROI(1)) ZixTemp(ZixROI(1)) Xi(XixROI(2))-Xi(XixROI(1)) ZixTemp(ZixROI(2))-ZixTemp(ZixROI(1))]; %update the position of the sample ROI in both the xAM and Bmode figures
-    
-    
-    % Recalulate sample mean, noise mean, and noise STD using the new ROI for all frames
-    for frame = 1:Nf
+    for frame = 1:Nf % Recalulate sample mean, noise mean, and noise STD using the new ROI for all frames
         for imMode = 1:2
             %need to use evalin to run the following commented out commands in the main workspace
             %ImTemp = Imi{frame,imMode,wellIx}(ixZtemp,:);
@@ -335,23 +311,41 @@ function updateROI(src,evt)
             evalin('base',sprintf('noiseROI_stds(%d,%d,wellIx) = std2(ImTemp(iZd_noise,:));', frame,imMode));
         end
     end
-    
     %need to use evalin to run the following commented out commands in the main workspace
-    %sampCNR(:,:,wellIx) = 20 * log10(abs(sampROI_means(:,:,wellIx) - noiseROI_means(:,:,wellIx)) ./ noiseROI_stds(:,:,wellIx)); % Replace sample CNR
-    %AM_Bmode_ratio = 20*log10(abs((sampROI_means(:,1,:) - noiseROI_means(:,1,:)) ./ (sampROI_means(:,2,:) - noiseROI_means(:,1,:)))); % Recalculate xAM/Bmode, dB scale
-    evalin('base','sampCNR(:,:,wellIx) = 20 * log10(abs(sampROI_means(:,:,wellIx) - noiseROI_means(:,:,wellIx)) ./ noiseROI_stds(:,:,wellIx));'); % Replace sample CNR
-    evalin('base','AM_Bmode_ratio = 20*log10(abs((sampROI_means(:,1,:) - noiseROI_means(:,1,:)) ./ (sampROI_means(:,2,:) - noiseROI_means(:,1,:))));'); % Recalculate xAM/Bmode, dB scale
-    disp(['Updated ' sampROI.Tag ' mean']);
+    %sampCNR_dB(:,:,wellIx) = 20 * log10(abs(sampROI_means(:,:,wellIx) - noiseROI_means(:,:,wellIx)) ./ noiseROI_stds(:,:,wellIx)); % Replace sample CNR
+    %AM_Bmode_ratio_dB = 20*log10(abs((sampROI_means(:,1,:) - noiseROI_means(:,1,:)) ./ (sampROI_means(:,2,:) - noiseROI_means(:,1,:)))); % Recalculate xAM/Bmode, dB scale
+    evalin('base','sampCNR_dB(:,:,wellIx) = 20 * log10(abs(sampROI_means(:,:,wellIx) - noiseROI_means(:,:,wellIx)) ./ noiseROI_stds(:,:,wellIx));'); % Replace sample CNR
+    evalin('base','AM_Bmode_ratio_dB = 20*log10(abs((sampROI_means(:,1,:) - noiseROI_means(:,1,:)) ./ (sampROI_means(:,2,:) - noiseROI_means(:,1,:))));'); % Recalculate xAM/Bmode, dB scale
+    disp(['Updated ' src.Tag ' mean']);
     
     %update ZixROI and XixROI arrays
     evalin('base','ZixROI_array(wellIx, :) = ZixROI;');
     evalin('base','XixROI_array(wellIx, :) = XixROI;');
     
+    %update samp rectangle for both the xAM and Bmode figures
+    open_figs = findobj('type', 'figure'); %find all the figures
+    for fig_ind = 1:length(open_figs)
+        fig = open_figs(fig_ind);
+        disp(fig.Tag);
+        if strcmp(fig.Tag, 'ROI-layout') %specifically find the layout figures
+            disp('Found fig');
+            roi_axes_array = fig.Children.Children;
+            roi_axes = roi_axes_array(length(roi_axes_array) + 1 - wellIx); %get the axes for the updated ROI, need to search in reverse order
+            graphics = roi_axes.Children; %get graphics array for specific figure in layout
+            for graph_index = 1:length(graphics) %iterate through graphics array to find samp rectangle
+                object = graphics(graph_index);
+                if strcmp(object.Tag, sprintf("sampl_%d", wellIx))
+                    object.Position = [Xi(XixROI(1)) ZixTemp(ZixROI(1)) Xi(XixROI(2))-Xi(XixROI(1)) ZixTemp(ZixROI(2))-ZixTemp(ZixROI(1))];%update the position of the rectangle
+                end
+            end
+        end
+    end
+    
     % update plots
-    evalin('base','make_plots(sampCNR, PlateSize, Nf, AM_Bmode_ratio,confScore,saveName)');
+    evalin('base','make_plots(sampCNR_dB, PlateSize, Nf, AM_Bmode_ratio_dB,confScore,saveName)');
  
     % save updated quants
-    evalin('base', "save([saveName '_data_' datestr(now,'yymmdd-hh-MM-ss')],'P','saveName','sampROI_means','sampCNR','AM_Bmode_ratio','noiseROI_means','noiseROI_stds','voltage','PlateCoordinate','PlateSize','ROI_Centers','confScore','Nf');")
+    evalin('base', "save([saveName '_data_' datestr(now,'yymmdd-hh-MM-ss')],'P','saveName','sampROI_means','sampCNR_dB','AM_Bmode_ratio_dB','noiseROI_means','noiseROI_stds','voltage','PlateCoordinate','PlateSize','ROI_Centers','confScore','Nf');")
 end
 
 function layout = layoutfigures(figs_array,n_rows,n_cols, title_str, cmap)
