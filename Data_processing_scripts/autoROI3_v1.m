@@ -300,11 +300,11 @@ function updateROI(src,evt)
     assignin('base', 'XixROI', XixROI);
     
     %update samp rectangle for both the xAM and Bmode figures
-    open_figs = findobj('type', 'figure'); %find all the figures
+    open_figs = findobj('type', 'figure'); %find all figure objects
     for fig_ind = 1:length(open_figs)
         fig = open_figs(fig_ind);
         disp(fig.Tag);
-        if strcmp(fig.Tag, 'ROI-layout') %specifically find the layout figures
+        if strcmp(fig.Tag, 'ROI-layout') %specifically find the layout figure objects
             disp('Found fig');
             roi_axes_array = fig.Children.Children;
             roi_axes = roi_axes_array(length(roi_axes_array) + 1 - wellIx); %get the axes for the updated ROI, need to search in reverse order
