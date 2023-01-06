@@ -19,7 +19,7 @@ xROI_size = 10; % size of the ROI in x dimension
 zROI_size = 40; % size of the ROI in z dimension 
 filter_size1 = [40 5]; % size of the median filter in [z,x] dimension
 noise_stdratio = 3; % ratio of the noise STD added to the noise mean to decide noise floor 
-noise_slices = repmat([9 10],total_n,1); % default noise depth (in mm) for noise ROI selection
+noise_slices = repmat([7 8],total_n,1); % default noise depth (in mm) for noise ROI selection
 noise_slices_backup = [8 9;9 10;10 11]; % backup noise depth (in mm) for noise ROI selection in case of abnormal noise level
 noiseThresh = 100; % threshold of noise level (mV) for abnormal high noise level / changing noise depth slices
 TemplateMode = 3; % ROI template to use: 1 = filled wells, 2/3 = empty wells with thinner (2) or thicker (3) well wall, use 1 as default and 2/3 if well is not full
@@ -134,7 +134,8 @@ for wellIx = 1:total_n
            
             %create xAM figure
             xAM_fig = figure();
-            ImTemp_xAM = Imi{Nf-1,1,wellIx}; %Fetch xAM image, currently using first voltage image
+%             ImTemp_xAM = Imi{Nf-1,1,wellIx}; % Fetch xAM image, currently using second-to-last voltage image
+            ImTemp_xAM = Imi{10,1,wellIx};
             ImTemp_xAM = ImTemp_xAM(ixZtemp,:);
             imagesc(Xi, ZixTemp, 20*log10(abs(ImTemp_xAM)), [20 80]); axis image; colormap hot;
             hold on;
@@ -193,13 +194,21 @@ for wellIx = 1:total_n
 end
 close(h);
 
-sampSBR = 20 * log10(abs(sampROI_means) ./ noiseROI_means); % Calculate sample SBR
-sampCNR = 20 * log10(abs(sampROI_means - noiseROI_means) ./ noiseROI_stds); % Calculate sample CNR
-AM_Bmode_ratio = 20*log10(abs((sampROI_means(:,1,:) - noiseROI_means(:,1,:)) ./ (sampROI_means(:,2,:) - noiseROI_means(:,1,:)))); % xAM/Bmode, dB scale
+sampSBR = sampROI_means ./ noiseROI_means; % Calculate sample SBR
+sampSBR_dB = 20 * log10(sampSBR); % Calculate sample SBR in dB
+sampSBR_diff = sampSBR(1:10,:,:) - sampSBR(11:20,:,:); % Calculate pre-/post-collapse difference SBR
+sampSBR_diff_dB = 20 * log10(abs(sampSBR_diff)); % Calculate pre-/post-collapse difference SBR in dB
+
+sampCNR = (sampROI_means - noiseROI_means) ./ noiseROI_stds; % Calculate sample CNR
+sampCNR_dB = 20 * log10(abs(sampCNR)); % Calculate sample CNR in dB
+sampCNR_diff = sampCNR(1:10,:,:) - sampCNR(11:20,:,:); % Calculate pre-/post-collapse difference CNR
+sampCNR_diff_dB = 20 * log10(abs(sampCNR_diff)); % Calculate pre-/post-collapse difference CBR in dB
+
+AM_Bmode_ratio_dB = 20*log10(abs((sampROI_means(:,1,:) - noiseROI_means(:,1,:)) ./ (sampROI_means(:,2,:) - noiseROI_means(:,1,:)))); % xAM/Bmode, dB scale
 
 % save data
 clear pressure imMode;
-save([saveName '_data_' datestr(now,'yymmdd-hh-MM-ss')],'P','saveName','sampROI_means','sampCNR','AM_Bmode_ratio','noiseROI_means','noiseROI_stds','voltage','PlateCoordinate','PlateSize','ROI_Centers','confScore','Nf');
+save([saveName '_data_' datestr(now,'yymmdd-hh-MM-ss')],'P','saveName','sampROI_means','sampCNR','AM_Bmode_ratio_dB','noiseROI_means','noiseROI_stds','voltage','PlateCoordinate','PlateSize','ROI_Centers','confScore','Nf');
 
 %% plot ROI quants with microplateplot
 % reshape ROI CNRs
