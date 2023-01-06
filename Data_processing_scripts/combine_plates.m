@@ -5,20 +5,33 @@ PlateSize = [8,12];
 n_plates = 4;
 
 % load data
-data1 = load('G:\.shortcut-targets-by-id\0B24ONICaZ0z9djczVE1ZR3BnWU0\Shapiro Lab Information\Data\Rob\96-well_plate_scans\GvpA-B-mutants\A-lib-2\A-lib-K22R-A2\A-lib-K22R-A2_P1_R1-3_stable-37C_P_R1_C2_data_221209-14-46-27.mat');
-data2 = load('G:\.shortcut-targets-by-id\0B24ONICaZ0z9djczVE1ZR3BnWU0\Shapiro Lab Information\Data\Rob\96-well_plate_scans\GvpA-B-mutants\A-lib-2\A-lib-K22R-A2\A-lib-K22R-A2_P2_R1-3_stable-37C_P_R1_C3_data_221209-14-50-05.mat');
-data3 = load('G:\.shortcut-targets-by-id\0B24ONICaZ0z9djczVE1ZR3BnWU0\Shapiro Lab Information\Data\Rob\96-well_plate_scans\GvpA-B-mutants\A-lib-2\A-lib-K22R-A2\A-lib-K22R-A2_P3_R1-3_stable-37C_P_R1_C3_data_221209-14-40-48.mat');
-data4 = load('G:\.shortcut-targets-by-id\0B24ONICaZ0z9djczVE1ZR3BnWU0\Shapiro Lab Information\Data\Rob\96-well_plate_scans\GvpA-B-mutants\A-lib-2\A-lib-K22R-A2\A-lib-K22R-A2_P4_R1-3_stable-37C_P_R1_C2_data_221209-14-44-59.mat');
+data1 = load('/Volumes/GoogleDrive-118305181097921812507/.shortcut-targets-by-id/0B24ONICaZ0z9djczVE1ZR3BnWU0/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/A-lib-1/A-lib_P1_R2-4_stable-37C_P_1_1_data_220727-11-54-47.mat');
+data2 = load('/Volumes/GoogleDrive-118305181097921812507/.shortcut-targets-by-id/0B24ONICaZ0z9djczVE1ZR3BnWU0/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/A-lib-1/A-lib_P2_R1-3_stable-37C_data_220727-11-58-06.mat');
+data3 = load('/Volumes/GoogleDrive-118305181097921812507/.shortcut-targets-by-id/0B24ONICaZ0z9djczVE1ZR3BnWU0/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/A-lib-1/A-lib_P3_R1-3_stable-37C_data_220727-12-02-59.mat');
+data4 = load('/Volumes/GoogleDrive-118305181097921812507/.shortcut-targets-by-id/0B24ONICaZ0z9djczVE1ZR3BnWU0/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/A-lib-1/A-lib_P4_R1-3_stable-37C_P_2_4_data_220727-12-07-08.mat');
 
-%%
-%combine arrays
+%% combine arrays
 CNRs = cat(4, squeeze(data1.sampCNR(:,:,:)), squeeze(data2.sampCNR(:,:,:)), squeeze(data3.sampCNR(:,:,:)), squeeze(data4.sampCNR(:,:,:)));
 noiseROI_means = cat(4, squeeze(data1.noiseROI_means(:,:,:)), squeeze(data2.noiseROI_means(:,:,:)), squeeze(data3.noiseROI_means(:,:,:)), squeeze(data4.noiseROI_means(:,:,:)));
+noiseROI_stds = cat(4, squeeze(data1.noiseROI_stds(:,:,:)), squeeze(data2.noiseROI_stds(:,:,:)), squeeze(data3.noiseROI_stds(:,:,:)), squeeze(data4.noiseROI_stds(:,:,:)));
 sampROI_means = cat(4, squeeze(data1.sampROI_means(:,:,:)), squeeze(data2.sampROI_means(:,:,:)), squeeze(data3.sampROI_means(:,:,:)), squeeze(data4.sampROI_means(:,:,:)));
 
+%% calculate CNRs and SBRs
+% calculate CNRs and SBRs for every well and pressure
+sampCNR = (sampROI_means - noiseROI_means) ./ noiseROI_stds; % Calculate sample CNR
+sampCNR_dB = 20 * log10(abs(sampCNR)); % Calculate sample CNR in dB
+sampSBR = sampROI_means ./ noiseROI_means; % Calculate sample SBR
+sampSBR_dB = 20 * log10(sampSBR); % Calculate sample SBR in dB
+
+% calculate pre-/post-collapse difference and then calculate CNRs and SBRs
+% from those values
+sampCNR_diff = sampCNR(1:10,:,:,:) - sampCNR(11:20,:,:,:); % Calculate pre-/post-collapse difference CNR
+sampCNR_diff_dB = 20 * log10(abs(sampCNR_diff)); % Calculate pre-/post-collapse difference CBR in dB
+sampSBR_diff = sampSBR(1:10,:,:,:) - sampSBR(11:20,:,:,:); % Calculate pre-/post-collapse difference SBR
+sampSBR_diff_dB = 20 * log10(abs(sampSBR_diff)); % Calculate pre-/post-collapse difference SBR in dB
+
+%% take maxs and combine plates
 max_CNRs = squeeze(max(CNRs, [], 1));
-max_noiseROI_means = squeeze(max(noiseROI_means, [], 1));
-max_sampROI_means = squeeze(max(sampROI_means, [], 1));
 
 combined = table;
 name1 = repmat([{'1'}, {'2'}, {'3'}, {'4'}],[96 1]);
