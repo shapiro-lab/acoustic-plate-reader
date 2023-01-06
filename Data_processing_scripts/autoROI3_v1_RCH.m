@@ -311,7 +311,7 @@ function updateROI(src,evt)
     end
 
     disp(['ROI ' sampROI.Tag ' moved. New position: ' mat2str(evt.CurrentPosition)])
-    sampMask = createMask(src); % Create mask for samp ROI
+    sampMask = createMask(sampROI); % Create mask for samp ROI
     noiseMask = createMask(noiseROI); % Create mask for samp ROI
     
     % recompute samp ROI and its dimensions

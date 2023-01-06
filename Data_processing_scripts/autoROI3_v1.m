@@ -290,14 +290,22 @@ function updateROI(src,evt)
     ZixTemp = evalin('base','ZixTemp_cell{wellIx}');
     
     disp(['ROI ' src.Tag ' moved. New position: ' mat2str(evt.CurrentPosition)])
-    sampMask = createMask(src); % create mask for samp ROI
+    ROImask = createMask(src); % create mask for ROI
+    [z_coords, x_coords] = find(ROImask == 1);
     
-    % recompute samp ROI and its dimensions
-    [z_coords, x_coords] = find(sampMask == 1);
-    ZixROI = [min(z_coords) max(z_coords)]; %range of Z coords
-    XixROI = [min(x_coords) max(x_coords)]; %range of X coords
-    assignin('base', 'ZixROI', ZixROI);%need to assign in base so they can be used by the evalin commands below
-    assignin('base', 'XixROI', XixROI);
+    if strcmp(src.Tag(1:5), "sampl")
+        % recompute samp ROI and its dimensions
+        ZixROI = [min(z_coords) max(z_coords)]; %range of Z coords
+        XixROI = [min(x_coords) max(x_coords)]; %range of X coords
+        assignin('base', 'ZixROI', ZixROI); %need to assign in base so they can be used by the evalin commands below
+        assignin('base', 'XixROI', XixROI);
+    elseif strcmp(src.Tag(1:5), "noise")
+        % recompute noise ROI and its dimensions
+        ZixNoise = [min(z_coords) max(z_coords)]; %range of Z coords
+        XixNoise = [min(x_coords) max(x_coords)]; %range of X coords
+        assignin('base', 'ZixNoise', ZixNoise); %need to assign in base so they can be used by the evalin commands below
+        assignin('base', 'XixNoise', XixNoise); %need to assign in base so they can be used by the evalin commands below
+    end
     
     %update samp rectangle for both the xAM and Bmode figures
     open_figs = findobj('type', 'figure'); %find all figure objects
@@ -309,10 +317,12 @@ function updateROI(src,evt)
             roi_axes_array = fig.Children.Children;
             roi_axes = roi_axes_array(length(roi_axes_array) + 1 - wellIx); %get the axes for the updated ROI, need to search in reverse order
             graphics = roi_axes.Children; %get graphics array for specific figure in layout
-            for graph_index = 1:length(graphics) %iterate through graphics array to find samp rectangle
-                object = graphics(graph_index);
-                if strcmp(object.Tag, sprintf("sampl_%d", wellIx))
-                    object.Position = [Xi(XixROI(1)) ZixTemp(ZixROI(1)) Xi(XixROI(2))-Xi(XixROI(1)) ZixTemp(ZixROI(2))-ZixTemp(ZixROI(1))];%update the position of the rectangle
+            for graphic_index = 1:length(graphics) %iterate through graphics array to find samp rectangle
+                object = graphics(graphic_index);
+                if strcmp(object.Tag, sprintf("sampl_%d", wellIx)) && strcmp(src.Tag(1:5), "sampl")
+                    object.Position = [Xi(XixROI(1)) ZixTemp(ZixROI(1)) Xi(XixROI(2))-Xi(XixROI(1)) ZixTemp(ZixROI(2))-ZixTemp(ZixROI(1))]; %update sample ROI position
+                elseif strcmp(object.Tag, sprintf("noise_%d", wellIx)) && strcmp(src.Tag(1:5), "noise")
+                    object.Position = [Xi(XixNoise(1)) ZixTemp(ZixNoise(1)) Xi(XixNoise(2))-Xi(XixNoise(1)) ZixTemp(ZixNoise(2))-ZixTemp(ZixNoise(1))]; % update noise ROI position
                 end
             end
         end
@@ -328,7 +338,7 @@ function updateROI(src,evt)
             %noiseROI_stds(frame,imMode,wellIx) = std2(ImTemp(iZd_noise,:));
             evalin('base',sprintf('ImTemp = Imi{%d,%d,wellIx}(Ixz_cell{wellIx},:);',frame,imMode));
             evalin('base',sprintf('sampROI_means(%d,%d,wellIx) = mean(mean(ImTemp(ZixROI(1):ZixROI(2),XixROI(1):XixROI(2))));', frame,imMode));
-            evalin('base',sprintf('noiseROI_means(%d,%d,wellIx) = mean(mean(ImTemp(iZd_noise,:)));', frame,imMode));
+            evalin('base',sprintf('noiseROI_means(%d,%d,wellIx) = mean(mean(ImTemp(ZixNoise(1):ZixNoise(2),XixNoise(1):XixNoise(2))));', frame,imMode));
             evalin('base',sprintf('noiseROI_stds(%d,%d,wellIx) = std2(ImTemp(iZd_noise,:));', frame,imMode));
         end
     end
