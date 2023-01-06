@@ -283,7 +283,7 @@ end
 function updateROI(src,evt)
     wellIx = str2double(src.Tag(7:end)); % get well index from the tag
     assignin('base', 'wellIx', wellIx);
-
+    
     % pull in variables we need to recompute values
     Nf = evalin('base','Nf');
     Xi = evalin('base','Xi_cell{wellIx}');
