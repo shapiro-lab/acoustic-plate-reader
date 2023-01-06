@@ -281,24 +281,25 @@ function plot_AM_Bmode_ratio(maxs_AM_Bmode_ratio, saveName)
 end
 
 function updateROI(src,evt)
-    disp(['ROI ' src.Tag ' moved. New position: ' mat2str(evt.CurrentPosition)])
-    sampMask = createMask(src); % Create mask for samp ROI
-    wellIx = str2double(src.Tag(7:end)); % Get well index from the tag
+    wellIx = str2double(src.Tag(7:end)); % get well index from the tag
     assignin('base', 'wellIx', wellIx);
-
-    %recompute ROI and its dimensions
-    [z_coords, x_coords] = find(sampMask == 1);
-    ZixROI = [min(z_coords) max(z_coords)]; %range of Z coords
-    XixROI = [min(x_coords) max(x_coords)]; %range of X coords
-    assignin('base', 'ZixROI', ZixROI);%need to assign in base so they can be used by the evalin commands below
-    assignin('base', 'XixROI', XixROI);
     
     % pull in variables we need to recompute values
     Nf = evalin('base','Nf');
     Xi = evalin('base','Xi_cell{wellIx}');
     ZixTemp = evalin('base','ZixTemp_cell{wellIx}');
     
-    for frame = 1:Nf % Recalulate sample mean, noise mean, and noise STD using the new ROI for all frames
+    disp(['ROI ' src.Tag ' moved. New position: ' mat2str(evt.CurrentPosition)])
+    sampMask = createMask(src); % create mask for samp ROI
+
+    % recompute ROI and its dimensions
+    [z_coords, x_coords] = find(sampMask == 1);
+    ZixROI = [min(z_coords) max(z_coords)]; %range of Z coords
+    XixROI = [min(x_coords) max(x_coords)]; %range of X coords
+    assignin('base', 'ZixROI', ZixROI);%need to assign in base so they can be used by the evalin commands below
+    assignin('base', 'XixROI', XixROI);
+    
+    for frame = 1:Nf % recalulate sample mean, noise mean, and noise STD using the new ROI for all frames
         for imMode = 1:2
             %need to use evalin to run the following commented out commands in the main workspace
             %ImTemp = Imi{frame,imMode,wellIx}(ixZtemp,:);
