@@ -318,7 +318,8 @@ function updateROI(src,evt)
         end
     end
     
-    for frame = 1:Nf % recalulate sample mean, noise mean, and noise STD using the new ROI for all frames
+    % recalulate sample mean, noise mean, and noise STD using the new ROI for all frames
+    for frame = 1:Nf
         for imMode = 1:2
             %need to use evalin to run the following commented out commands in the main workspace
             %ImTemp = Imi{frame,imMode,wellIx}(ixZtemp,:);

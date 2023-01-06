@@ -323,7 +323,7 @@ function updateROI(src,evt)
     src.Position = [Xi(XixROI(1)) ZixTemp(ZixROI(1)) Xi(XixROI(2))-Xi(XixROI(1)) ZixTemp(ZixROI(2))-ZixTemp(ZixROI(1))]; %update the position of the sample ROI in both the xAM and Bmode figures
     
     
-    % Recalulate sample mean, noise mean, and noise STD using the new ROI for all frames
+    % recalulate sample mean, noise mean, and noise STD using the new ROI for all frames
     for frame = 1:Nf
         for imMode = 1:2
             %need to use evalin to run the following commented out commands in the main workspace
