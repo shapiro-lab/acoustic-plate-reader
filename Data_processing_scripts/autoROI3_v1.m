@@ -291,37 +291,13 @@ function updateROI(src,evt)
     
     disp(['ROI ' src.Tag ' moved. New position: ' mat2str(evt.CurrentPosition)])
     sampMask = createMask(src); % create mask for samp ROI
-
-    % recompute ROI and its dimensions
+    
+    % recompute samp ROI and its dimensions
     [z_coords, x_coords] = find(sampMask == 1);
     ZixROI = [min(z_coords) max(z_coords)]; %range of Z coords
     XixROI = [min(x_coords) max(x_coords)]; %range of X coords
     assignin('base', 'ZixROI', ZixROI);%need to assign in base so they can be used by the evalin commands below
     assignin('base', 'XixROI', XixROI);
-    
-    for frame = 1:Nf % recalulate sample mean, noise mean, and noise STD using the new ROI for all frames
-        for imMode = 1:2
-            %need to use evalin to run the following commented out commands in the main workspace
-            %ImTemp = Imi{frame,imMode,wellIx}(ixZtemp,:);
-            % sampROI_means(frame,imMode,wellIx) = mean(mean(ImTemp(ZixROI(1):ZixROI(2),XixROI(1):XixROI(2))));
-            %noiseROI_means(frame,imMode,wellIx) = mean(mean(ImTemp(iZd_noise,:)));
-            %noiseROI_stds(frame,imMode,wellIx) = std2(ImTemp(iZd_noise,:));
-            evalin('base',sprintf('ImTemp = Imi{%d,%d,wellIx}(Ixz_cell{wellIx},:);',frame,imMode));
-            evalin('base',sprintf('sampROI_means(%d,%d,wellIx) = mean(mean(ImTemp(ZixROI(1):ZixROI(2),XixROI(1):XixROI(2))));', frame,imMode));
-            evalin('base',sprintf('noiseROI_means(%d,%d,wellIx) = mean(mean(ImTemp(iZd_noise,:)));', frame,imMode));
-            evalin('base',sprintf('noiseROI_stds(%d,%d,wellIx) = std2(ImTemp(iZd_noise,:));', frame,imMode));
-        end
-    end
-    %need to use evalin to run the following commented out commands in the main workspace
-    %sampCNR_dB(:,:,wellIx) = 20 * log10(abs(sampROI_means(:,:,wellIx) - noiseROI_means(:,:,wellIx)) ./ noiseROI_stds(:,:,wellIx)); % Replace sample CNR
-    %AM_Bmode_ratio_dB = 20*log10(abs((sampROI_means(:,1,:) - noiseROI_means(:,1,:)) ./ (sampROI_means(:,2,:) - noiseROI_means(:,1,:)))); % Recalculate xAM/Bmode, dB scale
-    evalin('base','sampCNR_dB(:,:,wellIx) = 20 * log10(abs(sampROI_means(:,:,wellIx) - noiseROI_means(:,:,wellIx)) ./ noiseROI_stds(:,:,wellIx));'); % Replace sample CNR
-    evalin('base','AM_Bmode_ratio_dB = 20*log10(abs((sampROI_means(:,1,:) - noiseROI_means(:,1,:)) ./ (sampROI_means(:,2,:) - noiseROI_means(:,1,:))));'); % Recalculate xAM/Bmode, dB scale
-    disp(['Updated ' src.Tag ' mean']);
-    
-    %update ZixROI and XixROI arrays
-    evalin('base','ZixROI_array(wellIx, :) = ZixROI;');
-    evalin('base','XixROI_array(wellIx, :) = XixROI;');
     
     %update samp rectangle for both the xAM and Bmode figures
     open_figs = findobj('type', 'figure'); %find all the figures
@@ -341,6 +317,31 @@ function updateROI(src,evt)
             end
         end
     end
+    
+    for frame = 1:Nf % recalulate sample mean, noise mean, and noise STD using the new ROI for all frames
+        for imMode = 1:2
+            %need to use evalin to run the following commented out commands in the main workspace
+            %ImTemp = Imi{frame,imMode,wellIx}(ixZtemp,:);
+            % sampROI_means(frame,imMode,wellIx) = mean(mean(ImTemp(ZixROI(1):ZixROI(2),XixROI(1):XixROI(2))));
+            %noiseROI_means(frame,imMode,wellIx) = mean(mean(ImTemp(iZd_noise,:)));
+            %noiseROI_stds(frame,imMode,wellIx) = std2(ImTemp(iZd_noise,:));
+            evalin('base',sprintf('ImTemp = Imi{%d,%d,wellIx}(Ixz_cell{wellIx},:);',frame,imMode));
+            evalin('base',sprintf('sampROI_means(%d,%d,wellIx) = mean(mean(ImTemp(ZixROI(1):ZixROI(2),XixROI(1):XixROI(2))));', frame,imMode));
+            evalin('base',sprintf('noiseROI_means(%d,%d,wellIx) = mean(mean(ImTemp(iZd_noise,:)));', frame,imMode));
+            evalin('base',sprintf('noiseROI_stds(%d,%d,wellIx) = std2(ImTemp(iZd_noise,:));', frame,imMode));
+        end
+    end
+    
+    %need to use evalin to run the following commented out commands in the main workspace
+    %sampCNR_dB(:,:,wellIx) = 20 * log10(abs(sampROI_means(:,:,wellIx) - noiseROI_means(:,:,wellIx)) ./ noiseROI_stds(:,:,wellIx)); % Replace sample CNR
+    %AM_Bmode_ratio_dB = 20*log10(abs((sampROI_means(:,1,:) - noiseROI_means(:,1,:)) ./ (sampROI_means(:,2,:) - noiseROI_means(:,1,:)))); % Recalculate xAM/Bmode, dB scale
+    evalin('base','sampCNR_dB(:,:,wellIx) = 20 * log10(abs(sampROI_means(:,:,wellIx) - noiseROI_means(:,:,wellIx)) ./ noiseROI_stds(:,:,wellIx));'); % Replace sample CNR
+    evalin('base','AM_Bmode_ratio_dB = 20*log10(abs((sampROI_means(:,1,:) - noiseROI_means(:,1,:)) ./ (sampROI_means(:,2,:) - noiseROI_means(:,1,:))));'); % Recalculate xAM/Bmode, dB scale
+    disp(['Updated ' src.Tag ' mean']);
+    
+    %update ZixROI and XixROI arrays
+    evalin('base','ZixROI_array(wellIx, :) = ZixROI;');
+    evalin('base','XixROI_array(wellIx, :) = XixROI;');
     
     % update plots
     evalin('base','make_plots(sampCNR_dB, PlateSize, Nf, AM_Bmode_ratio_dB,confScore,saveName)');

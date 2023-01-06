@@ -314,7 +314,7 @@ function updateROI(src,evt)
     sampMask = createMask(src); % Create mask for samp ROI
     noiseMask = createMask(noiseROI); % Create mask for samp ROI
     
-    %recompute samp ROI and its dimensions
+    % recompute samp ROI and its dimensions
     [samp_z_coords, samp_x_coords] = find(sampMask == 1);
     ZixROI = [min(samp_z_coords) max(samp_z_coords)]; %range of Z coords
     XixROI = [min(samp_x_coords) max(samp_x_coords)]; %range of X coords
