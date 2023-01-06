@@ -339,10 +339,10 @@ function updateROI(src,evt)
     end
     
     %need to use evalin to run the following commented out commands in the main workspace
-    %sampCNR(:,:,wellIx) = 20 * log10(abs(sampROI_means(:,:,wellIx) - noiseROI_means(:,:,wellIx)) ./ noiseROI_stds(:,:,wellIx)); % Replace sample CNR
-    %AM_Bmode_ratio = 20*log10(abs((sampROI_means(:,1,:) - noiseROI_means(:,1,:)) ./ (sampROI_means(:,2,:) - noiseROI_means(:,1,:)))); % Recalculate xAM/Bmode, dB scale
-    evalin('base','sampCNR(:,:,wellIx) = 20 * log10(abs(sampROI_means(:,:,wellIx) - noiseROI_means(:,:,wellIx)) ./ noiseROI_stds(:,:,wellIx));'); % Replace sample CNR
-    evalin('base','AM_Bmode_ratio = 20*log10(abs((sampROI_means(:,1,:) - noiseROI_means(:,1,:)) ./ (sampROI_means(:,2,:) - noiseROI_means(:,1,:))));'); % Recalculate xAM/Bmode, dB scale
+    %sampCNR_dB(:,:,wellIx) = 20 * log10(abs(sampROI_means(:,:,wellIx) - noiseROI_means(:,:,wellIx)) ./ noiseROI_stds(:,:,wellIx)); % Replace sample CNR
+    %AM_Bmode_ratio_dB = 20*log10(abs((sampROI_means(:,1,:) - noiseROI_means(:,1,:)) ./ (sampROI_means(:,2,:) - noiseROI_means(:,1,:)))); % Recalculate xAM/Bmode, dB scale
+    evalin('base','sampCNR_dB(:,:,wellIx) = 20 * log10(abs(sampROI_means(:,:,wellIx) - noiseROI_means(:,:,wellIx)) ./ noiseROI_stds(:,:,wellIx));'); % Replace sample CNR
+    evalin('base','AM_Bmode_ratio_dB = 20*log10(abs((sampROI_means(:,1,:) - noiseROI_means(:,1,:)) ./ (sampROI_means(:,2,:) - noiseROI_means(:,1,:))));'); % Recalculate xAM/Bmode, dB scale
     disp(['Updated ' sampROI.Tag ' mean']);
     
     %update ZixROI and XixROI arrays
