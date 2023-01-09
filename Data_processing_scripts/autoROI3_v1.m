@@ -202,17 +202,14 @@ sampSBR_diff_dB = 20 * log10(abs(sampSBR_diff)); % Calculate pre-/post-collapse 
 sampCNR = (sampROI_means - noiseROI_means) ./ noiseROI_stds; % Calculate sample CNR
 sampCNR_dB = 20 * log10(abs(sampCNR)); % Calculate sample CNR in dB
 sampCNR_diff = sampCNR(1:VmaxIX(1),:,:) - sampCNR(VmaxIX(1)+1:VmaxIX(2),:,:); % Calculate pre-/post-collapse difference CNR
-sampCNR_diff_dB = 20 * log10(abs(sampCNR_diff)); % Calculate pre-/post-collapse difference CBR in dB
+sampCNR_diff_dB = 20 * log10(abs(sampCNR_diff)); % Calculate pre-/post-collapse difference CNR in dB
 
-AM_Bmode_ratio_dB = 20*log10(abs((sampROI_means(:,1,:) - noiseROI_means(:,1,:)) ./ (sampROI_means(:,2,:) - noiseROI_means(:,1,:)))); % xAM/Bmode, dB scale
-
-% save data
-clear pressure imMode;
-save([saveName '_data_' datestr(now,'yymmdd-hh-MM-ss')],'P','saveName','sampROI_means','sampCNR','AM_Bmode_ratio_dB','noiseROI_means','noiseROI_stds','voltage','PlateCoordinate','PlateSize','ROI_Centers','confScore','Nf');
+AM_Bmode_ratio = (sampROI_means(:,1,:) - noiseROI_means(:,1,:)) ./ (sampROI_means(:,2,:) - noiseROI_means(:,1,:)); % xAM/Bmode
+AM_Bmode_ratio_dB = 20 * log10(abs(AM_Bmode_ratio)); % xAM/Bmode, dB scale
 
 %% plot ROI quants with microplateplot
 % make and save microplate plots
-make_plots(sampCNR_dB, AM_Bmode_ratio_dB, PlateSize, Nf, confScore,saveName)
+make_plots(sampCNR, AM_Bmode_ratio_dB, PlateSize, Nf, confScore,saveName)
 
 Bmode_layout = layoutfigures(Bmode_figs,PlateSize(1),PlateSize(2), 'Bmode layout', 'bone'); %create Bmode figure layout
 xAM_layout = layoutfigures(xAM_figs,PlateSize(1),PlateSize(2), 'xAM layout', 'hot'); %create xAM figure layout
@@ -224,13 +221,12 @@ function make_plots(sampCNR, AM_Bmode_ratio, PlateSize, Nf, confScore, saveName)
     %reshape ROI CNRs
     % sampCNR new dimensions: well rows, well columns, frames, imaging modes
     sampCNRs = permute(reshape(sampCNR, Nf, 2, PlateSize(2), PlateSize(1)), [4 3 1 2]);
-%     sampCNRs_diff = permute(reshape(sampCNR_diff, Nf/2, 2, PlateSize(2), PlateSize(1)), [4 3 1 2]);
+%     sampCNRs = permute(reshape(sampCNR, Nf/2, 2, PlateSize(2), PlateSize(1)), [4 3 1 2]);
     AM_Bmode_ratios = permute(reshape(AM_Bmode_ratio, Nf, 1, PlateSize(2), PlateSize(1)), [4 3 1 2]);
     confScore = permute(reshape(confScore, PlateSize(2), PlateSize(1)), [1 2]);
     
     % find max signal achieved by each sample at any voltage
     maxs_AM = squeeze(max(sampCNRs, [], 3));
-%     maxs_AM_diff = squeeze(max(sampCNRs_diff, [], 3));
     maxs_AM_Bmode_ratio = squeeze(max(AM_Bmode_ratios, [], 3));
     
     %delete previous plots
@@ -245,6 +241,9 @@ function make_plots(sampCNR, AM_Bmode_ratio, PlateSize, Nf, confScore, saveName)
     % make and save microplate plots
     plot_xAM(maxs_AM, saveName);
     plot_AM_Bmode_ratio(maxs_AM_Bmode_ratio, saveName);
+    
+    % save updated quants
+    evalin('base', "save([saveName '_data_' datestr(now,'yymmdd-hh-MM-ss')],'P','saveName','sampROI_means','sampCNR','AM_Bmode_ratio','noiseROI_means','noiseROI_stds','voltage','PlateCoordinate','PlateSize','ROI_Centers','confScore','Nf');")
 end
 
 function plot_xAM(maxs_AM, saveName)
@@ -332,11 +331,10 @@ function updateROI(src,evt)
         end
     end
     
-    %need to use evalin to run the following commented out commands in the main workspace
-    %sampCNR_dB(:,:,wellIx) = 20 * log10(abs(sampROI_means(:,:,wellIx) - noiseROI_means(:,:,wellIx)) ./ noiseROI_stds(:,:,wellIx)); % Replace sample CNR
-    %AM_Bmode_ratio_dB = 20*log10(abs((sampROI_means(:,1,:) - noiseROI_means(:,1,:)) ./ (sampROI_means(:,2,:) - noiseROI_means(:,1,:)))); % Recalculate xAM/Bmode, dB scale
-    evalin('base','sampCNR_dB(:,:,wellIx) = 20 * log10(abs(sampROI_means(:,:,wellIx) - noiseROI_means(:,:,wellIx)) ./ noiseROI_stds(:,:,wellIx));'); % Replace sample CNR
-    evalin('base','AM_Bmode_ratio_dB = 20*log10(abs((sampROI_means(:,1,:) - noiseROI_means(:,1,:)) ./ (sampROI_means(:,2,:) - noiseROI_means(:,1,:))));'); % Recalculate xAM/Bmode, dB scale
+    %need to use evalin to run the following commands in the main workspace
+    evalin('base','sampCNR(:,:,wellIx) = (sampROI_means(:,:,wellIx) - noiseROI_means(:,:,wellIx)) ./ noiseROI_stds(:,:,wellIx);'); % Replace sample CNR
+    evalin('base','sampSBR(:,:,wellIx) = sampROI_means(:,:,wellIx) ./ noiseROI_means(:,:,wellIx);'); % Calculate sample SBR
+    evalin('base','AM_Bmode_ratio = (sampROI_means(:,1,:) - noiseROI_means(:,1,:)) ./ (sampROI_means(:,2,:) - noiseROI_means(:,1,:));'); % Recalculate xAM/Bmode
     disp(['Updated ' src.Tag ' mean']);
     
     %update ZixROI and XixROI arrays
@@ -345,9 +343,6 @@ function updateROI(src,evt)
     
     % update plots
     evalin('base','make_plots(sampCNR_dB, AM_Bmode_ratio_dB, PlateSize, Nf, confScore,saveName)');
- 
-    % save updated quants
-    evalin('base', "save([saveName '_data_' datestr(now,'yymmdd-hh-MM-ss')],'P','saveName','sampROI_means','sampCNR_dB','AM_Bmode_ratio_dB','noiseROI_means','noiseROI_stds','voltage','PlateCoordinate','PlateSize','ROI_Centers','confScore','Nf');")
 end
 
 function layout = layoutfigures(figs_array,n_rows,n_cols, title_str, cmap)
