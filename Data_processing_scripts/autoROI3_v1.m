@@ -380,6 +380,10 @@ function layout = layoutfigures(figs_array,n_rows,n_cols, title_str, cmap)
                 addlistener(new_object,'ROIMoved',@updateROI); %updateROI is the callback function
             end
         end
+        row = floor((wellIx-1)/12) + 65;
+        col = mod(wellIx-1,12) + 1;
+        well = [char(row), num2str(col,'%02d')];
+        title(well, 'FontSize', 8);
         set(curr_axes, 'YDir','reverse')
         set(curr_axes, 'tag', ['ROI_' num2str(wellIx)]);
         axis off;
