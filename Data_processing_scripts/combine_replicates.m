@@ -4,10 +4,11 @@ close all
 PlateSize = [8,12];
 
 % load data;
-% data1 = load('/Volumes/GoogleDrive-118305181097921812507/.shortcut-targets-by-id/0B24ONICaZ0z9djczVE1ZR3BnWU0/Shapiro Lab Information/Data/Rob/96-well_plate_scans/ORI-RBS-libraries/EFA4-C8-E8-G8_R1-3_stable_37C/EFA4-G8_R1-3_stable_37C_P_R3_C1/EFA4-G8_R1-3_stable_37C_P_R3_C1_data_230120-13-50-53.mat');
-data1 = load('/Volumes/GoogleDrive-118305181097921812507/.shortcut-targets-by-id/0B24ONICaZ0z9djczVE1ZR3BnWU0/Shapiro Lab Information/Data/Rob/96-well_plate_scans/ORI-RBS-libraries/EFA4-C8-E8-G8_R1-3_stable_37C/EFA4-G8_R1-3_stable_37C_P_R3_C2/EFA4-G8_R1-3_stable_37C_P_R3_C2_data_230120-13-55-08.mat');
-data2 = load('/Volumes/GoogleDrive-118305181097921812507/.shortcut-targets-by-id/0B24ONICaZ0z9djczVE1ZR3BnWU0/Shapiro Lab Information/Data/Rob/96-well_plate_scans/ORI-RBS-libraries/EFA4-C8-E8-G8_R1-3_stable_37C/EFA4-G8_R1-3_stable_37C_P_R3_C3/EFA4-G8_R1-3_stable_37C_P_R3_C3_data_230120-14-06-55.mat');
-data3 = load('/Volumes/GoogleDrive-118305181097921812507/.shortcut-targets-by-id/0B24ONICaZ0z9djczVE1ZR3BnWU0/Shapiro Lab Information/Data/Rob/96-well_plate_scans/ORI-RBS-libraries/EFA4-C8-E8-G8_R1-3_stable_37C/EFA4-G8_R1-3_stable_37C_P_R3_C4/EFA4-G8_R1-3_stable_37C_P_R3_C4_data_230120-14-12-28.mat');
+% data1 =
+% load('G:\.shortcut-targets-by-id\0B24ONICaZ0z9djczVE1ZR3BnWU0\Shapiro Lab Information\Data\Rob\96-well_plate_scans\GvpA-B-mutants\Best-A-B-muts_R1-4_stable_37C\Best-B-muts_R1-4_stable_37C_P_R2_C1\Best-B-muts_R1-4_stable_37C_P_R2_C1_data_230222-13-50-33.mat');
+data1 = load('G:\.shortcut-targets-by-id\0B24ONICaZ0z9djczVE1ZR3BnWU0\Shapiro Lab Information\Data\Rob\96-well_plate_scans\GvpA-B-mutants\Best-A-B-muts_R1-4_stable_37C\Best-B-muts_R1_stable_37C_P_R2_C2\Best-B-muts_R1_stable_37C_P_R2_C2_data_230222-15-37-30.mat');
+data2 = load('G:\.shortcut-targets-by-id\0B24ONICaZ0z9djczVE1ZR3BnWU0\Shapiro Lab Information\Data\Rob\96-well_plate_scans\GvpA-B-mutants\Best-A-B-muts_R1-4_stable_37C\Best-B-muts_R2_stable_37C_P_R2_C3\Best-B-muts_R2_stable_37C_P_R2_C3_data_230222-15-08-48.mat');
+data3 = load('G:\.shortcut-targets-by-id\0B24ONICaZ0z9djczVE1ZR3BnWU0\Shapiro Lab Information\Data\Rob\96-well_plate_scans\GvpA-B-mutants\Best-A-B-muts_R1-4_stable_37C\Best-B-muts_R3_stable_37C_P_R2_C4\Best-B-muts_R3_stable_37C_P_R2_C4_data_230222-15-18-31.mat');
 
 %%
 %make structure to hold data

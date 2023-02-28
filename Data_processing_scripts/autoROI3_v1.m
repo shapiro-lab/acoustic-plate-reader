@@ -20,7 +20,7 @@ zROI_size = 40; % size of the ROI in z dimension
 filter_size1 = [40 5]; % size of the median filter in [z,x] dimension
 noise_stdratio = 3; % ratio of the noise STD added to the noise mean to decide noise floor 
 noise_slices = repmat([2 3],total_n,1); % default noise depth (in mm) for noise ROI selection
-noise_slices_backup = [3 4;7 8;8 9;9 10;10 11]; % backup noise depth (in mm) for noise ROI selection in case of abnormal noise level
+noise_slices_backup = [8 9;9 10;10 11]; % backup noise depth (in mm) for noise ROI selection in case of abnormal noise level
 noiseThresh = 100; % threshold of noise level (mV) for abnormal high noise level / changing noise depth slices
 TemplateMode = 3; % ROI template to use: 1 = filled wells, 2/3 = empty wells with thinner (2) or thicker (3) well wall, use 1 as default and 2/3 if well is not full
 if ~exist('WellTemplates','var') % load the ROI template if needed, please put the .mat file in accessible folders
@@ -210,6 +210,7 @@ function quantify(quants, VmaxIX)
     % calculate SBRs
     quants.sampSBR = quants.sampROI_means ./ quants.noiseROI_means; % Calculate sample SBR
     quants.sampSBR_dB = 20 * log10(quants.sampSBR); % Calculate sample SBR in dB
+%     quants.sampSBR_diff = quants.sampSBR(2:VmaxIX(1),:,:) - quants.sampSBR(VmaxIX(1)+1:VmaxIX(2),:,:); % Calculate pre-/post-collapse difference SBR
 %     quants.sampSBR_diff = quants.sampSBR(1:VmaxIX(1),:,:) - quants.sampSBR(VmaxIX(1)+1:VmaxIX(2),:,:); % Calculate pre-/post-collapse difference SBR
     quants.sampSBR_diff = quants.sampSBR(2,:,:) - quants.sampSBR(3,:,:); % Calculate pre-/post-collapse difference SBR
     quants.sampSBR_diff_dB = 20 * log10(abs(quants.sampSBR_diff)); % Calculate pre-/post-collapse difference SBR in dB
@@ -217,6 +218,7 @@ function quantify(quants, VmaxIX)
     % calculate CNRs
     quants.sampCNR = (quants.sampROI_means - quants.noiseROI_means) ./ quants.noiseROI_stds; % Calculate sample CNR
     quants.sampCNR_dB = 20 * log10(abs(quants.sampCNR)); % Calculate sample CNR in dB
+%     quants.sampCNR_diff = quants.sampCNR(2:VmaxIX(1),:,:) - quants.sampCNR(VmaxIX(1)+1:VmaxIX(2),:,:); % Calculate pre-/post-collapse difference CNR
 %     quants.sampCNR_diff = quants.sampCNR(1:VmaxIX(1),:,:) - quants.sampCNR(VmaxIX(1)+1:VmaxIX(2),:,:); % Calculate pre-/post-collapse difference CNR
     quants.sampCNR_diff = quants.sampCNR(2,:,:) - quants.sampCNR(3,:,:); % Calculate pre-/post-collapse difference CNR
     quants.sampCNR_diff_dB = 20 * log10(abs(quants.sampCNR_diff)); % Calculate pre-/post-collapse difference CNR in dB
