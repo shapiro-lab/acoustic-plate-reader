@@ -1242,7 +1242,7 @@ if P.Setup || P.RForImg(2) || P.ScanCount(4) || P.LiveRecon
     % iIm = find(z>=2.5,1,'first'):(find(z>=2.5,1,'first')+dispLen);
     persistent iIm
     if isempty(iIm)
-        disp_depth = [2.5 P.endDepth_mm];
+        disp_depth = [1 P.endDepth_mm];
         iIm = find(z>=disp_depth(1),1,'first'):find(z>=disp_depth(2),1,'first');
     end
     ImgData.Xx = x;
@@ -1380,7 +1380,7 @@ if P.Setup || P.RForImg(2) || P.ScanCount(4) || P.LiveRecon
     z = z*1e3; % convert to mm
     persistent iIm
     if isempty(iIm)
-        disp_depth = [2.5 P.endDepth_mm];
+        disp_depth = [1 P.endDepth_mm];
         iIm = find(z>=disp_depth(1),1,'first'):find(z>=disp_depth(2),1,'first');
     end
     % zMaxAng = zMaxAng*1e3;
@@ -1434,7 +1434,7 @@ if P.Setup || P.RForImg(2) || P.ScanCount(4) || P.LiveRecon
         zoffset = 100;
         filter_size1 = [40 5];
         noise_stdratio = 1;
-        sample_depth = [3 6];
+        sample_depth = [2 6];
         iZt = find(z>=sample_depth(1),1,'first'):find(z>=sample_depth(2),1,'first');
         filter_depth = zeros(size(Im));
         filter_depth(iZt,:) = 1;
@@ -1445,7 +1445,8 @@ if P.Setup || P.RForImg(2) || P.ScanCount(4) || P.LiveRecon
     %% auto ROI selection 
     if P.autoROI == 1
         if P.ScanCount(4) || P.Setup || P.StartRamp
-            noiseROIt = mean(mean(Im(iZn,:))) + noise_stdratio * std2(Im(iZn,:));
+            % noiseROIt = mean(mean(Im(iZn,:))) + noise_stdratio * std2(Im(iZn,:));
+            noiseROIt = 60;
             Imt_f1 = medfilt2(Im,filter_size1);
             Imt_f2 = (Imt_f1 > noiseROIt) .* filter_depth;
             Xm = repmat(1:length(x),length(z),1).* Imt_f2;
