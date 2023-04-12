@@ -1,7 +1,7 @@
 clear all
 close all
 % 
-pathName = 'G:\.shortcut-targets-by-id\0B24ONICaZ0z9djczVE1ZR3BnWU0\Shapiro Lab Information\Data\Rob\96-well_plate_scans\ORI-RBS-libraries\EFA4-C9_P1-3_R1-2_stable_37C_ara-vs-glu\EFA4-C9_P1_R1-2_stable_37C_P_R1_C1';
+pathName = '/Users/Rob/Dropbox/verasonics system/Vantage-4.6.2-RCH/Data/230317/Best-A-B-mutants_R1-3_stable_37C_xAM-cramp/Best-A-B-mutants_R1-3_stable_37C_cramp_P_R1_C1';
 saveName = pathName;
 
 SubDirs = GetSubDirs(pathName);

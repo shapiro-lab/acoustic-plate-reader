@@ -1,4 +1,4 @@
-% For fUS verasonics, use COM5; for 256-channel use COM2; for other one,
+l% For fUS verasonics, use COM5; for 256-channel use COM2; for other one,
 % use COM2
 
 function params = sub_Stage_Initialize(params)

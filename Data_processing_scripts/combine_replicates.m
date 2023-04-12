@@ -4,11 +4,9 @@ close all
 PlateSize = [8,12];
 
 % load data;
-% data1 =
-% load('G:\.shortcut-targets-by-id\0B24ONICaZ0z9djczVE1ZR3BnWU0\Shapiro Lab Information\Data\Rob\96-well_plate_scans\GvpA-B-mutants\Best-A-B-muts_R1-4_stable_37C\Best-B-muts_R1-4_stable_37C_P_R2_C1\Best-B-muts_R1-4_stable_37C_P_R2_C1_data_230222-13-50-33.mat');
-data1 = load('G:\.shortcut-targets-by-id\0B24ONICaZ0z9djczVE1ZR3BnWU0\Shapiro Lab Information\Data\Rob\96-well_plate_scans\GvpA-B-mutants\Best-A-B-muts_R1-4_stable_37C\Best-B-muts_R1_stable_37C_P_R2_C2\Best-B-muts_R1_stable_37C_P_R2_C2_data_230222-15-37-30.mat');
-data2 = load('G:\.shortcut-targets-by-id\0B24ONICaZ0z9djczVE1ZR3BnWU0\Shapiro Lab Information\Data\Rob\96-well_plate_scans\GvpA-B-mutants\Best-A-B-muts_R1-4_stable_37C\Best-B-muts_R2_stable_37C_P_R2_C3\Best-B-muts_R2_stable_37C_P_R2_C3_data_230222-15-08-48.mat');
-data3 = load('G:\.shortcut-targets-by-id\0B24ONICaZ0z9djczVE1ZR3BnWU0\Shapiro Lab Information\Data\Rob\96-well_plate_scans\GvpA-B-mutants\Best-A-B-muts_R1-4_stable_37C\Best-B-muts_R3_stable_37C_P_R2_C4\Best-B-muts_R3_stable_37C_P_R2_C4_data_230222-15-18-31.mat');
+data1 = load('/Users/Rob/Dropbox/verasonics system/Vantage-4.6.2-RCH/Data/230307/A-A-B-B-A-T6A-L40A-A-T6A-I48V-B-S9G-R31L-R85L_P1_R1-4_stable_37C/A-A-B-B-A-T6A-L40A-A-T6A-I48V-B-S9G-R31L-R85L_P1_R1-4_stable_37C_P_R1_C1_data_230309-19-00-28.mat');
+data2 = load('/Users/Rob/Dropbox/verasonics system/Vantage-4.6.2-RCH/Data/230307/A-A-B-B-A-T6A-L40A-A-T6A-I48V-B-S9G-R31L-R85L_P1_R1-4_stable_37C/A-A-B-B-A-T6A-L40A-A-T6A-I48V-B-S9G-R31L-R85L_P1_R1-4_stable_37C_P_R1_C2_data_230309-19-03-38.mat');
+data3 = load('/Users/Rob/Dropbox/verasonics system/Vantage-4.6.2-RCH/Data/230307/A-A-B-B-A-T6A-L40A-A-T6A-I48V-B-S9G-R31L-R85L_P1_R1-4_stable_37C/A-A-B-B-A-T6A-L40A-A-T6A-I48V-B-S9G-R31L-R85L_P1_R1-4_stable_37C_P_R1_C3_data_230309-18-57-00.mat');
 
 %%
 %make structure to hold data
@@ -91,8 +89,8 @@ pause(0.5)
 
 signals = table;
 signals.wells = categorical(quants.PlateCoordinate).';
-signals.max_diff_SBRs = reshape(permute(quants.max_diff_SBRs, [2 1 3]), [96,2]);
-signals.max_diff_SBR_SEMs = reshape(permute(quants.max_diff_SBR_SEMs, [2 1 3]), [96,2]);
+signals.max_diff_SBRs = reshape(permute(quants.max_diff_SBRs, [2 1 3]), [(PlateSize(2)*PlateSize(1)),2]);
+signals.max_diff_SBR_SEMs = reshape(permute(quants.max_diff_SBR_SEMs, [2 1 3]), [(PlateSize(2)*PlateSize(1)),2]);
 signals_sorted = sortrows(signals,2,'descend');
 
 % Make bar plot of max signals
