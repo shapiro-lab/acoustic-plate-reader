@@ -33,7 +33,7 @@ catch
    try
     % Then try connecting to the BK
     delete(instrfind('Name', 'VISA-USB-0-0xF4ED-0xEE3A-388G16168-0'));
-    params.SG.address = 'USB0::0xF4ED::0xEE3A::388G16168::INSTR';
+    params.SG.address = 'USB0::0xF4EC::0xEE38::515F18109::0::INSTR';
    
     % Initialize the BK
     params.SG.visaObj = visa('ni',params.SG.address);

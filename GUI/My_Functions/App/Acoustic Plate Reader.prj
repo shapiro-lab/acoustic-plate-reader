@@ -1,9 +1,9 @@
 <deployment-project plugin="plugin.apptool" plugin-version="1.0">
-  <configuration build-checksum="2023867256" file="C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\acoustic-plate-reader\GUI\My_Functions\App\Acoustic Plate Reader.prj" location="C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\acoustic-plate-reader\GUI\My_Functions\App" name="Acoustic Plate Reader" target="target.mlapps" target-name="Package App">
+  <configuration build-checksum="1367044798" file="C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\acoustic-plate-reader\GUI\My_Functions\App\Acoustic Plate Reader.prj" location="C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\acoustic-plate-reader\GUI\My_Functions\App" name="Acoustic Plate Reader" target="target.mlapps" target-name="Package App">
     <param.appname>Acoustic Plate Reader</param.appname>
-    <param.authnamewatermark />
-    <param.email />
-    <param.company />
+    <param.authnamewatermark>Mikhail Shapiro</param.authnamewatermark>
+    <param.email>mikhail@caltech.edu</param.email>
+    <param.company>Caltech</param.company>
     <param.icon>${PROJECT_ROOT}\Acoustic Plate Reader_resources\icon_24.png</param.icon>
     <param.icons>
       <file>${PROJECT_ROOT}\Acoustic Plate Reader_resources\icon_48.png</file>
@@ -12,105 +12,110 @@
     </param.icons>
     <param.summary />
     <param.description />
-    <param.screenshot>C:\Users\dmaresca\AppData\Local\Temp\tp03958a98_ae32_499c_a805_e09dc5c3dcf0.png</param.screenshot>
+    <param.screenshot>C:\Users\verasonics\AppData\Local\Temp\tpe7d37e50_74c6_41e9_a0a2_47ed5dd27dbb.png</param.screenshot>
     <param.version>1.0</param.version>
     <param.products.name />
     <param.products.id />
     <param.products.version />
-    <param.platforms />
+    <param.platforms>
+      <item>win64</item>
+    </param.platforms>
     <param.output>${PROJECT_ROOT}</param.output>
     <param.guid>3b51f557-ac96-4724-9984-8e49c0a1eff6</param.guid>
     <unset>
-      <param.authnamewatermark />
-      <param.email />
-      <param.company />
       <param.summary />
       <param.description />
       <param.version />
       <param.products.name />
       <param.products.id />
       <param.products.version />
-      <param.platforms />
       <param.output />
     </unset>
     <fileset.main>
       <file>${PROJECT_ROOT}\Data_Acquisition_GUI.mlapp</file>
     </fileset.main>
     <fileset.depfun>
-      <file>C:\Users\dmaresca\AppData\Local\Temp\Auto_Ramp.m</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\acoustic-plate-reader\GUI\Mat file tests\real2rgb\bone.m</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\acoustic-plate-reader\GUI\Mat file tests\real2rgb\gray.m</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\acoustic-plate-reader\GUI\Mat file tests\real2rgb\private\colormap_helper.m</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\acoustic-plate-reader\GUI\Mat file tests\real2rgb\private\rescale.m</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\acoustic-plate-reader\GUI\Mat file tests\real2rgb\real2rgb.m</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\activate.p</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\Scripts\motorStage\sub_AllSettings.m</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\Scripts\motorStage\sub_Stage_Cancel.m</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\Scripts\motorStage\sub_Stage_Initialize.m</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\Scripts\motorStage\sub_Stage_Update_Positions.m</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\Scripts\motorStage\sub_Stage_Wait_Until_Ready.m</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\System\+vsv\+common\+util\Logger.m</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\System\+vsv\+multi\generateSecondaryEcho.m</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\System\+vsv\+multi\updateNaming.m</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\System\+vsv\+seq\+function\AbstractFunctionDef.m</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\System\+vsv\+seq\+function\ExFunctionDef.m</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\System\convertLogData.mexw64</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\System\envdet.mexw64</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\System\mexaudiostream.mexw64</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\System\P_Files\+vsv\+apps\VSXResearchApp.p</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\System\P_Files\+vsv\+hal\VantageHardware.p</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\System\P_Files\+vsv\+seq\+display\DisplaySettings.p</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\System\P_Files\+vsv\+seq\+function\ExFunctionManager.p</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\System\P_Files\+vsv\+seq\+view\+deprecated\vsxGUIcreation.p</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\System\P_Files\+vsv\+seq\getBaseComp.p</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\System\P_Files\+vsv\+util\+events\EventReporter.p</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\System\P_Files\+vsv\+vsx\+validate\mustBeValidEventIndices.p</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\System\P_Files\getConnectorInfo.p</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\System\P_Files\getHardwareProperty.p</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\System\P_Files\hwConfigCheck.p</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\System\P_Files\loadAnnotation.p</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\System\P_Files\setSelectedConnector.p</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\Utilities\audiostream.m</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\Utilities\computeHIFUgeometry.m</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\Utilities\computeHvMuxSHIAperture.m</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\Utilities\computeRcvProfile.m</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\Utilities\computeRegions.m</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\Utilities\computeTGCWaveform.m</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\Utilities\computeTrans.m</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\Utilities\computeUTA.m</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\Utilities\extPwrCtrl.m</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\Utilities\getMuxMap.m</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\Utilities\pt1.m</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\Utilities\rs_irrat.m</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\Utilities\setTpcProfileHighVoltage.m</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\Utilities\spectralDoppler.m</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\Utilities\text2cell.m</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\vstoolbox\filterTranslate.m</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\vstoolbox\hammingvs.m</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\vstoolbox\sincvs.m</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\vstoolbox\spectraldoppler_filtercoeff.mat</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\vstoolbox\subspoly.m</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\vstoolbox\upsamplevs.m</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\vstoolbox\zpad.m</file>
-      <file>C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\VSX.m</file>
+      <file>C:\Users\verasonics\AppData\Local\Temp\Auto_Ramp.m</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\acoustic-plate-reader\Data_acquisition_scripts\motorStage\sub_AllSettings.m</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\acoustic-plate-reader\Data_acquisition_scripts\motorStage\sub_Stage_Cancel.m</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\acoustic-plate-reader\Data_acquisition_scripts\motorStage\sub_Stage_Initialize.m</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\acoustic-plate-reader\Data_acquisition_scripts\motorStage\sub_Stage_Update_Positions.m</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\acoustic-plate-reader\Data_acquisition_scripts\motorStage\sub_Stage_Wait_Until_Ready.m</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\acoustic-plate-reader\Data_processing_scripts\Proc_ZJ\real2rgb\bone.m</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\acoustic-plate-reader\Data_processing_scripts\Proc_ZJ\real2rgb\gray.m</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\acoustic-plate-reader\Data_processing_scripts\Proc_ZJ\real2rgb\private\colormap_helper.m</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\acoustic-plate-reader\Data_processing_scripts\Proc_ZJ\real2rgb\private\rescale.m</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\acoustic-plate-reader\Data_processing_scripts\Proc_ZJ\real2rgb\real2rgb.m</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\activate.p</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\System\+vsv\+common\+util\Logger.m</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\System\+vsv\+multi\generateSecondaryEcho.m</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\System\+vsv\+multi\updateNaming.m</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\System\+vsv\+seq\+function\AbstractFunctionDef.m</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\System\+vsv\+seq\+function\ExFunctionDef.m</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\System\convertLogData.mexw64</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\System\envdet.mexw64</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\System\mexaudiostream.mexw64</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\System\P_Files\+vsv\+apps\VSXResearchApp.p</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\System\P_Files\+vsv\+hal\VantageHardware.p</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\System\P_Files\+vsv\+seq\+display\DisplaySettings.p</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\System\P_Files\+vsv\+seq\+function\ExFunctionManager.p</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\System\P_Files\+vsv\+seq\+view\+deprecated\vsxGUIcreation.p</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\System\P_Files\+vsv\+seq\getBaseComp.p</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\System\P_Files\+vsv\+util\+events\EventReporter.p</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\System\P_Files\+vsv\+vsx\+validate\mustBeValidEventIndices.p</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\System\P_Files\getConnectorInfo.p</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\System\P_Files\getHardwareProperty.p</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\System\P_Files\hwConfigCheck.p</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\System\P_Files\loadAnnotation.p</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\System\P_Files\setSelectedConnector.p</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\System\runAcq.mexw64</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\Utilities\audiostream.m</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\Utilities\computeHIFUgeometry.m</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\Utilities\computeHvMuxSHIAperture.m</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\Utilities\computeRcvProfile.m</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\Utilities\computeRegions.m</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\Utilities\computeTGCWaveform.m</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\Utilities\computeTrans.m</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\Utilities\computeUTA.m</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\Utilities\extPwrCtrl.m</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\Utilities\getMuxMap.m</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\Utilities\pt1.m</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\Utilities\rs_irrat.m</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\Utilities\setTpcProfileHighVoltage.m</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\Utilities\spectralDoppler.m</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\Utilities\text2cell.m</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\vstoolbox\filterTranslate.m</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\vstoolbox\hammingvs.m</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\vstoolbox\sincvs.m</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\vstoolbox\spectraldoppler_filtercoeff.mat</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\vstoolbox\subspoly.m</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\vstoolbox\upsamplevs.m</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\vstoolbox\zpad.m</file>
+      <file>C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\VSX.m</file>
     </fileset.depfun>
     <fileset.resources>
       <file>${PROJECT_ROOT}\DAQ.m</file>
     </fileset.resources>
     <fileset.package />
     <build-deliverables>
-      <file location="C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\acoustic-plate-reader\GUI\My_Functions" name="App" optional="false">C:\Users\dmaresca\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\acoustic-plate-reader\GUI\My_Functions\App</file>
+      <file location="C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\acoustic-plate-reader\GUI\My_Functions" name="App" optional="false">C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-Clean\acoustic-plate-reader\GUI\My_Functions\App</file>
     </build-deliverables>
     <workflow />
     <matlab>
       <root>C:\Program Files\MATLAB\R2021a</root>
       <toolboxes>
         <toolbox name="matlabcoder" />
+        <toolbox name="gpucoder" />
       </toolboxes>
       <toolbox>
         <matlabcoder>
           <enabled>true</enabled>
         </matlabcoder>
+      </toolbox>
+      <toolbox>
+        <gpucoder>
+          <enabled>true</enabled>
+        </gpucoder>
       </toolbox>
     </matlab>
     <platform>
