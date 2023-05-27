@@ -16,7 +16,12 @@ The most common types of scans we run are:
 2. Click "Select Vantage directory" and navigate to the Vantage directory you wish to run the data acquisition script from (this will likely have a name of the form "Vantage-4.6.2-XXX" and should contain a script called "activate.p"
 3. Select the transducer, beam type, plate parameters, and number of equilibration frames you want. You will rarely need to change the starting well/row/column fields, and you should make sure that the numbers of rows/columns matches the number of plates you wish to scan. If you set these numbers to be too high, the motor stage will not automatically recognize this error, and may damage the transducer. The number of equilibration frames is the number of frames that occur between a change in voltage and the imaging being saved for that voltage, and is intended to make sure that if any GVs are going to collapse at that imaging voltage, they do so before the final image for that voltage is aquired.
 4. Select the scan type, and set the voltages for the scan as desired.
+5. Confirm that everything is correct, and click "Start Scan"
 
+<img width="774" alt="Screenshot 2023-04-12 at 12 07 20 PM" src="https://user-images.githubusercontent.com/14302923/231559930-73bba2a2-abcb-42e9-86f7-af7056e918a1.png">
+
+6. Looking at the gray Bmode iamge, posisiton the first well as it appears in the screenshot. The depth will depend on the transducer used: the sample should be at 5 mm for the L22, and 20 mm for the L10.
+7. In the gray VSX GUI, click "Start Ramp" (you may have to click it many times for the scan to start).
 
 # Processing data
 The Data Processing GUI was designed to process data for any of the three scan types that was acquired using the Data Acquisition GUI. 
