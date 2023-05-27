@@ -1,7 +1,17 @@
 clear all
 close all
 
+<<<<<<< Updated upstream
 pathName = 'C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\Data\230302\EFA4-C8-C9_clusters2-E4_R1-4_stable_37C\EFA4-C9_P1_R3-4_stable_37C_P_R2_C2';
+=======
+% saveName = '/Volumes/GoogleDrive/My Drive/';
+% pathName = '/Volumes/GoogleDrive/My Drive/';
+% ExperimentDate = 'Verasonics_Raw';
+% SampleName = '211124_EF31-80-93-Mega13-Mega14-Serratia_stable_37C';
+% saveName = fullfile(saveName,'Verasonics_Processed','APR',SampleName,filesep);
+
+pathName = '/Users/Rob/Library/CloudStorage/GoogleDrive-rchurt@caltech.edu/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/A-B-hits-and-cloned_uninduced_vramp_stable-37C/A-B-hits-and-cloned_uninduced_vramp_stable-37C_P_R2_C3';
+>>>>>>> Stashed changes
 saveName = pathName;
 
 SubDirs = GetSubDirs(pathName);

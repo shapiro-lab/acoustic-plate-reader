@@ -6,7 +6,7 @@ savefigure = 1;
 groupalong = 'columns';
 split = 1; % number of voltage ramps
 NpS = 1; % number of replicates
-numcondition = 96; % number of unique samples
+numcondition = 2; % number of unique samples
 
 %%
 % ROI dimensions: voltage, mode, wells
@@ -17,7 +17,7 @@ sampCNRb = squeeze(sampCNR(:,2,:)); % CNR of Bmode, dB scale
 noiseROIx = squeeze(noiseROI_means(:,1,:)); % mean intensity of xAM noise, linear scale
 noiseROIb = squeeze(noiseROI_means(:,2,:)); % mean intensity of Bmode noise, linear scale
 
-PreV = 1:10; % Define pre-collapse voltage range
+PreV = 1:43; % Define pre-collapse voltage range
 PostV = PreV(end)+1; % Define post-collapse voltage range
 PreV_split = reshape(PreV,[],split)';
 
@@ -27,7 +27,8 @@ PreV_split = reshape(PreV,[],split)';
 % normx = 20*log10(abs((sampROIx(PreV,:) - noiseROIx(PreV,:)) ./...
 %         (sampROIb(1,:) - sampROIb(PostV,:)))); % xAM/Bmode, dB scale, normalize only to the first Bmode frame
 
-normx = (sampCNRx(:,:)); % only plotting raw CNR
+% normx = (sampCNRx(:,:)); % only plotting raw CNR
+normx = (sampROIb(:,:) - sampROIb(PostV+1,:))./(max(sampROIb) - sampROIb(PostV+1,:)); % only plotting raw CNR
 
 vx = voltage(PreV_split(1,:));%voltage(PreV); % voltages for plotting
 %%

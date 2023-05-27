@@ -5,6 +5,7 @@ PlateSize = [8,12];
 n_plates = 4;
 
 % load data
+<<<<<<< Updated upstream
 data1 = load('G:\.shortcut-targets-by-id\0B24ONICaZ0z9djczVE1ZR3BnWU0\Shapiro Lab Information\Data\Rob\APR_scans\GvpA-B-mutants\A-lib-2\A-lib-K22R-A2\A-lib-K22R-A2_P1_R1-3_stable-37C_quants_230505-19-21-04.mat');
 data2 = load('G:\.shortcut-targets-by-id\0B24ONICaZ0z9djczVE1ZR3BnWU0\Shapiro Lab Information\Data\Rob\APR_scans\GvpA-B-mutants\A-lib-2\A-lib-K22R-A2\A-lib-K22R-A2_P2_R1-3_stable-37C_quants_230505-19-22-20.mat');
 data3 = load('G:\.shortcut-targets-by-id\0B24ONICaZ0z9djczVE1ZR3BnWU0\Shapiro Lab Information\Data\Rob\APR_scans\GvpA-B-mutants\A-lib-2\A-lib-K22R-A2\A-lib-K22R-A2_P3_R1-3_stable-37C_quants_230505-19-23-40.mat');
@@ -13,6 +14,12 @@ data4 = load('G:\.shortcut-targets-by-id\0B24ONICaZ0z9djczVE1ZR3BnWU0\Shapiro La
 %% combine arrays
 %make structure to hold data
 quants = data2;
+=======
+data1 = load('/Users/Rob/Library/CloudStorage/GoogleDrive-rchurt@caltech.edu/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/B-lib-1/B-lib_P1_R134_stable-37C_P_1_1_data_220727-11-03-28.mat');
+data2 = load('/Users/Rob/Library/CloudStorage/GoogleDrive-rchurt@caltech.edu/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/B-lib-1/B-lib_P2_R134_stable-37C_P_1_2_data_220727-10-57-12.mat');
+data3 = load('/Users/Rob/Library/CloudStorage/GoogleDrive-rchurt@caltech.edu/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/B-lib-1/B-lib_P3_R134_stable-37C_P_1_3_data_220727-10-44-56.mat');
+data4 = load('/Users/Rob/Library/CloudStorage/GoogleDrive-rchurt@caltech.edu/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/B-lib-1/B-lib_P4_R2-4_stable-37C_P_1_4_data_220727-10-51-17.mat');
+>>>>>>> Stashed changes
 
 %combine arrays
 quants.CNR_diffs = cat(4, squeeze(data1.sampCNR_diff(:,:,:)), squeeze(data2.sampCNR_diff(:,:,:)), squeeze(data3.sampCNR_diff(:,:,:)), squeeze(data4.sampCNR_diff(:,:,:)));

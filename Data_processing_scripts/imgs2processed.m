@@ -2,8 +2,8 @@ wclear all
 
 %% Inputs
 % file parameters
-pathName = '/Volumes/GoogleDrive/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/A-and-B-hits_stable-37C';
-SampleName = 'A-and-B-hits_R2_stable-37C_P_R1_C1';
+pathName = '/Users/Rob/Library/CloudStorage/GoogleDrive-rchurt@caltech.edu/My Drive/Shapiro lab/Acoustic plate reader project/Example data';
+SampleName = 'A-lib-1_plate2_rep2_stable-37C_P_1_1';
 
 % scan_type = 'pre_post'; %'voltage_ramp', 'collapse_ramp' % TODO make these change what types of plots get made
 
@@ -11,7 +11,7 @@ SampleName = 'A-and-B-hits_R2_stable-37C_P_R1_C1';
 disp_crange = [40 -3]; % limits of colorbar
 imgMode = 1; % 1 for ramping voltage, 2 for imaging voltage
 computeDiff = 1; % 1 or 0 to compute pre-post-collapse difference image or not
-compar = [10 20]; % indices of voltages to compare for pre-post-collapse difference
+compar = [16 32]; % indices of voltages to compare for pre-post-collapse difference
 trans = 'L22'; % L22 or L10
 
 %%
@@ -28,7 +28,7 @@ end
 
 % Call raw2imgs script
 raw2imgs;
-load(fullfile(pathName, SampleName, 'imgs.mat'));
+% load(fullfile(pathName, SampleName, 'imgs.mat'));
 
 if imgMode == 1
     cmap = 'hot';

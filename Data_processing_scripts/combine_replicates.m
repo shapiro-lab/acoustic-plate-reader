@@ -3,12 +3,47 @@ close all
 
 PlateSize = [8,12];
 
+<<<<<<< Updated upstream
 % load data;
 data1 = load('G:\.shortcut-targets-by-id\0B24ONICaZ0z9djczVE1ZR3BnWU0\Shapiro Lab Information\Data\Rob\APR_scans\ORI-RBS-libraries\EFA4-C9-E9-G9_R1-4_stable_37C\EFA4-G9_R1_stable_37C_P_R2_C1\EFA4-G9_R1-4_stable_37C_P_R2_C1_data_230305-12-54-51.mat');
 data2 = load('G:\.shortcut-targets-by-id\0B24ONICaZ0z9djczVE1ZR3BnWU0\Shapiro Lab Information\Data\Rob\APR_scans\ORI-RBS-libraries\EFA4-C9-E9-G9_R1-4_stable_37C\EFA4-G9_R2_stable_37C_P_R2_C3\EFA4-G9_R1-4_stable_37C_P_R2_C3_data_230305-13-03-11.mat');
 data3 = load('G:\.shortcut-targets-by-id\0B24ONICaZ0z9djczVE1ZR3BnWU0\Shapiro Lab Information\Data\Rob\APR_scans\ORI-RBS-libraries\EFA4-C9-E9-G9_R1-4_stable_37C\EFA4-G9_R3_stable_37C_P_R2_C4\EFA4-G9_R1-4_stable_37C_P_R2_C4_data_230305-13-04-56.mat');
 
 %%
+=======
+% load data
+% data1 = load('/Users/Rob/Library/CloudStorage/GoogleDrive-rchurt@caltech.edu/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/A-B-hits_vramp_stable-37C/A-B-hits_vramp_stable-37C_P_R1_C1/A-B-hits_vramp_stable-37C_P_R1_C1_data_220818-11-15-09.mat');
+% data2 = load('/Users/Rob/Library/CloudStorage/GoogleDrive-rchurt@caltech.edu/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/A-B-hits_vramp_stable-37C/A-B-hits_vramp_stable-37C_P_R1_C2/A-B-hits_vramp_stable-37C_P_R1_C2_data_220818-11-21-13.mat');
+% data3 = load('/Users/Rob/Library/CloudStorage/GoogleDrive-rchurt@caltech.edu/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/A-B-hits_vramp_stable-37C/A-B-hits_vramp_stable-37C_P_R1_C4/A-B-hits_vramp_stable-37C_P_R1_C4_data_220818-12-04-33.mat');
+
+data1 = load('/Users/Rob/Library/CloudStorage/GoogleDrive-rchurt@caltech.edu/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/A-B-hits-and-cloned_uninduced_vramp_stable-37C/A-B-hits-and-cloned_uninduced_vramp_stable-37C_P_R1_C1/A-B-hits-and-cloned_uninduced_vramp_stable-37C_P_R1_C1_data_220826-16-19-48.mat');
+data2 = load('/Users/Rob/Library/CloudStorage/GoogleDrive-rchurt@caltech.edu/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/A-B-hits-and-cloned_uninduced_vramp_stable-37C/A-B-hits-and-cloned_uninduced_vramp_stable-37C_P_R1_C2/A-B-hits-and-cloned_uninduced_vramp_stable-37C_P_R1_C2_data_220826-16-25-33.mat');
+data3 = load('/Users/Rob/Library/CloudStorage/GoogleDrive-rchurt@caltech.edu/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/A-B-hits-and-cloned_uninduced_vramp_stable-37C/A-B-hits-and-cloned_uninduced_vramp_stable-37C_P_R1_C3/A-B-hits-and-cloned_uninduced_vramp_stable-37C_P_R1_C3_data_220826-16-27-38.mat');
+data4 = load('/Users/Rob/Library/CloudStorage/GoogleDrive-rchurt@caltech.edu/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/A-B-hits-and-cloned_uninduced_vramp_stable-37C/A-B-hits-and-cloned_uninduced_vramp_stable-37C_P_R2_C1/A-B-hits-and-cloned_uninduced_vramp_stable-37C_P_R2_C1_data_220826-16-30-00.mat');
+data5 = load('/Users/Rob/Library/CloudStorage/GoogleDrive-rchurt@caltech.edu/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/A-B-hits-and-cloned_uninduced_vramp_stable-37C/A-B-hits-and-cloned_uninduced_vramp_stable-37C_P_R2_C2_data_220826-16-33-41.mat');
+data6 = load('/Users/Rob/Library/CloudStorage/GoogleDrive-rchurt@caltech.edu/My Drive/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/A-B-hits-and-cloned_uninduced_vramp_stable-37C/A-B-hits-and-cloned_uninduced_vramp_stable-37C_P_R2_C3_data_220826-16-35-57.mat');
+
+%%
+%combine arrays
+% 3 plates
+% % CNRs = cat(4, squeeze(data1.sampCNR([3:2:21 24:2:end],:,:)), squeeze(data2.sampCNR(:,:,:)), squeeze(data3.sampCNR(:,:,:))); %if downsampling
+% CNRs = cat(4, squeeze(data1.sampCNR(:,:,:)), squeeze(data2.sampCNR(:,:,:)), squeeze(data3.sampCNR(:,:,:)));
+% % noiseROI_means = cat(4, squeeze(data1.noiseROI_means([3:2:21 24:2:end],:,:)), squeeze(data2.noiseROI_means(:,:,:)), squeeze(data3.noiseROI_means(:,:,:))); %if downsampling
+% noiseROI_means = cat(4, squeeze(data1.noiseROI_means(:,:,:)), squeeze(data2.noiseROI_means(:,:,:)), squeeze(data3.noiseROI_means(:,:,:)));
+% % sampROI_means = cat(4, squeeze(data1.sampROI_means([3:2:21 24:2:end],:,:)), squeeze(data2.sampROI_means(:,:,:)), squeeze(data3.sampROI_means(:,:,:))); %if downsampling
+% sampROI_means = cat(4, squeeze(data1.sampROI_means(:,:,:)), squeeze(data2.sampROI_means(:,:,:)), squeeze(data3.sampROI_means(:,:,:)));
+
+% 6 plates
+% CNRs = cat(4, squeeze(data1.sampCNR([3:2:21 24:2:end],:,:)), squeeze(data2.sampCNR(:,:,:)), squeeze(data3.sampCNR(:,:,:))); %if downsampling
+CNRs = cat(4, squeeze(data1.sampCNR(:,:,:)), squeeze(data2.sampCNR(:,:,:)), squeeze(data3.sampCNR(:,:,:)), squeeze(data4.sampCNR(:,:,:)), squeeze(data5.sampCNR(:,:,:)), squeeze(data6.sampCNR(:,:,:)));
+% noiseROI_means = cat(4, squeeze(data1.noiseROI_means([3:2:21 24:2:end],:,:)), squeeze(data2.noiseROI_means(:,:,:)), squeeze(data3.noiseROI_means(:,:,:))); %if downsampling
+noiseROI_means = cat(4, squeeze(data1.noiseROI_means(:,:,:)), squeeze(data2.noiseROI_means(:,:,:)), squeeze(data3.noiseROI_means(:,:,:)), squeeze(data4.noiseROI_means(:,:,:)), squeeze(data5.noiseROI_means(:,:,:)), squeeze(data6.noiseROI_means(:,:,:)));
+% sampROI_means = cat(4, squeeze(data1.sampROI_means([3:2:21 24:2:end],:,:)), squeeze(data2.sampROI_means(:,:,:)), squeeze(data3.sampROI_means(:,:,:))); %if downsampling
+sampROI_means = cat(4, squeeze(data1.sampROI_means(:,:,:)), squeeze(data2.sampROI_means(:,:,:)), squeeze(data3.sampROI_means(:,:,:)), squeeze(data4.sampROI_means(:,:,:)), squeeze(data5.sampROI_means(:,:,:)), squeeze(data6.sampROI_means(:,:,:)));
+
+
+
+>>>>>>> Stashed changes
 %make structure to hold data
 quants = data2;
 quants.saveName = 'G:\.shortcut-targets-by-id\0B24ONICaZ0z9djczVE1ZR3BnWU0\Shapiro Lab Information\Data\Rob\APR_scans\ORI-RBS-libraries\EFA4-C9-E9-G9_R1-4_stable_37C\EFA4-G9_R1-3_stable_37C';

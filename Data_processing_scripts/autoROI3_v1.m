@@ -54,6 +54,43 @@ Ixz_cell = cell(Nf,1); %initialize empty cell to hold ixZtemp from each well
 xcorrection = zeros(1,total_n); % initialize array for ROI correction in x dimension (correction in the unit of voxel count, ~0.1 mm/count)
 zcorrection = zeros(1,total_n); % initialize array for ROI correction in z dimension (correction in the unit of voxel count, ~0.0124 mm/count)  
 skip = zeros(1,total_n); % ROI correction in well indices to skip processing
+<<<<<<< Updated upstream
+=======
+
+% xcorrection([2]) = 2;
+% xcorrection([8]) = -2;
+% xcorrection([13]) = 2;
+% xcorrection([74]) = 25;
+% xcorrection([76]) = 55;
+% xcorrection([85]) = 25;
+% xcorrection([86]) = 30;
+% xcorrection([18]) = 5;
+% xcorrection([40]) = 3;
+% xcorrection([38]) = 5;
+% xcorrection([60]) = -5;
+% xcorrection([27]) = 5;
+% xcorrection([53]) = -5;
+% xcorrection([55]) = -5;
+% xcorrection([86]) = 15;
+%xcorrection([37]) =55;
+
+% zcorrection(1:total_n) = 20;
+% zcorrection(2) = -15;
+% zcorrection(2) = -45;
+% zcorrection(3) = -30;
+% zcorrection(8) = -40;
+% zcorrection(13) = -20;
+% zcorrection(14) = -40;
+% zcorrection(15) = -40;
+% zcorrection(17) = -40;
+% zcorrection(14) = -40;
+% zcorrection(15) = -40;
+% zcorrection(86) = -80;
+% zcorrection(25) = 40;
+% zcorrection(75) = 30;
+% zcorrection(81) = -30;
+% zcorrection(93) = -10;
+>>>>>>> Stashed changes
 zcorrection = zcorrection + 20;
 %% quantify ROIs
 h = waitbar(0,'Quantifying ROIs');

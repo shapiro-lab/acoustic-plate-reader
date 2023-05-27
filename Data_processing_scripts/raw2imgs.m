@@ -102,7 +102,7 @@ clear well pressure mode;
 close(h);
 
 PlateSize = [P.xLines P.zLines]; % rows and columns of wells scanned
-save(fullfile(samplePath, 'imgs.mat'), 'Imi', 'dImi', 'P', 'Zi', 'PlateSize', '-v7.3')
+% save(fullfile(samplePath, 'imgs.mat'), 'Imi', 'dImi', 'P', 'Zi', 'PlateSize', '-v7.3')
 
 %% Function definitions
 function [subDirsNames] = GetSubDirs(parentDir)
