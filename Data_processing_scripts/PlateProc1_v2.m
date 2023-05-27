@@ -1,7 +1,7 @@
 clear all
 close all
-% 
-pathName = '/Users/Rob/Dropbox/verasonics system/Vantage-4.6.2-RCH/Data/230317/Best-A-B-mutants_R1-3_stable_37C_xAM-cramp/Best-A-B-mutants_R1-3_stable_37C_cramp_P_R1_C1';
+
+pathName = 'C:\Users\verasonics\Dropbox\GV Team\verasonics system\Vantage-4.6.2-RCH\Data\230302\EFA4-C8-C9_clusters2-E4_R1-4_stable_37C\EFA4-C9_P1_R3-4_stable_37C_P_R2_C2';
 saveName = pathName;
 
 SubDirs = GetSubDirs(pathName);

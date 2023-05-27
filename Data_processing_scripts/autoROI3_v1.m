@@ -137,7 +137,8 @@ for wellIx = 1:total_n
            
             %create xAM figure
             xAM_fig = figure();
-            ImTemp_xAM = Imi{VmaxIX(1),1,wellIx}; % Fetch xAM image at first occurence of max voltage
+%             ImTemp_xAM = Imi{1,1,wellIx}; % Fetch xAM image at first voltage (use for collapse ramps)
+            ImTemp_xAM = Imi{VmaxIX(1),1,wellIx}; % Fetch xAM image at first occurence of max voltage (use for voltage ramps and pre-post collapse)
 %             ImTemp_xAM = Imi{VmaxIX(1),1,wellIx}-Imi{VmaxIX(2),1,wellIx}; % Generate pre-post-collapse difference image at max voltage
             ImTemp_xAM = ImTemp_xAM(ixZtemp,:);
             imagesc(Xi, ZixTemp, 20*log10(abs(ImTemp_xAM)), xAM_color_lims); axis image; colormap hot;
@@ -217,7 +218,7 @@ figure;
 % plot(squeeze(normalize(means([5:10],:,1)',1,'range')));
 % plot(squeeze(means([14 18],:,1)'));
 % plot(normalize(squeeze(sampSBR_diff_reshaped(1,[1 2 3],:,1))'));
-plot(squeeze(sampSBR_reshaped(1:4,4,:,1))');
+plot(squeeze(sampSBR_reshaped(1:4,1,:,1))');
 title('Best Round 2 GvpA Mutants')
 xlabel('Voltage')
 ylabel('xAM diff SBR')
@@ -235,13 +236,11 @@ function quantify(quants, VmaxIX)
     % calculate SBRs
     quants.sampSBR = quants.sampROI_means ./ quants.noiseROI_means; % Calculate sample SBR
     quants.sampSBR_dB = 20 * log10(quants.sampSBR); % Calculate sample SBR in dB
-%     quants.sampSBR_diff = quants.sampSBR(2:VmaxIX(1),:,:) - quants.sampSBR(VmaxIX(1)+1:VmaxIX(2),:,:); % Calculate pre-/post-collapse difference SBR
-%     quants.sampSBR_diff = quants.sampSBR(1:VmaxIX(1),:,:) - quants.sampSBR(VmaxIX(1)+1:VmaxIX(2),:,:); % Calculate pre-/post-collapse difference SBR
-    quants.sampSBR_diff = quants.sampSBR(VmaxIX(1),:,:) - quants.sampSBR(VmaxIX(end),:,:); % Calculate pre-/post-collapse difference SBR
-%     quants.sampSBR_diff = quants.sampSBR(1,:,:) - quants.sampSBR(2,:,:); % Calculate pre-/post-collapse difference SBR
+%     quants.sampSBR_diff = quants.sampROI_means(1:end,:,:) ./ quants.noiseROI_means(1:end,:,:); % Calculate pre-/post-collapse difference SBR for collapse ramp scan
+%     quants.sampSBR_diff = (quants.sampROI_means(2:VmaxIX(1),:,:) - quants.sampROI_means(VmaxIX(1)+1:VmaxIX(2),:,:)) ./ quants.noiseROI_means(VmaxIX(1)+1:VmaxIX(2),:,:); % Calculate pre-/post-collapse difference SBR for voltage ramp scan
+    quants.sampSBR_diff = (quants.sampROI_means(VmaxIX(1),:,:) - quants.sampROI_means(VmaxIX(2),:,:)) ./ quants.noiseROI_means(VmaxIX(end),:,:); % Calculate pre-/post-collapse difference SBR for simple pre-post-collapse scan
     quants.sampSBR_diff_dB = 20 * log10(abs(quants.sampSBR_diff)); % Calculate pre-/post-collapse difference SBR in dB
-    % plot(squeeze(quants.sampSBR(1:13,2,[9 21 33 45])))
-    %plot(squeeze(quants.sampSBR(1:13,2,[10 22 34 46])))
+
     % calculate CNRs
     quants.sampCNR = (quants.sampROI_means - quants.noiseROI_means) ./ quants.noiseROI_stds; % Calculate sample CNR
     quants.sampCNR_dB = 20 * log10(abs(quants.sampCNR)); % Calculate sample CNR in dB

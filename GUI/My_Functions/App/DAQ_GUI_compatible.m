@@ -7,20 +7,32 @@
 % Last update:
 % 11/12/2017 - Danny Sawyer
 
-format compact
-P.TargetDepth = 5; % in mm, just for instruction purpose
+% clear all, format compact
+% P.RampMode = 2; % 1 = pBmode, 2 = xAM, 3 = xBmode, 4 = pAM (P1 imaging mode)
+% P.AcousticCollapse = 1; % 1 = imaging ramp, 2 = collapse ramp
+% AcousticCollapseImagingVoltage = 25; % only applicable for acoustic collapse mode, imaging voltage
 
-PostCollapse = [PostCollapse 2];
+% params = sub_AllSettings('ZJScanTest');
+% params = sub_Stage_Initialize(params);
+
+% P.savePath = [pwd '\Data\230415\'];
+% P.saveDirName = 'test';
+
+% Initial_Pos = 'A1'; %Starting point
+% Initial_PlatePos = [1 1];
+
+% P.seed = [25]; % Voltge ramp range, min voltage = 1.6V 
+% PostCollapse = [25]; % post-collapse voltage(s)
 P.Focus = 5e-3; % focus of parabolic beam [m]
-P.rc_threshold = 2;
+% P.rc_threshold = 2;
 P.numAccum = 50;
 
-% P.xLines = 8; % number of scanned lines in the x-direction
-% P.zLines = 12; % number of scanned lines in the z-direction.
+% P.xLines = 7; % number of scanned lines in the x-direction
+% P.zLines = 1; % number of scanned lines in the z-direction.
 P.xDist = 9; % distance (in mm) to move in each x step
 P.zDist = 9; % distance (in mm) to move in each z step
 
-% P.pNum = [3 4]; % number of plates [row column] in [x z] direction (max [3 4])
+% P.pNum = [1 1]; % number of plates [row column] in [x z] direction (max [3 4])
 P.pDist = [90 132]; % distance (in mm) to move across plate in [x,z] direction
 
 Scan.Pos = cell(P.xLines,P.zLines);
@@ -35,6 +47,16 @@ P.EqTime3 = 0; % Post-collpase waiting time before changing voltages
 % P.BC = 30; % Parabolic collapse voltage
 % P.BI = 1.6; % Parabolic B-mode imaging voltage
 P.fps = 100; % maximal frame rate
+if P.AcousticCollapse == 2
+    P.ACI = AcousticCollapseImagingVoltage;
+    PostCollapse = [];
+elseif P.AcousticCollapse == 1
+    P.ACI = 1.6;
+else
+    error('Check Acoustic Collapse Setting. Needs to be set at 1 or 2.')
+end
+
+P.TargetDepth = 5; % in mm, just for instruction purpose
 
 P.autoDepthRange = 2; % max travel range from the center (dz in z +/- dz) in mm
 P.autoDepth = [5 0]; %349 = 5 mm for Bmode, 923 for 12 mm
@@ -134,7 +156,8 @@ P.wellROI = [wL wL+w_width ; wD wD+w_height];
 P.CNR = 0;
 P.VRampStep = 1;
 P.rtime = [0,0,inf;0,0,0];
-
+P.t2 = clock;
+StartRamp = [0 0];
 
 
 %% no bmode ramp
@@ -917,15 +940,19 @@ return
 
 %saveRF - save RF
 P = evalin('base','P');
-P.ScanCount(4) = 1;
-P.Setup = 0;
-P.t2 = clock;
-P.autoDepth(2) = 1;
-params = evalin('base','sub_Stage_Update_Positions(params)');
-params.Stages.Origin = params.Stages.Position;
-assignin('base','params', params);
-fprintf('Ramp starts.\n')
-assignin('base','P', P);
+StartRamp = evalin('base','StartRamp');
+if ~StartRamp(2)
+    StartRamp(1) = 1;
+    P.Setup = 0;
+    P.t2 = clock;
+    params = evalin('base','sub_Stage_Update_Positions(params)');
+    params.Stages.Origin = params.Stages.Position;
+    params.test = 1;
+    assignin('base','params', params);
+    fprintf('Ramp starts.\n')
+    assignin('base','P', P);
+    assignin('base','StartRamp', StartRamp);
+end
 return
 %saveRF
 
@@ -1081,6 +1108,11 @@ if P.PlateCount(3)
     P.PlateCount(3) = 0;
 end
 
+% if P.StartRamp
+%     P.ScanCount(4) = 1;
+%     P.StartRamp = 0;
+% end
+
 if P.ramp && (etime(clock,P.t1) > P.EqTime) && (P.rc > P.rc_threshold)
 
     if P.Collapse 
@@ -1216,7 +1248,7 @@ if P.Setup || P.RForImg(2) || P.ScanCount(4) || P.LiveRecon
     % iIm = find(z>=2.5,1,'first'):(find(z>=2.5,1,'first')+dispLen);
     persistent iIm
     if isempty(iIm)
-        disp_depth = [2.5 P.endDepth_mm];
+        disp_depth = [1 P.endDepth_mm];
         iIm = find(z>=disp_depth(1),1,'first'):find(z>=disp_depth(2),1,'first');
     end
     ImgData.Xx = x;
@@ -1247,20 +1279,6 @@ if P.Setup || P.RForImg(2) || P.ScanCount(4) || P.LiveRecon
     % Noise ROI
     rectangle(imgHandle.CurrentAxes,'Position',[x(xNoiseROI(1)), z(zNoiseROI(1)),...
         x(xNoiseROI(end))-x(xNoiseROI(1)),z(zNoiseROI(end))-z(zNoiseROI(1))],'EdgeColor','y')
-    % Well ROI
-    % rectangle(imgHandle.CurrentAxes,'Position',[x(xWellROI(1)), z(zWellROI(1)),...
-    %     x(xWellROI(end))-x(xWellROI(1)),z(zWellROI(end))-z(zWellROI(1))],'EdgeColor','r')
-    % CNR value as text
-    % text(imgHandle.CurrentAxes,x(end)-2,z(iIm(1))+1,sprintf('CNR = %2.1f',CNR),'Color','y')
-%     if P.RForImg(2) && P.ROI_found
-%         Ind_dZ = P.id_cur(2,:);
-%         Ind_dX = P.id_cur(1,:);
-%     
-%         if sum(sign([Ind_dX Ind_dZ])) == 4 && (Ind_dZ(2) <= length(z)) && (Ind_dX(2) <= length(x)) 
-%             P.CNR = 20*log10((mean(mean(Im(Ind_dZ(1):Ind_dZ(2),Ind_dX(1):Ind_dX(2)))) - mean(mean(Im(zNoiseROI,xNoiseROI))))...
-%                                     / std2(Im(zNoiseROI,xNoiseROI)));
-%         end
-%     end
     
     title(imgHandle.CurrentAxes,['Time elapsed: ' char(duration(P.rtime(2,:))) '. Time remaining: ' char(duration(P.rtime(1,:)))]);
     drawnow limitrate   
@@ -1275,6 +1293,7 @@ function B_Recon(rfData)
 
 %%
 P = evalin('base','P');
+StartRamp = evalin('base','StartRamp');
 if P.Setup || P.RForImg(2) || P.ScanCount(4) || P.LiveRecon
     Receive = evalin('base','Receive');
     ImgData = evalin('base','ImgData');
@@ -1368,7 +1387,7 @@ if P.Setup || P.RForImg(2) || P.ScanCount(4) || P.LiveRecon
     z = z*1e3; % convert to mm
     persistent iIm
     if isempty(iIm)
-        disp_depth = [2.5 P.endDepth_mm];
+        disp_depth = [1 P.endDepth_mm];
         iIm = find(z>=disp_depth(1),1,'first'):find(z>=disp_depth(2),1,'first');
     end
     % zMaxAng = zMaxAng*1e3;
@@ -1432,9 +1451,9 @@ if P.Setup || P.RForImg(2) || P.ScanCount(4) || P.LiveRecon
     end
     %% auto ROI selection 
     if P.autoROI == 1
-        if P.ScanCount(4) || P.Setup
-            
-            noiseROIt = mean(mean(Im(iZn,:))) + noise_stdratio * std2(Im(iZn,:));
+        if P.ScanCount(4) || P.Setup || StartRamp(1)
+            % noiseROIt = mean(mean(Im(iZn,:))) + noise_stdratio * std2(Im(iZn,:));
+            noiseROIt = 60;
             Imt_f1 = medfilt2(Im,filter_size1);
             Imt_f2 = (Imt_f1 > noiseROIt) .* filter_depth;
             Xm = repmat(1:length(x),length(z),1).* Imt_f2;
@@ -1451,7 +1470,20 @@ if P.Setup || P.RForImg(2) || P.ScanCount(4) || P.LiveRecon
                 P.id_cur = [Ind_dX;Ind_dZ];
                 P.ROI_found = 1;
                 d_temp = (P.d_cur(2) - d_samp(1)); % negative sign for the motor definition
-                if ~P.Setup    
+                if StartRamp(1)
+                    d_samp(3) = d_temp; % calculate how much distance to travel from the origin
+                    if abs(d_samp(3)) > P.autoDepthRange*2
+                       warning('Initial position too far for auto-focus target. Please readjust and restart.')
+                       StartRamp = [0 0];
+                    else
+                        P.ScanCount(4) = 1;
+                        StartRamp = [0 1];
+                        P.Setup = 0;
+                        P.t2 = clock;
+                        P.autoDepth = [d_samp(3) - d_samp(2) P.ScanCount(4)]; 
+                        d_samp(2) = 0;
+                    end
+                elseif ~P.Setup    
                     d_samp(3) = d_samp(2) + d_temp; % calculate how much distance to travel from the origin
                      if abs(d_samp(3)) > P.autoDepthRange 
                         d_samp(3) = sign(d_samp(3))*P.autoDepthRange; % if out of range, go to the max range
@@ -1490,6 +1522,7 @@ if P.Setup || P.RForImg(2) || P.ScanCount(4) || P.LiveRecon
             end
         end
     end
+    assignin('base','StartRamp', StartRamp);
     assignin('base','P',P);
     %%
     
@@ -1505,12 +1538,35 @@ if P.ramp
     if ~P.rampi
         P.rampi = P.rampi + 1;
         P.hv = P.Vseq(P.rampi);
-        [result,hv] = setTpcProfileHighVoltage(P.hv, 1);
-        P.hv = hv;
-        hv1Sldr = findobj('Tag','hv1Sldr');
-        set(hv1Sldr,'Value',P.hv);
-        hv1Value = findobj('Tag','hv1Value');
-        set(hv1Value,'String',num2str(P.hv,'%.1f'));
+        if P.AcousticCollapse == 2
+            % change P1 to imaging voltage 
+            [result,ACI] = setTpcProfileHighVoltage(P.ACI, 1);
+            P.ACI = ACI;
+            slide_temp = ['hv' num2str(1) 'Sldr'];
+            value_temp = ['hv' num2str(1) 'Value'];
+            hvSldr = findobj('Tag',slide_temp);
+            set(hvSldr,'Value',P.ACI);
+            hvValue = findobj('Tag',value_temp);
+            set(hvValue,'String',num2str(P.ACI,'%.1f'));
+            % change P2 to ramp voltage
+            [result,hv] = setTpcProfileHighVoltage(P.hv, P.AcousticCollapse);
+            P.hv = hv;
+            slide_temp = ['hv' num2str(P.AcousticCollapse) 'Sldr'];
+            value_temp = ['hv' num2str(P.AcousticCollapse) 'Value'];
+            hvSldr = findobj('Tag',slide_temp);
+            set(hvSldr,'Value',P.hv);
+            hvValue = findobj('Tag',value_temp);
+            set(hvValue,'String',num2str(P.hv,'%.1f'));
+        else
+            [result,hv] = setTpcProfileHighVoltage(P.hv, P.AcousticCollapse);
+            P.hv = hv;
+            slide_temp = ['hv' num2str(P.AcousticCollapse) 'Sldr'];
+            value_temp = ['hv' num2str(P.AcousticCollapse) 'Value'];
+            hvSldr = findobj('Tag',slide_temp);
+            set(hvSldr,'Value',P.hv);
+            hvValue = findobj('Tag',value_temp);
+            set(hvValue,'String',num2str(P.hv,'%.1f'));
+        end
         P.t1 = clock;
         P.rc = 0;
         P.EqTime = P.EqTime1;
@@ -1523,7 +1579,7 @@ if P.ramp
         Resource = evalin('base','Resource');
         TPC = evalin('base','TPC');
         nAngleEvent = evalin('base','nAngleEvent');
-        hv = TPC(1).hv;
+        hv = TPC(P.AcousticCollapse).hv;
         ImgData = evalin('base','ImgData');
 
         if (strcmpi(P.pulseShape,'parabola'))
@@ -1570,31 +1626,35 @@ if P.ramp
             fprintf('Voltage ramp is done!\n');
             P.ScanCount(3) = 1;
             P.hv = P.Vseq(P.rampi);
-            [result,hv] = setTpcProfileHighVoltage(P.hv, 1);
+            [result,hv] = setTpcProfileHighVoltage(P.hv, P.AcousticCollapse);
             P.hv = hv;
-            hv1Sldr = findobj('Tag','hv1Sldr');
-            set(hv1Sldr,'Value',P.hv);
-            hv1Value = findobj('Tag','hv1Value');
-            set(hv1Value,'String',num2str(P.hv,'%.1f')); 
+            slide_temp = ['hv' num2str(P.AcousticCollapse) 'Sldr'];
+            value_temp = ['hv' num2str(P.AcousticCollapse) 'Value'];
+            hvSldr = findobj('Tag',slide_temp);
+            set(hvSldr,'Value',P.hv);
+            hvValue = findobj('Tag',value_temp);
+            set(hvValue,'String',num2str(P.hv,'%.1f'));
             P.rc = 0;
             P.EqTime = P.EqTime1 * (1 - P.PCf) + P.EqTime3 * P.PCf;
             assignin('base','P', P);
             assignin('base','paramsUpdated',true);
             evalin('base','clear RcvData_pers'); % Clear persistent variables 
         elseif P.rampi == length(P.seed) % set collapse frame
-            if length(P.seed) == length(P.Vseq)
+            if length(P.seed) == length(P.Vseq) || (P.AcousticCollapse == 2)
                 P.ramp = 0;
                 P.rampi = 0;
                 P.PCf = 0;
                 fprintf('Voltage ramp is done!\n');
                 P.ScanCount(3) = 1;
                 P.hv = P.Vseq(P.rampi);
-                [result,hv] = setTpcProfileHighVoltage(P.hv, 1);
+                [result,hv] = setTpcProfileHighVoltage(P.hv, P.AcousticCollapse);
                 P.hv = hv;
-                hv1Sldr = findobj('Tag','hv1Sldr');
-                set(hv1Sldr,'Value',P.hv);
-                hv1Value = findobj('Tag','hv1Value');
-                set(hv1Value,'String',num2str(P.hv,'%.1f')); 
+                slide_temp = ['hv' num2str(P.AcousticCollapse) 'Sldr'];
+                value_temp = ['hv' num2str(P.AcousticCollapse) 'Value'];
+                hvSldr = findobj('Tag',slide_temp);
+                set(hvSldr,'Value',P.hv);
+                hvValue = findobj('Tag',value_temp);
+                set(hvValue,'String',num2str(P.hv,'%.1f'));
                 P.rc = 0;
                 P.EqTime = P.EqTime1 * (1 - P.PCf) + P.EqTime3 * P.PCf;
                 assignin('base','P', P);
@@ -1603,10 +1663,10 @@ if P.ramp
             else
                 [result,BC] = setTpcProfileHighVoltage(P.BC, 2);
                 P.BC = BC;
-                hv2Sldr = findobj('Tag','hv2Sldr');
-                set(hv2Sldr,'Value',BC);
-                hv2Value = findobj('Tag','hv2Value');
-                set(hv2Value,'String',num2str(BC,'%.1f'));
+                hvSldr = findobj('Tag','hv2Sldr');
+                set(hvSldr,'Value',BC);
+                hvValue = findobj('Tag','hv2Value');
+                set(hvValue,'String',num2str(BC,'%.1f'));
                 P.Collapse = 1;
                 P.t1 = clock;
                 P.rc = 0;
@@ -1619,12 +1679,14 @@ if P.ramp
         else
             P.rampi = P.rampi + 1;
             P.hv = P.Vseq(P.rampi);
-            [result,hv] = setTpcProfileHighVoltage(P.hv, 1);
+            [result,hv] = setTpcProfileHighVoltage(P.hv, P.AcousticCollapse);
             P.hv = hv;
-            hv1Sldr = findobj('Tag','hv1Sldr');
-            set(hv1Sldr,'Value',P.hv);
-            hv1Value = findobj('Tag','hv1Value');
-            set(hv1Value,'String',num2str(P.hv,'%.1f'));
+            slide_temp = ['hv' num2str(P.AcousticCollapse) 'Sldr'];
+            value_temp = ['hv' num2str(P.AcousticCollapse) 'Value'];
+            hvSldr = findobj('Tag',slide_temp);
+            set(hvSldr,'Value',P.hv);
+            hvValue = findobj('Tag',value_temp);
+            set(hvValue,'String',num2str(P.hv,'%.1f'));
             P.t1 = clock;
             P.rc = 0;
             P.VCSeq = 0;
@@ -1636,10 +1698,10 @@ if P.ramp
     elseif P.PostCollapse % get back to ramp after collapse 
         [result,BI] = setTpcProfileHighVoltage(P.BI, 2);
         P.BI = BI;
-        hv2Sldr = findobj('Tag','hv2Sldr');
-        set(hv2Sldr,'Value',BI);
-        hv2Value = findobj('Tag','hv2Value');
-        set(hv2Value,'String',num2str(BI,'%.1f'));
+        hvSldr = findobj('Tag','hv2Sldr');
+        set(hvSldr,'Value',BI);
+        hvValue = findobj('Tag','hv2Value');
+        set(hvValue,'String',num2str(BI,'%.1f'));
         P.PostCollapse = 0;
         P.Collapse = 0;
         P.PCf = 1;
@@ -1648,10 +1710,10 @@ if P.ramp
         P.hv = P.Vseq(P.rampi);
         [result,hv] = setTpcProfileHighVoltage(P.hv, 1);
         P.hv = hv;
-        hv1Sldr = findobj('Tag','hv1Sldr');
-        set(hv1Sldr,'Value',P.hv);
-        hv1Value = findobj('Tag','hv1Value');
-        set(hv1Value,'String',num2str(P.hv,'%.1f'));
+        hvSldr = findobj('Tag','hv1Sldr');
+        set(hvSldr,'Value',P.hv);
+        hvValue = findobj('Tag','hv1Value');
+        set(hvValue,'String',num2str(P.hv,'%.1f'));
         P.t1 = clock;
         P.rc = 0;
         P.VCSeq = 0;
@@ -1668,7 +1730,7 @@ end
 
 function motorStepX
 P = evalin('base','P');
-if P.ScanCount(3) && (P.ScanCount(1) < P.xLines)
+if P.ScanCount(3) && (P.ScanCount(1) < P.xLines)&& (P.rc > P.rc_threshold)
     params = evalin('base','params');
     evalin('base','sub_Stage_Move(params, params.Stages.x_motor, (P.xDist/1000)/params.Stages.step_distance);');
     pause(1+(abs(P.xDist)/1000)/params.Stages.step_distance/params.Stages.Speed)
@@ -1688,7 +1750,7 @@ end
 function motorReturnXStepZ
 P = evalin('base','P');
 params = evalin('base','params');
-if P.ScanCount(3)
+if P.ScanCount(3)&& (P.rc > P.rc_threshold)
     if P.ScanCount(1) < P.xLines
         evalin('base','sub_Stage_Move(params, params.Stages.x_motor, (P.xDist/1000)/params.Stages.step_distance);');
         pause(1+(abs(P.xDist)/1000)/params.Stages.step_distance/params.Stages.Speed)
@@ -1803,9 +1865,6 @@ if P.autoDepth(2)
     P.rampi = 0;
     P.autoDepth(2) = 0;
     P.t1 = clock;
-    disp('ScanC')
-    disp(P.ScanCount);
-    disp(P.autoDepth);
     assignin('base','P', P);
     fprintf('motorAdjustY\n')
 end

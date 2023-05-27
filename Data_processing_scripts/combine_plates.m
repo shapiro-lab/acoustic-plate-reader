@@ -5,10 +5,10 @@ PlateSize = [8,12];
 n_plates = 4;
 
 % load data
-data1 = load('/Volumes/GoogleDrive-118305181097921812507/.shortcut-targets-by-id/0B24ONICaZ0z9djczVE1ZR3BnWU0/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/B-lib-1/B-lib_P1_R2_stable-37C_P_1_2_quants_230117-09-14-25.mat');
-data2 = load('/Volumes/GoogleDrive-118305181097921812507/.shortcut-targets-by-id/0B24ONICaZ0z9djczVE1ZR3BnWU0/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/B-lib-1/B-lib_P2_R3_stable-37C_P_1_2_quants_230117-09-16-53.mat');
-data3 = load('/Volumes/GoogleDrive-118305181097921812507/.shortcut-targets-by-id/0B24ONICaZ0z9djczVE1ZR3BnWU0/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/B-lib-1/B-lib_P3_R3_stable-37C_P_1_3_quants_230117-09-20-06.mat');
-data4 = load('/Volumes/GoogleDrive-118305181097921812507/.shortcut-targets-by-id/0B24ONICaZ0z9djczVE1ZR3BnWU0/Shapiro Lab Information/Data/Rob/96-well_plate_scans/GvpA-B-mutants/B-lib-1/B-lib_P4_R2_stable-37C_P_1_1_quants_230117-09-23-12.mat');
+data1 = load('G:\.shortcut-targets-by-id\0B24ONICaZ0z9djczVE1ZR3BnWU0\Shapiro Lab Information\Data\Rob\APR_scans\GvpA-B-mutants\A-lib-2\A-lib-K22R-A2\A-lib-K22R-A2_P1_R1-3_stable-37C_quants_230505-19-21-04.mat');
+data2 = load('G:\.shortcut-targets-by-id\0B24ONICaZ0z9djczVE1ZR3BnWU0\Shapiro Lab Information\Data\Rob\APR_scans\GvpA-B-mutants\A-lib-2\A-lib-K22R-A2\A-lib-K22R-A2_P2_R1-3_stable-37C_quants_230505-19-22-20.mat');
+data3 = load('G:\.shortcut-targets-by-id\0B24ONICaZ0z9djczVE1ZR3BnWU0\Shapiro Lab Information\Data\Rob\APR_scans\GvpA-B-mutants\A-lib-2\A-lib-K22R-A2\A-lib-K22R-A2_P3_R1-3_stable-37C_quants_230505-19-23-40.mat');
+data4 = load('G:\.shortcut-targets-by-id\0B24ONICaZ0z9djczVE1ZR3BnWU0\Shapiro Lab Information\Data\Rob\APR_scans\GvpA-B-mutants\A-lib-2\A-lib-K22R-A2\A-lib-K22R-A2_P4_R1-3_stable-37C_quants_230505-19-24-47.mat');
 
 %% combine arrays
 %make structure to hold data

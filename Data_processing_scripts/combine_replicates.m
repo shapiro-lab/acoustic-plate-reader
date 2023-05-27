@@ -4,14 +4,14 @@ close all
 PlateSize = [8,12];
 
 % load data;
-data1 = load('/Users/Rob/Dropbox/verasonics system/Vantage-4.6.2-RCH/Data/230307/A-A-B-B-A-T6A-L40A-A-T6A-I48V-B-S9G-R31L-R85L_P1_R1-4_stable_37C/A-A-B-B-A-T6A-L40A-A-T6A-I48V-B-S9G-R31L-R85L_P1_R1-4_stable_37C_P_R1_C1_data_230309-19-00-28.mat');
-data2 = load('/Users/Rob/Dropbox/verasonics system/Vantage-4.6.2-RCH/Data/230307/A-A-B-B-A-T6A-L40A-A-T6A-I48V-B-S9G-R31L-R85L_P1_R1-4_stable_37C/A-A-B-B-A-T6A-L40A-A-T6A-I48V-B-S9G-R31L-R85L_P1_R1-4_stable_37C_P_R1_C2_data_230309-19-03-38.mat');
-data3 = load('/Users/Rob/Dropbox/verasonics system/Vantage-4.6.2-RCH/Data/230307/A-A-B-B-A-T6A-L40A-A-T6A-I48V-B-S9G-R31L-R85L_P1_R1-4_stable_37C/A-A-B-B-A-T6A-L40A-A-T6A-I48V-B-S9G-R31L-R85L_P1_R1-4_stable_37C_P_R1_C3_data_230309-18-57-00.mat');
+data1 = load('G:\.shortcut-targets-by-id\0B24ONICaZ0z9djczVE1ZR3BnWU0\Shapiro Lab Information\Data\Rob\APR_scans\ORI-RBS-libraries\EFA4-C9-E9-G9_R1-4_stable_37C\EFA4-G9_R1_stable_37C_P_R2_C1\EFA4-G9_R1-4_stable_37C_P_R2_C1_data_230305-12-54-51.mat');
+data2 = load('G:\.shortcut-targets-by-id\0B24ONICaZ0z9djczVE1ZR3BnWU0\Shapiro Lab Information\Data\Rob\APR_scans\ORI-RBS-libraries\EFA4-C9-E9-G9_R1-4_stable_37C\EFA4-G9_R2_stable_37C_P_R2_C3\EFA4-G9_R1-4_stable_37C_P_R2_C3_data_230305-13-03-11.mat');
+data3 = load('G:\.shortcut-targets-by-id\0B24ONICaZ0z9djczVE1ZR3BnWU0\Shapiro Lab Information\Data\Rob\APR_scans\ORI-RBS-libraries\EFA4-C9-E9-G9_R1-4_stable_37C\EFA4-G9_R3_stable_37C_P_R2_C4\EFA4-G9_R1-4_stable_37C_P_R2_C4_data_230305-13-04-56.mat');
 
 %%
 %make structure to hold data
 quants = data2;
-
+quants.saveName = 'G:\.shortcut-targets-by-id\0B24ONICaZ0z9djczVE1ZR3BnWU0\Shapiro Lab Information\Data\Rob\APR_scans\ORI-RBS-libraries\EFA4-C9-E9-G9_R1-4_stable_37C\EFA4-G9_R1-3_stable_37C';
 %combine arrays
 % CNRs = cat(4, squeeze(data1.quants.sampCNR_diff([3:2:21 24:2:end],:,:)), squeeze(data2.quants.sampCNR_diff(:,:,:)), squeeze(data3.quants.sampCNR_diff(:,:,:))); %if downsampling
 quants.CNR_diffs = cat(4, squeeze(data1.quants.sampCNR_diff(:,:,:)), squeeze(data2.quants.sampCNR_diff(:,:,:)), squeeze(data3.quants.sampCNR_diff(:,:,:)));
