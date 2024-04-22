@@ -3,6 +3,14 @@
 # Introduction
 
 # Construction
+## Motorized stages
+xxx
+## Imaging water tank
+The water tank used in this study is designed to hold 12 of the 96-well phantoms. The parts were made by laser cutting, assembled with xxx(glue) and water-proofed with xxx(glue2?). For the walls (Long_v4.DXF and Short_v4.DXF) and the base insert (Base_horiz.DXF), 0.25 inch acrylic sheets were used, while for the bottom piece (Inner.DXF), 0.5 in ones were used for improved rigidity. Alternatively, two pieces of the bottom cut from 0.25 in acrylic sheets can be stacked and glued together. The simulated full assembly of the tank is shown in Full_Assemble.SLDASM for the reference.
+## 96-well phantoms
+The phantom molds were 3D-printed (96-well_PhantomMold_v1.STL and 96-well_PhantomMold_body_shallow.STL). Specifically, the molding parts (96-well_PhantomMold_v1.STL) were printed with Nylon 12 using Selective Laser Sintering through Shapeways for the finer features of the wells. The walls (96-well_PhantomMold_body_shallow.STL) were printed with PLA in-house. 
+## Transducer holders
+The holder for the transducer used in this study (Verasonics L22-14vX) was 3D-printed with PLA in-house (L22_holder_15deg.SLDPRT and L22_holder_top.SLDPRT).
 
 # Running a scan
 ## Types of scans
