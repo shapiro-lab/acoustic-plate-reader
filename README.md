@@ -1,12 +1,18 @@
 # Acoustic Plate Reader
 
 # Introduction
-![APR Workflow](https://github.com/shapiro-lab/acoustic-plate-reader/assets/14302923/3c5e6829-79da-44d7-9f6f-d468f0007d1f)
 
+This repository contains instructions for building and using an Acoustic Plate Reader (APR) to image bacterial or mammalian cell samples expressing gas vesicles (GVs) in high throughput using ultrasound.
+
+The APR uses a Verasonics Vantage™ Research Ultrasound System for ultrasound image acquisition, and a custom-built motorized stage to raster scan the ultrasound transducer over the samples. The ultrasound image acquisition and transducer movement are controlled using custom MATLAB scripts run from the Vantage™ host computer. Data acquisition and analysis are automated via MATLAB GUIs.
+
+Please consult the [preprint](https://doi.org/10.1101/2024.03.30.587094) for an example of how the APR was used to evolve bacterial acoustic reporter genes for increased nonlinear ultrasound contrast.
+
+![APR](https://github.com/shapiro-lab/acoustic-plate-reader/assets/14302923/20a8be6d-0944-4c29-8b85-5b0349e94ba8)
 
 # Construction
 ## Motorized stage
-The motorized stage used to scan the transducer over the samples consists of three components: the stage itself, the acrylic base that supports it, and the Matlab scripts used to control it. The scripts can be found [here](https://github.com/drmittelstein/ultrasound_hardware_control?tab=readme-ov-file#scripts-in-this-repository), but are provided only for troubleshooting purposes; the control of the stage during a scan is built into the Data Acquisition GUI. The parts required to build the stage and base are provided in the tables below; the assembly of the stage is self-explanatory, and the CAD files for machining the base can be found [here](https://github.com/drmittelstein/ultrasound_rigs/tree/master/Mech%20Translating%20Stage%20Setup).
+The motorized stage setup used to scan the transducer over the samples consists of three components: the stage itself, the acrylic base that supports it, and the MATLAB scripts used to control it. The scripts can be found [here](https://github.com/drmittelstein/ultrasound_hardware_control?tab=readme-ov-file#scripts-in-this-repository), but are provided only for troubleshooting purposes; the control of the stage during a scan is built into the Data Acquisition GUI. The parts required to build the stage and base are provided in the tables below; the assembly of the stage is self-explanatory, and the CAD files for machining the base can be found [here](https://github.com/drmittelstein/ultrasound_rigs/tree/master/Mech%20Translating%20Stage%20Setup).
 
 **Motorized stage: BiSlide Motorized Translating System: 24”, 12”, 8”, (5 um resolution) from Velmex**
 
@@ -39,13 +45,20 @@ Dimensions of mounted stage: 18” x 28”
 
 <img width="392" alt="Screenshot 2024-04-23 at 2 59 03 PM" src="https://github.com/shapiro-lab/acoustic-plate-reader/assets/14302923/ac41ef90-97af-40c7-ad17-acd20938071e">
 
-
 ## Imaging water tank
-The water tank used in this study is designed to hold 12 of the 96-well phantoms. The parts were made by laser cutting, assembled with xxx(glue) and water-proofed with xxx(glue2?). For the walls (Long_v4.DXF and Short_v4.DXF) and the base insert (Base_horiz.DXF), 0.25 inch acrylic sheets were used, while for the bottom piece (Inner.DXF), 0.5 in ones were used for improved rigidity. Alternatively, two pieces of the bottom cut from 0.25 in acrylic sheets can be stacked and glued together. The simulated full assembly of the tank is shown in Full_Assemble.SLDASM for the reference.
+The water tank used in this study is designed to hold 12 of the 96-well phantoms. The parts were made by laser cutting, assembled with SCIGRIP Weld-On #4, and water-proofed with a silicone sealant. For the walls (Long_v4.DXF and Short_v4.DXF) and the base insert (Base_horiz.DXF), 0.25" acrylic sheets were used, while for the bottom piece (Inner.DXF), 0.5" ones were used for improved rigidity. Alternatively, two pieces of the bottom cut from 0.25" acrylic sheets can be stacked and glued together. The simulated full assembly of the tank is shown in Full_Assemble.SLDASM for reference.
 ## 96-well phantoms
 The phantom molds were 3D-printed (96-well_PhantomMold_v1.STL and 96-well_PhantomMold_body_shallow.STL). Specifically, the molding parts (96-well_PhantomMold_v1.STL) were printed with Nylon 12 using Selective Laser Sintering through Shapeways for the finer features of the wells. The walls (96-well_PhantomMold_body_shallow.STL) were printed with PLA in-house. 
 ## Transducer holders
 The holder for the transducer used in this study (Verasonics L22-14vX) was 3D-printed with PLA in-house (L22_holder_15deg.SLDPRT and L22_holder_top.SLDPRT).
+
+# Sample preparation
+![APR Workflow](https://github.com/shapiro-lab/acoustic-plate-reader/assets/14302923/3c5e6829-79da-44d7-9f6f-d468f0007d1f)
+1) Preparation of *E. coli* cells expressing GVs
+2) Casting of a 96-well agarose phantom
+3) Preparation of low-melt molten agarose for loading *E. coli* samples into the phantom
+4) Loading of samples into the phantom at 42C
+5) Scanning of the loaded phantom using the Acoustic Plate Reader
 
 # Running a scan
 ## Types of scans
