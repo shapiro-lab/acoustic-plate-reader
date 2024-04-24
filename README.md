@@ -1,5 +1,4 @@
 # Acoustic Plate Reader
-
 # Introduction
 
 This repository contains instructions for building and using an Acoustic Plate Reader (APR) to image bacterial or mammalian cell samples expressing gas vesicles (GVs) in high throughput using ultrasound.
@@ -8,9 +7,10 @@ The APR uses a Verasonics Vantage™ Research Ultrasound System for ultrasound i
 
 Please consult the [preprint](https://doi.org/10.1101/2024.03.30.587094) for an example of how the APR was used to evolve bacterial acoustic reporter genes for increased nonlinear ultrasound contrast.
 
-![APR](https://github.com/shapiro-lab/acoustic-plate-reader/assets/14302923/20a8be6d-0944-4c29-8b85-5b0349e94ba8)
+![SupplementaryVideo1-ezgif com-video-to-gif-converter-2](https://github.com/shapiro-lab/acoustic-plate-reader/assets/14302923/fa99e78a-02eb-450f-973e-672e7c86ed09)
 
 # Construction
+![APR](https://github.com/shapiro-lab/acoustic-plate-reader/assets/14302923/20a8be6d-0944-4c29-8b85-5b0349e94ba8)
 ## Motorized stage
 The motorized stage setup used to scan the transducer over the samples consists of three components: the stage itself, the acrylic base that supports it, and the MATLAB scripts used to control it. The scripts can be found [here](https://github.com/drmittelstein/ultrasound_hardware_control?tab=readme-ov-file#scripts-in-this-repository), but are provided only for troubleshooting purposes; the control of the stage during a scan is built into the Data Acquisition GUI. The parts required to build the stage and base are provided in the tables below; the assembly of the stage is self-explanatory, and the CAD files for machining the base can be found [here](https://github.com/drmittelstein/ultrasound_rigs/tree/master/Mech%20Translating%20Stage%20Setup).
 
